@@ -1,0 +1,5 @@
+hookTextureSize: 32
+chainStartOffset: 27
+chainStartCenter: 1
+chainTextureSize: 16
+chainLinkOffset: 7
