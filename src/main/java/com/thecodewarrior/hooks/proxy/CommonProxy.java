@@ -80,20 +80,21 @@ public class CommonProxy
 			}
 			Vector3 loc = hook.getLocation();
 			Vector3 vel = hook.getVelocity();
+			Vector3 movement = vel;
 			if(hook.isRetracting())
 			{
-				vel = loc.copy().sub(playerCenter).normalize().multiply(-hook.getHook().getRetractSpeed());
+				movement = vel = loc.copy().sub(playerCenter).normalize().multiply(-hook.getHook().getRetractSpeed());
 				if(loc.copy().sub(playerCenter).mag() < hook.getHook().getRetractSpeed()) {
 					hook.destroy();
 				}
+			} else {
+				movement = HookUtil.collisionRayCast(w, loc, vel, event.player);
+				if(!(  approxEqual(movement.x, vel.x) && approxEqual(movement.y, vel.y) && approxEqual(movement.z, vel.z)  ) && !hook.isStopped())
+				{
+					hook.setStopped();
+				}
 			}
-			AxisAlignedBB hookAABB = hook.getAABB().copy().offset(loc.x, loc.y, loc.z);
-			Vector3 movement = HookUtil.attemptBoundingBoxMove(hookAABB, w, vel, event.player);
-			if(!(  approxEqual(movement.x, vel.x) && approxEqual(movement.y, vel.y) && approxEqual(movement.z, vel.z)  ) && !hook.isStopped())
-			{
-				hook.setStopped();
-			}
-			hook.setLocation(loc.add( movement ));
+			hook.setLocation(loc.copy().add( movement ));
 			if( !hook.isStopped() &&
 				distance(playerEyes, loc) > Math.pow(hook.getHook().getLength(), 2) )
 				hook.setRetracting();
@@ -114,9 +115,9 @@ public class CommonProxy
 		   approxEqual(player.posZ - player.lastTickPosZ, 0)) {
 			props.isSteady = true;
 		}
-		player.motionX = movement.x;
-		player.motionY = movement.y;
-		player.motionZ = movement.z;
+//		player.motionX = movement.x;
+//		player.motionY = movement.y;
+//		player.motionZ = movement.z;
 	}
 	
 	@SubscribeEvent

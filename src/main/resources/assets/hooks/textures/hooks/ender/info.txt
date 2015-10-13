@@ -1,0 +1,29 @@
+#The pixel dimensions of the hook
+hookTextureSize: 32
+
+#The number of hook pixels to offset the start of the chain
+chainOffset: 23
+
+#The number of pixels to shift the chain
+loopCenter: 1
+
+#The pixel dimensions of the chain
+chainTextureSize: 16
+
+#The number of pixels to offset each hook
+chainLinkOffset: 7
+
+#The number of degrees to rotate each hook
+chainLinkAngleOffset: 90
+
+#The min/max number of degrees to randomly rotate each link
+chainLinkAngleRandomRange: 10
+
+#The number of pixels to offset the hook, when diagonal this will be multiplied by √2
+hookOffset: 2
+
+#The number of pixels to offset the loop when rendering
+loopOffset: 4
+
+#include this if you're hook texture is diagonal. it should point to the top-right
+diagonalHook:true

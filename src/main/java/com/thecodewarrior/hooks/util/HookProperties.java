@@ -129,6 +129,7 @@ public class HookProperties implements IExtendedEntityProperties
 		
 		ActiveHook ahook = new ActiveHook(hook);
 		ahook.setLocation(new Vector3( RayTracer.getCorrectedHeadVec(player) ));
+//		ahook.setLocation(new Vector3(player.posX, player.posY, player.posZ));
 		ahook.setHeading(new Vector3( player.getLookVec() ).normalize());
 		ahook.setHitNotify(this);
 		addHook(ahook);

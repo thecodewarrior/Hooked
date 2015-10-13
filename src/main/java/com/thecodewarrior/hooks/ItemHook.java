@@ -24,7 +24,7 @@ public class ItemHook extends ItemHookProvider
 		this.count = count;
 		this.hook  = hook ;
 		
-		setUnlocalizedName("hook");
+		setUnlocalizedName("hook." + hook.getId().substring(HookMod.MODID.length()+1));
 		setCreativeTab(CreativeTabs.tabTransport);
 	}
 	

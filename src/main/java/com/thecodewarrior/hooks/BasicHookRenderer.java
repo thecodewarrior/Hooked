@@ -32,14 +32,21 @@ public class BasicHookRenderer implements IHookRenderer, IResourceConfig
 		{
 			randomTwists[i] = (Math.random()-0.5)*10;
 		}
-		hookTextureSize  = parseWithDefault( hookTextureSize,  data.get("hookTextureSize" ).trim() );
-		chainStartOffset = parseWithDefault( chainStartOffset, data.get("chainStartOffset").trim() );
-		chainStartCenter = parseWithDefault( chainStartCenter, data.get("chainStartCenter").trim() );
-		chainTextureSize = parseWithDefault( chainTextureSize, data.get("chainTextureSize").trim() );
-		chainLinkOffset  = parseWithDefault( chainLinkOffset,  data.get("chainLinkOffset" ).trim() );
+		hookTextureSize  = parseWithDefault( hookTextureSize,  data.get("hookTextureSize" ) );
+		chainOffset = parseWithDefault( chainOffset, data.get("chainOffset") );
+		loopOffset = parseWithDefault( loopOffset, data.get("loopOffset") );
+		loopCenter = parseWithDefault( loopCenter, data.get("loopCenter") );
+		chainTextureSize = parseWithDefault( chainTextureSize, data.get("chainTextureSize") );
+		chainLinkOffset  = parseWithDefault( chainLinkOffset,  data.get("chainLinkOffset" ) );
+		
+		diagonal = data.containsKey("diagonalHook") ? data.get("diagonalHook").equals("true") : false;
 	}
 	
 	double parseWithDefault(double def, String s) {
+		if(s == null)
+			return def;
+		else
+			s = s.trim();
 	    try {
 	        return Double.parseDouble(s);
 	    }
@@ -50,10 +57,15 @@ public class BasicHookRenderer implements IHookRenderer, IResourceConfig
 	}
 	
 	double hookTextureSize  = 16;
-	double chainStartOffset = 16;
-	double chainStartCenter = 0;
+	double chainOffset = 16;
+	double loopCenter = 0;
 	double chainTextureSize = 16;
 	double chainLinkOffset  = 16;
+	double loopOffset = 0;
+	
+	double asdf;
+	
+	boolean diagonal;
 	
 	double[] randomTwists = new double[1000];
 	
@@ -93,6 +105,14 @@ public class BasicHookRenderer implements IHookRenderer, IResourceConfig
 		mc.renderEngine.bindTexture(hookTexture);
 		GL11.glRotated(45, 0, 1, 0);
 
+		GL11.glPushMatrix();
+		
+		if(diagonal) {
+			GL11.glTranslated(0, 0.5, 0);
+			GL11.glRotated(-45, 0, 0, 1);
+			GL11.glTranslated(0, -0.5, 0);
+		}
+		
 		t.startDrawingQuads();
 		renderFace(
 			 0.5, 0, 0,  1, 0,
@@ -100,17 +120,32 @@ public class BasicHookRenderer implements IHookRenderer, IResourceConfig
 			-0.5, 1, 0,  0, 1,
 			 0.5, 1, 0,  1, 1
 		);
+		t.draw();
+		
+		GL11.glPopMatrix();
+		
+		GL11.glPushMatrix();
+		GL11.glRotated(90, 0, 1, 0);
+		if(diagonal) {
+			GL11.glTranslated(0, 0.5, 0);
+			GL11.glRotated(-45, 0, 0, 1);
+			GL11.glTranslated(0, -0.5, 0);
+		}
+		t.startDrawingQuads();
 		renderFace(
-			0, 0,  0.5,  1, 0,
-			0, 0, -0.5,  0, 0,
-			0, 1, -0.5,  0, 1,
-			0, 1,  0.5,  1, 1
+			 0.5, 0, 0,  1, 0,
+			-0.5, 0, 0,  0, 0,
+			-0.5, 1, 0,  0, 1,
+			 0.5, 1, 0,  1, 1
 		);
 		t.draw();
+		GL11.glPopMatrix();
+		
 		
 		mc.renderEngine.bindTexture(hookLoop);
 		GL11.glRotated(45, 0, 1, 0);
-		
+		GL11.glTranslated(0, ( (loopOffset)/hookTextureSize )*(diagonal ? Math.sqrt(2) : 1), 0);
+
 		t.startDrawingQuads();
 		renderFace(
 			 0.5, 0, 0,  1, 0,
@@ -160,7 +195,7 @@ public class BasicHookRenderer implements IHookRenderer, IResourceConfig
 			GL11.glPushMatrix();
 			
 			
-			double d = chainStartOffset/hookTextureSize;
+			double d = (chainOffset/hookTextureSize)*(diagonal ? Math.sqrt(2) : 1);
 			Vector3 heading = hook.getHeading().copy().multiply(-d);
 			GL11.glTranslated(heading.x, heading.y, heading.z);
 			Vector3 newOffset = offsetToPlayer.copy().sub(heading);
@@ -173,7 +208,7 @@ public class BasicHookRenderer implements IHookRenderer, IResourceConfig
 		mc.renderEngine.bindTexture(chain);
 //		GL11.glRotated(90, 0, 1, 0);
 		int i = 0;
-		for(double d = -(size*chainStartCenter/chainTextureSize); d < (length-offset); d += offset) {
+		for(double d = -(size*loopCenter/hookTextureSize); d < (length-offset); d += offset) {
 			t.startDrawingQuads();
 			renderFace(
 				 size/2, d     , 0,  1, 0,

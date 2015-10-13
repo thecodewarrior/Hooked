@@ -107,6 +107,18 @@ public class HookMod {
 		h.reset("emerald");
 		h.setLength(20).setSpeed(20).setRetractSpeed(40).setUnbreakable().setCount(3);
 		h.register();
+		
+		h.reset("ender");
+		h.setLength(25).setSpeed(25 * 20 / 2).setRetractSpeed(25 * 20 / 2).setUnbreakable().setCount(3);
+		h.register();
+		
+		h.reset("slime");
+		h.setLength(25).setSpeed(30).setRetractSpeed(60).setUnbreakable().setCount(3);
+		h.register();
+		
+		h.reset("wither");
+		h.setLength(30).setSpeed(30).setRetractSpeed(60).setUnbreakable().setCount(4);
+		h.register();
 	}
 	
 	@EventHandler
