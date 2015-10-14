@@ -62,7 +62,7 @@ public class RetractHookMessage implements IMessage
             {
             	if(h.getUUID().equals( message.hookId ))
             	{
-            		h.setRetracting();
+            		h.destroy();
             		h.setLocation(message.location);
             	}
             }

@@ -14,8 +14,11 @@ import org.apache.logging.log4j.Logger;
 
 import com.thecodewarrior.hooks.net.NetHandler;
 import com.thecodewarrior.hooks.proxy.CommonProxy;
+import com.thecodewarrior.hooks.render.HookRenderer;
+import com.thecodewarrior.hooks.render.model.chain.BasicChainModel;
+import com.thecodewarrior.hooks.render.model.hook.BasicHookModel;
+import com.thecodewarrior.hooks.render.model.hook.DiagonalHookModel;
 import com.thecodewarrior.hooks.util.Hook;
-import com.thecodewarrior.hooks.util.HookStats;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
@@ -69,9 +72,7 @@ public class HookMod {
 	
 	@SidedProxy(clientSide = "com.thecodewarrior.hooks.proxy.ClientProxy", serverSide = "com.thecodewarrior.hooks.proxy.CommonProxy")
 	public static CommonProxy proxy;
-	
-	public static IHookRenderer basicRenderer;
-	
+		
 	public static Map<String, Hook>			 hooks;
 	public static Map<String, ItemHook>		 items;
 	public static Map<String, IHookRenderer> renderers;
@@ -88,7 +89,15 @@ public class HookMod {
 		items	  = new HashMap<String, ItemHook>();
 		renderers = new HashMap<String, IHookRenderer>();
 		
-		basicRenderer = new BasicHookRenderer("unknown");
+		HookRegistry.basicRenderer = new HookRenderer("unknown");
+		
+		HookRegistry.basicHookModel = BasicHookModel.class;
+		HookRegistry.registerHookModel("basic", BasicHookModel.class);
+		
+		HookRegistry.basicChainModel = BasicChainModel.class;
+		HookRegistry.registerChainModel("basic", BasicChainModel.class);
+		
+		HookRegistry.registerHookModel("diagonal", DiagonalHookModel.class);
 		
 		HookRegisterHelper h = new HookRegisterHelper();
 		

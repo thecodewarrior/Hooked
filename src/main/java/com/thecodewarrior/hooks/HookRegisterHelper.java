@@ -1,5 +1,6 @@
 package com.thecodewarrior.hooks;
 
+import com.thecodewarrior.hooks.render.HookRenderer;
 import com.thecodewarrior.hooks.util.Hook;
 import com.thecodewarrior.hooks.util.HookStats;
 
@@ -53,7 +54,7 @@ public class HookRegisterHelper
 			throw e;
 		}
 		
-		IHookRenderer renderer = new BasicHookRenderer(name);
+		IHookRenderer renderer = new HookRenderer(name);
 		
 		HookStats stats = new HookStats(length, speed, retractSpeed);
 		stats.setRenderer(renderer);

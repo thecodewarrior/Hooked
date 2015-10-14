@@ -16,7 +16,7 @@ import codechicken.lib.vec.Vector3;
 import com.thecodewarrior.hooks.HookMod;
 
 public class HookUtil
-{
+{	
 	private static List<AxisAlignedBB> collidingBoundingBoxes = new ArrayList<AxisAlignedBB>();
 	
 	private static void addCollidingBoundingBoxes(Entity e, World w, AxisAlignedBB aabb) {
@@ -85,7 +85,7 @@ public class HookUtil
 						AxisAlignedBB.getBoundingBox(
 								minX+( offset.x * i/count), minY+( offset.y * i/count), minZ+( offset.z * i/count),
 								maxX-( offset.x * (count-i)/count), maxY-( offset.y * (count-i)/count), maxZ-( offset.z * (count-i)/count)
-							).expand(0.5, 0.5, 0.5)
+							).expand(1, 1, 1)
 						);
 			}
 		} else {
@@ -107,10 +107,13 @@ public class HookUtil
 			{
 		    	AxisAlignedBB currentBB = (AxisAlignedBB)collidingBoundingBoxes.get(i);
 				Vector3 currentHit = traceAABB(start, end, currentBB);
-				if(currentHit != null && currentHit.magSquared() < shortestMagSquared)
+				if(currentHit != null)
 				{
-					shortestHit = currentHit;
-					shortestMagSquared = currentHit.magSquared();
+					double currentMagS = currentHit.copy().sub(start).magSquared();
+					if(currentMagS < shortestMagSquared) {
+						shortestHit = currentHit;
+						shortestMagSquared = currentMagS;
+					}
 				}
 			}
 		    if(shortestHit != null) {
@@ -118,5 +121,33 @@ public class HookUtil
 			}
 		}
 		return offset;
+	}
+	
+	
+	public static double parseWithDefault(double def, String s) {
+		if(s == null)
+			return def;
+		else
+			s = s.trim();
+	    try {
+	        return Double.parseDouble(s);
+	    }
+	    catch (NumberFormatException e) {
+	        // It's OK to ignore "e" here because returning a default value is the documented behaviour on invalid input.
+	        return def;
+	    }
+	}
+	public static int parseWithDefault(int def, String s) {
+		if(s == null)
+			return def;
+		else
+			s = s.trim();
+	    try {
+	        return Integer.parseInt(s);
+	    }
+	    catch (NumberFormatException e) {
+	        // It's OK to ignore "e" here because returning a default value is the documented behaviour on invalid input.
+	        return def;
+	    }
 	}
 }

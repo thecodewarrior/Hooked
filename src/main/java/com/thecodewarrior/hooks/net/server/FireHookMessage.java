@@ -69,6 +69,7 @@ public class FireHookMessage implements IMessage
             HookProperties props = HookWrapper.getProperties( player );
             
             ActiveHook ahook = new ActiveHook(HookRegistry.getHook(message.hookId));
+            ahook.setUUID(message.uuid);
             ahook.setLocation(message.start);
     		ahook.setHeading(message.heading.normalize());
     		props.addHook(ahook);

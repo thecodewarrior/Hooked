@@ -89,10 +89,8 @@ public class ActiveHook
 			setRetracting();
 		if(d > 100*getHook().getLength())
 			destroy();
-		if(isRetracting() && d < 1)
+		if(isRetracting() && d < getHook().getRetractSpeed())
 			destroy();
-//		if(d < 3)
-//			d = d-1+1;
 		
 		if(isStopped())
 		{
@@ -127,7 +125,6 @@ public class ActiveHook
 		if(this.isStopped)
 			return;
 		this.isStopped = true;
-//		if(FMLCommonHandler.instance().getEffectiveSide().isClient())
 		NetHandler.CHANNEL.sendToServer(new LatchHookMessage( getUUID(), getLocation() ));
 		if(this.hitNotify != null && !shouldDestroy())
 			this.hitNotify.hookHit(this);

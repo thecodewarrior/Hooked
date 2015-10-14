@@ -95,9 +95,9 @@ public class CommonProxy
 				}
 			}
 			hook.setLocation(loc.copy().add( movement ));
-			if( !hook.isStopped() &&
-				distance(playerEyes, loc) > Math.pow(hook.getHook().getLength(), 2) )
-				hook.setRetracting();
+//			if( !hook.isStopped() &&
+//				distance(playerEyes, loc) > Math.pow(hook.getHook().getLength(), 2) )
+//				hook.setRetracting();
 			
 			index++;
 		}
