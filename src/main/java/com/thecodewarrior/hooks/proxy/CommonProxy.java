@@ -4,15 +4,15 @@ import java.util.List;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import codechicken.lib.raytracer.RayTracer;
 import codechicken.lib.vec.Vector3;
 
-import com.thecodewarrior.hooks.HookMod;
 import com.thecodewarrior.hooks.util.ActiveHook;
+import com.thecodewarrior.hooks.util.ExtendedVector3;
 import com.thecodewarrior.hooks.util.HookProperties;
 import com.thecodewarrior.hooks.util.HookUtil;
 import com.thecodewarrior.hooks.util.HookWrapper;
@@ -88,9 +88,11 @@ public class CommonProxy
 					hook.destroy();
 				}
 			} else {
-				movement = HookUtil.collisionRayCast(w, loc, vel, event.player);
+				ExtendedVector3<ForgeDirection> hit = HookUtil.collisionRayCast(w, loc, vel, event.player);
+				movement = hit;
 				if(!(  approxEqual(movement.x, vel.x) && approxEqual(movement.y, vel.y) && approxEqual(movement.z, vel.z)  ) && !hook.isStopped())
 				{
+					hook.setHitSide(hit.getData());
 					hook.setStopped();
 				}
 			}
@@ -115,9 +117,9 @@ public class CommonProxy
 		   approxEqual(player.posZ - player.lastTickPosZ, 0)) {
 			props.isSteady = true;
 		}
-//		player.motionX = movement.x;
-//		player.motionY = movement.y;
-//		player.motionZ = movement.z;
+		player.motionX = movement.x;
+		player.motionY = movement.y;
+		player.motionZ = movement.z;
 	}
 	
 	@SubscribeEvent

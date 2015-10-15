@@ -21,7 +21,8 @@ public class BasicChainModel implements IChainModel
 	private double chainTextureSize = 16;
 	private double chainLinkOffset = 16;
 	private double chainLineOffset = 0;
-	
+	private int flat = -1;
+	private int doubleFlat = -1;
 	private double[] randomTwists = new double[1000];
 	
 	public BasicChainModel()
@@ -44,6 +45,8 @@ public class BasicChainModel implements IChainModel
 		chainTextureSize = HookUtil.parseWithDefault( chainTextureSize, data.get("chain.link.textureSize") );
 		chainLinkOffset  = HookUtil.parseWithDefault( chainLinkOffset,  data.get("chain.link.offset" ) );
 		chainLineOffset  = HookUtil.parseWithDefault( chainLineOffset,  data.get("chain.offset" ) );
+		flat			 = HookUtil.parseWithDefault( flat			 ,  data.get("chain.flat" ) );
+		doubleFlat		 = HookUtil.parseWithDefault( doubleFlat	 ,  data.get("chain.flat.double" ) );
 	}
 	
 	@Override
@@ -57,6 +60,9 @@ public class BasicChainModel implements IChainModel
 		double size = 0.5;
 		double offset = size*(chainLinkOffset/chainTextureSize);
 		mc.renderEngine.bindTexture(chain);
+		if(flat != -1) {
+			GL11.glRotated(flat, 0, 1, 0);
+		}
 		int i = 0;
 		for(double d = -(size*chainLineOffset/chainTextureSize); d < (length-offset); d += offset) {
 			t.startDrawingQuads();
@@ -67,10 +73,26 @@ public class BasicChainModel implements IChainModel
 				 size/2, d+size, 0,  1, 1
 			);
 			t.draw();
-			if(i%2 == 0)
-				GL11.glRotated(   90 + randomTwists[i%randomTwists.length]  , 0, 1, 0);
-			else
-				GL11.glRotated(-( 90 + randomTwists[i%randomTwists.length] ), 0, 1, 0);
+			
+			if(doubleFlat != -1)
+			{
+				GL11.glRotated(doubleFlat, 0, 1, 0);
+				t.startDrawingQuads();
+				HookClientUtil.renderFace(
+					 size/2, d     , 0,  1, 0,
+					-size/2, d     , 0,  0, 0,
+					-size/2, d+size, 0,  0, 1,
+					 size/2, d+size, 0,  1, 1
+				);
+				t.draw();
+				GL11.glRotated(-doubleFlat, 0, 1, 0);
+			}
+			if(flat == -1) {
+				if(i%2 == 0)
+					GL11.glRotated(   90 + randomTwists[i%randomTwists.length]  , 0, 1, 0);
+				else
+					GL11.glRotated(-( 90 + randomTwists[i%randomTwists.length] ), 0, 1, 0);
+			}
 			i++;
 		}
 		

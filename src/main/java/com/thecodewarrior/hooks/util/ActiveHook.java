@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.util.AxisAlignedBB;
+import net.minecraftforge.common.util.ForgeDirection;
 import codechicken.lib.vec.Vector3;
 
 import com.thecodewarrior.hooks.HookMod;
@@ -12,8 +13,6 @@ import com.thecodewarrior.hooks.net.NetHandler;
 import com.thecodewarrior.hooks.net.server.DestroyHookMessage;
 import com.thecodewarrior.hooks.net.server.LatchHookMessage;
 import com.thecodewarrior.hooks.net.server.RetractHookMessage;
-
-import cpw.mods.fml.common.FMLCommonHandler;
 
 public class ActiveHook
 {
@@ -25,12 +24,22 @@ public class ActiveHook
 	boolean retracting;
 	boolean destroy = false;
 	UUID uuid;
+	ForgeDirection hitSide;
 	
 	public ActiveHook(Hook hook)
 	{
 		this.hook = hook;
 		isStopped = false;
 		uuid = UUID.randomUUID();
+	}
+	
+	public ForgeDirection getHitSide()
+	{
+		return hitSide;
+	}
+	public void setHitSide(ForgeDirection hitSide)
+	{
+		this.hitSide = hitSide;
 	}
 	
 	public UUID getUUID()

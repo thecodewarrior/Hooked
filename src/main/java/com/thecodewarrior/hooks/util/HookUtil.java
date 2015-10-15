@@ -53,17 +53,17 @@ public class HookUtil
         }
 	}
 	
-	private static Vector3 traceAABB(Vector3 start, Vector3 end, AxisAlignedBB aabb) {
+	private static ExtendedVector3<MovingObjectPosition> traceAABB(Vector3 start, Vector3 end, AxisAlignedBB aabb) {
 		if(aabb == null || start == null || end == null)
 			return null;
 		MovingObjectPosition mop = aabb.calculateIntercept(start.toVec3D(), end.toVec3D());
 		if(mop == null)
 			return null;
 		else
-			return new Vector3(mop.hitVec);
+			return ( new ExtendedVector3(mop.hitVec) ).setData(mop);
 	}
 	
-	public static Vector3 collisionRayCast(World world, Vector3 start, Vector3 offset, Entity e)
+	public static ExtendedVector3<ForgeDirection> collisionRayCast(World world, Vector3 start, Vector3 offset, Entity e)
 	{
 	    Vector3 end   = start.copy().add(offset);
 
@@ -103,50 +103,54 @@ public class HookUtil
 			
 			Vector3 shortestHit = null;
 		    double shortestMagSquared = Double.MAX_VALUE;
+		    int shortestSide = 0;
 		    for (int i = 0; i < collidingBoundingBoxes.size(); i++)
 			{
 		    	AxisAlignedBB currentBB = (AxisAlignedBB)collidingBoundingBoxes.get(i);
-				Vector3 currentHit = traceAABB(start, end, currentBB);
+				ExtendedVector3<MovingObjectPosition> currentHit = traceAABB(start, end, currentBB);
 				if(currentHit != null)
 				{
 					double currentMagS = currentHit.copy().sub(start).magSquared();
 					if(currentMagS < shortestMagSquared) {
 						shortestHit = currentHit;
 						shortestMagSquared = currentMagS;
+						shortestSide = currentHit.getData().sideHit;
 					}
 				}
 			}
 		    if(shortestHit != null) {
-		    	return shortestHit.sub(start);
+		    	return new ExtendedVector3<ForgeDirection>(shortestHit.sub(start)).setData(ForgeDirection.getOrientation(shortestSide));
 			}
 		}
-		return offset;
+		return new ExtendedVector3<ForgeDirection>(offset).setData(null);
 	}
 	
 	
 	public static double parseWithDefault(double def, String s) {
-		if(s == null)
+		if(s == null) {
 			return def;
-		else
+		} else {
 			s = s.trim();
+		}
 	    try {
 	        return Double.parseDouble(s);
 	    }
 	    catch (NumberFormatException e) {
-	        // It's OK to ignore "e" here because returning a default value is the documented behaviour on invalid input.
+	        HookMod.logger.error("Error parsing decimal value: '" + s + "'");
 	        return def;
 	    }
 	}
 	public static int parseWithDefault(int def, String s) {
-		if(s == null)
+		if(s == null) {
 			return def;
-		else
+		} else {
 			s = s.trim();
+		}
 	    try {
 	        return Integer.parseInt(s);
 	    }
 	    catch (NumberFormatException e) {
-	        // It's OK to ignore "e" here because returning a default value is the documented behaviour on invalid input.
+	        HookMod.logger.error("Error parsing integer value: '" + s + "'");
 	        return def;
 	    }
 	}

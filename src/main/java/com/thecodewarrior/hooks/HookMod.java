@@ -18,6 +18,7 @@ import com.thecodewarrior.hooks.render.HookRenderer;
 import com.thecodewarrior.hooks.render.model.chain.BasicChainModel;
 import com.thecodewarrior.hooks.render.model.hook.BasicHookModel;
 import com.thecodewarrior.hooks.render.model.hook.DiagonalHookModel;
+import com.thecodewarrior.hooks.render.model.hook.SlimeHookModel;
 import com.thecodewarrior.hooks.util.Hook;
 
 import cpw.mods.fml.common.FMLCommonHandler;
@@ -85,6 +86,8 @@ public class HookMod {
 		FMLCommonHandler.instance().bus().register(proxy);
 		MinecraftForge.EVENT_BUS.register(proxy);
 		
+		logger = getLogger();
+		
 		hooks	  = new HashMap<String, Hook>();
 		items	  = new HashMap<String, ItemHook>();
 		renderers = new HashMap<String, IHookRenderer>();
@@ -98,6 +101,7 @@ public class HookMod {
 		HookRegistry.registerChainModel("basic", BasicChainModel.class);
 		
 		HookRegistry.registerHookModel("diagonal", DiagonalHookModel.class);
+		HookRegistry.registerHookModel("slime", SlimeHookModel.class);
 		
 		HookRegisterHelper h = new HookRegisterHelper();
 		

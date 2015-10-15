@@ -1,5 +1,10 @@
 #the model type to use
 
+# format:
+# name:value
+# anything after a # is a comment
+# any settings not defined will be overriden by previous texture packs much like the vanilla system
+
 hook.model:(basic|diagonal|skull|slime)
 
 # hook.model = basic:
@@ -9,9 +14,16 @@ hook.hook.offset:[number of pixels to offset the hook texture]
 hook.loop.offset:[number of pixels to offset the loop texture]
 hook.loop.center:[number of pixels from the bottom of the loop texture to the center of the loop]
 
-chain.model:(basic|vertical|horizontal|spine)
+# hook.model = slime:
+hook.size:[scale of the hook]
+
+
+
+chain.model:(basic|spine)
 
 # chain.model = basic:
 chain.link.textureSize:[dimensions of the link texture]
 chain.link.offset:[number of pixels to offset each link from the last]
 chain.offset:[number of pixels to offset the entire chain]
+chain.flat:[(integer) any negative number for normal 90 degree offset of each link, or if it's positive the chain will be flat and rotated by that much]
+chain.flat.double:[(integer) if not -1, duplicate links will be rotated by this much from the main line]

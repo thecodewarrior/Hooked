@@ -204,32 +204,28 @@ public class ClientProxy extends CommonProxy implements IResourceManagerReloadLi
 	public void glAlign(Vector3 align, Vector3 along, Vector3 point, Vector3 to) {
 
 		double rot_angle = Math.acos( along.dotProduct(align) );
+		Vector3 rot_axis = null;
 		if( Math.abs(rot_angle) > 1.0/65536 )
 		{
-		    Vector3 rot_axis = along.copy().crossProduct(align).normalize();
-//		    rot_axis.x *= align.x == 0 ? -1 : 1;
-//		    rot_axis.y *= align.y == 0 ? -1 : 1;
-//		    rot_axis.z *= align.z == 0 ? -1 : 1;
-
+			rot_axis = along.copy().crossProduct(align).normalize();
 		    rot_axis.x *= -1;
 		    rot_axis.z *= -1;
 		    
 		    GL11.glRotated( Math.toDegrees(rot_angle), rot_axis.x, rot_axis.y, rot_axis.z );
-			    
-		    Vector3 up_target_dir = to.rotate(-rot_angle, rot_axis).normalize();
-		    up_target_dir.y = 0;
-		    if(up_target_dir.x != 0 || up_target_dir.z != 0) {
-			    up_target_dir.normalize();
-	
-				Vector3 up_axis = point;
-				double up_rot_angle = Math.acos( up_target_dir.copy().dotProduct(up_axis) );
-				if( Math.abs(up_rot_angle) > 1.0/65536 )
-				{
-				    Vector3 up_rot_axis = up_target_dir.copy().crossProduct(up_axis).normalize().multiply(-1);
-				    GL11.glRotated( Math.toDegrees(up_rot_angle), 0, up_rot_axis.y, 0 );
-				}
-		    }
 		}
+		Vector3 up_target_dir = rot_axis == null ? to : to.rotate(-rot_angle, rot_axis).normalize();
+	    up_target_dir.y = 0;
+	    if(up_target_dir.x != 0 || up_target_dir.z != 0) {
+		    up_target_dir.normalize();
+
+			Vector3 up_axis = point;
+			double up_rot_angle = Math.acos( up_target_dir.copy().dotProduct(up_axis) );
+			if( Math.abs(up_rot_angle) > 1.0/65536 )
+			{
+			    Vector3 up_rot_axis = up_target_dir.copy().crossProduct(up_axis).normalize().multiply(-1);
+			    GL11.glRotated( Math.toDegrees(up_rot_angle), 0, up_rot_axis.y, 0 );
+			}
+	    }
 	}
 
 	@Override

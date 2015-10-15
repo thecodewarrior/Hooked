@@ -54,10 +54,10 @@ public class HookRenderer implements IHookRenderer, IResourceConfig
 		catch (IllegalAccessException e) { e.printStackTrace(); }
 		
 		
-		 hookModel.constructTexturesFor(hookName);
 		 hookModel.processConfig(data);
-		chainModel.constructTexturesFor(hookName);
+		 hookModel.constructTexturesFor(hookName);
 		chainModel.processConfig(data);
+		chainModel.constructTexturesFor(hookName);
 	}
 	
 	String hookName;
