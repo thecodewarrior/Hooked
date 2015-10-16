@@ -134,7 +134,8 @@ public class ActiveHook
 		if(this.isStopped)
 			return;
 		this.isStopped = true;
-		NetHandler.CHANNEL.sendToServer(new LatchHookMessage( getUUID(), getLocation() ));
+		if(HookMod.proxy.isClient)
+			NetHandler.CHANNEL.sendToServer(new LatchHookMessage( getUUID(), getLocation() ));
 		if(this.hitNotify != null && !shouldDestroy())
 			this.hitNotify.hookHit(this);
 	}

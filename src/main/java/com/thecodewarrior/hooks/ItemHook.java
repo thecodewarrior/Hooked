@@ -1,5 +1,6 @@
 package com.thecodewarrior.hooks;
 
+import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -15,6 +16,8 @@ public class ItemHook extends ItemHookProvider
 	int count = 1;
 	Hook hook;
 	int durability = -1;
+	String hookName;
+	
 	
 	public ItemHook(Hook hook) 						{ this(hook, 1,     false); }
 	public ItemHook(Hook hook, int count) 			{ this(hook, count, false); }
@@ -23,9 +26,19 @@ public class ItemHook extends ItemHookProvider
 		this.multi = multi;
 		this.count = count;
 		this.hook  = hook ;
-		
-		setUnlocalizedName("hook." + hook.getId().substring(HookMod.MODID.length()+1));
+		hookName = hook.getId().substring(hook.getId().indexOf(':')+1);
+		setUnlocalizedName("hook." + hookName);
 		setCreativeTab(CreativeTabs.tabTransport);
+	}
+	
+	
+	
+	@Override
+	public void registerIcons(IIconRegister reg)
+	{
+		this.itemIcon = reg.registerIcon(HookMod.MODID + ":hooks/"+hookName+"/item");
+		
+//		super.registerIcons(p_94581_1_);
 	}
 	
 	public ItemHook setCount(int count)

@@ -1,5 +1,7 @@
 package com.thecodewarrior.hooks.render.model.chain;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import net.minecraft.client.Minecraft;
@@ -23,6 +25,7 @@ public class BasicChainModel implements IChainModel
 	private double chainLineOffset = 0;
 	private int flat = -1;
 	private int doubleFlat = -1;
+	private List<Integer> flatRot;
 	private double[] randomTwists = new double[1000];
 	
 	public BasicChainModel()
@@ -47,6 +50,13 @@ public class BasicChainModel implements IChainModel
 		chainLineOffset  = HookUtil.parseWithDefault( chainLineOffset,  data.get("chain.offset" ) );
 		flat			 = HookUtil.parseWithDefault( flat			 ,  data.get("chain.flat" ) );
 		doubleFlat		 = HookUtil.parseWithDefault( doubleFlat	 ,  data.get("chain.flat.double" ) );
+		flatRot = new ArrayList<Integer>();
+		for(int i = 0; data.get("chain.flat.rot."+i) != null; i++) {
+			String rotData = data.get("chain.flat.rot."+i);
+			if(rotData.trim().equals("END"))
+				break;
+			flatRot.add(HookUtil.parseWithDefault( 0, rotData));
+		}
 	}
 	
 	@Override
@@ -92,6 +102,9 @@ public class BasicChainModel implements IChainModel
 					GL11.glRotated(   90 + randomTwists[i%randomTwists.length]  , 0, 1, 0);
 				else
 					GL11.glRotated(-( 90 + randomTwists[i%randomTwists.length] ), 0, 1, 0);
+			} else {
+				if(flatRot.size() > 0)
+					GL11.glRotated(flatRot.get(i%flatRot.size()), 0,1,0 );
 			}
 			i++;
 		}

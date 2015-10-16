@@ -1,5 +1,13 @@
-hookTextureSize: 32
-chainStartOffset: 27
-chainStartCenter: 1
-chainTextureSize: 16
-chainLinkOffset: 7
+#the model type to use
+
+hook.model:skull
+hook.size:.75
+
+chain.model:basic
+
+# chain.model = basic:
+chain.link.textureSize:16
+chain.link.offset:16
+chain.offset:1
+chain.flat:0
+chain.flat.double:90

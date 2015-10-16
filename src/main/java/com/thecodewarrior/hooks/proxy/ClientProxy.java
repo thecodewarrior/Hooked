@@ -43,6 +43,7 @@ public class ClientProxy extends CommonProxy implements IResourceManagerReloadLi
 {
 	public static KeyBinding fireBinding;
 	public static KeyBinding retractBinding;
+	public static KeyBinding togglePullBinding;
 	
 //	public static boolean isClient = true;
 	
@@ -53,6 +54,8 @@ public class ClientProxy extends CommonProxy implements IResourceManagerReloadLi
 		ClientRegistry.registerKeyBinding(fireBinding);
 		retractBinding = new KeyBinding("key.hooks.retract.desc", Keyboard.KEY_T, "key.categories.gameplay");
 		ClientRegistry.registerKeyBinding(retractBinding);
+		togglePullBinding = new KeyBinding("key.hooks.togglePull.desc", Keyboard.KEY_P, "key.categories.gameplay");
+		ClientRegistry.registerKeyBinding(togglePullBinding);
 		
 		( (IReloadableResourceManager)Minecraft.getMinecraft().getResourceManager() ).registerReloadListener(this);
 	}
@@ -78,7 +81,10 @@ public class ClientProxy extends CommonProxy implements IResourceManagerReloadLi
 		{
 			doRetractHook(p);
 		}
-	    
+		else if(togglePullBinding.isPressed())
+		{
+			this.shouldPull = !this.shouldPull;
+		}
 	}
 	
 	public void doFireHook(EntityPlayer player)

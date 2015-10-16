@@ -18,6 +18,7 @@ import com.thecodewarrior.hooks.render.HookRenderer;
 import com.thecodewarrior.hooks.render.model.chain.BasicChainModel;
 import com.thecodewarrior.hooks.render.model.hook.BasicHookModel;
 import com.thecodewarrior.hooks.render.model.hook.DiagonalHookModel;
+import com.thecodewarrior.hooks.render.model.hook.SkullHookModel;
 import com.thecodewarrior.hooks.render.model.hook.SlimeHookModel;
 import com.thecodewarrior.hooks.util.Hook;
 
@@ -102,6 +103,7 @@ public class HookMod {
 		
 		HookRegistry.registerHookModel("diagonal", DiagonalHookModel.class);
 		HookRegistry.registerHookModel("slime", SlimeHookModel.class);
+		HookRegistry.registerHookModel("skull", SkullHookModel.class);
 		
 		HookRegisterHelper h = new HookRegisterHelper();
 		

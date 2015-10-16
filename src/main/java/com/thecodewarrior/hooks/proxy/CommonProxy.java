@@ -25,6 +25,8 @@ public class CommonProxy
 {
 	public static boolean isClient = false;
 
+	public static boolean shouldPull = true;
+	
 	public void init(){}
 	public void glAlign(Axis align, Vector3 along, Axis point, Axis to) {}
 	public void glAlign(Vector3 align, Vector3 along, Vector3 point, Vector3 to) {}
@@ -117,9 +119,11 @@ public class CommonProxy
 		   approxEqual(player.posZ - player.lastTickPosZ, 0)) {
 			props.isSteady = true;
 		}
-		player.motionX = movement.x;
-		player.motionY = movement.y;
-		player.motionZ = movement.z;
+		if(shouldPull) {
+			player.motionX = movement.x;
+			player.motionY = movement.y;
+			player.motionZ = movement.z;
+		}
 	}
 	
 	@SubscribeEvent
