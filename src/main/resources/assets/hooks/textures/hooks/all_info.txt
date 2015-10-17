@@ -7,7 +7,7 @@
 
 hook.model:(basic|diagonal|skull|slime)
 
-# hook.model = basic:
+# hook.model = basic|diagonal:
 # /hook.png
 # /hook_loop.png
 hook.hook.textureSize:[dimensions of hook texture]
@@ -19,7 +19,8 @@ hook.loop.center:[number of pixels from the bottom of the loop texture to the ce
 # hook.model = slime:
 hook.size:[scale of the hook]
 
-
+# hook.model = skull:
+hook.size:.75
 
 chain.model:(basic|spine)
 
