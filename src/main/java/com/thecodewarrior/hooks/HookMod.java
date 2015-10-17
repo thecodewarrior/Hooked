@@ -16,6 +16,7 @@ import com.thecodewarrior.hooks.net.NetHandler;
 import com.thecodewarrior.hooks.proxy.CommonProxy;
 import com.thecodewarrior.hooks.render.HookRenderer;
 import com.thecodewarrior.hooks.render.model.chain.BasicChainModel;
+import com.thecodewarrior.hooks.render.model.chain.SpineChainModel;
 import com.thecodewarrior.hooks.render.model.hook.BasicHookModel;
 import com.thecodewarrior.hooks.render.model.hook.DiagonalHookModel;
 import com.thecodewarrior.hooks.render.model.hook.SkullHookModel;
@@ -100,6 +101,8 @@ public class HookMod {
 		
 		HookRegistry.basicChainModel = BasicChainModel.class;
 		HookRegistry.registerChainModel("basic", BasicChainModel.class);
+		HookRegistry.registerChainModel("spine", SpineChainModel.class);
+		
 		
 		HookRegistry.registerHookModel("diagonal", DiagonalHookModel.class);
 		HookRegistry.registerHookModel("slime", SlimeHookModel.class);

@@ -28,3 +28,7 @@ chain.offset:[number of pixels to offset the entire chain]
 chain.flat:[(integer) any negative number for normal 90 degree offset of each link, or if it's positive the chain will be flat and rotated by that much]
 chain.flat.double:[(integer) if not -1, duplicate links will be rotated by this much from the main line]
 chain.flat.rot.[x]:[(integer) number of degrees to rotate the link, rotation indexes wrap, set one to 'END' to end (this is so another texture pack won't continue your rotations)]
+
+# chain.model = spine:
+chain.overlap:[(integer)number of pixels to overlap each link, used for tiling]
+chain.tex.height:[(integer)height in pixels of the link texture, used for overlap]

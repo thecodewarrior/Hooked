@@ -3,11 +3,6 @@
 hook.model:skull
 hook.size:.75
 
-chain.model:basic
-
-# chain.model = basic:
-chain.link.textureSize:16
-chain.link.offset:16
-chain.offset:1
-chain.flat:0
-chain.flat.double:90
+chain.model:spine
+chain.overlap:1
+chain.tex.height:16
