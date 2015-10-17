@@ -18,12 +18,14 @@ public class SpineChainModel implements IChainModel
 {
 	
 	ResourceLocation tex;
+	ResourceLocation perpTex;
 	
 	@Override
 	public void constructTexturesFor(String hookName)
 	{
 		// TODO Auto-generated method stub
 		tex = new ResourceLocation(HookMod.MODID + ":textures/hooks/" + hookName + "/chain.png");
+		perpTex = new ResourceLocation(HookMod.MODID + ":textures/hooks/" + hookName + "/vertebra.png");
 	}
 	
 	@Override
@@ -31,10 +33,16 @@ public class SpineChainModel implements IChainModel
 	{
 		overlap = HookUtil.parseWithDefault(overlap, data.get("chain.overlap"));
 		texHeight = HookUtil.parseWithDefault(texHeight, data.get("chain.tex.height"));
+		space = HookUtil.parseWithDefault(space, data.get("chain.spacing"));
+		vertStart = HookUtil.parseWithDefault(vertStart, data.get("chain.spacing.start"));
+		scale = 0.25*HookUtil.parseWithDefault(1d, data.get("chain.scale"));
 	}
 	int texHeight = 16;
 	int overlap = 0;
+	int space = -1;
+	int vertStart = 0;
 	double sideLen = Math.sqrt(0.5);
+	double scale = 0.25;
 
 	@Override
 	public void draw(ActiveHook hook, double length)
@@ -43,7 +51,6 @@ public class SpineChainModel implements IChainModel
 		
 		GL11.glPushMatrix();
 //		GL11.glTranslated(0, 2, 0);
-		double scale = 0.25;
 		GL11.glScaled(scale, scale, scale);
 		Minecraft mc = Minecraft.getMinecraft();
 		Tessellator t = Tessellator.instance;
@@ -80,15 +87,36 @@ public class SpineChainModel implements IChainModel
 					0, 		l, 	-sideLen, 8/w, 1,
 					-sideLen, l, 	0, 	    0,   1);
 			HookClientUtil.renderFace(
-					sideLen+0.5, 0,       0, 32/w, 0,
-					sideLen+0.5, l, 0, 32/w, 1,
-					sideLen-0.5, l, 0, 48/w, 1,
-					sideLen-0.5, 0,       0, 48/w, 0
+					sideLen+1, 0, 0, 32/w, 0,
+					sideLen+1, l, 0, 32/w, 1,
+					sideLen-1, l, 0, 48/w, 1,
+					sideLen-1, 0, 0, 48/w, 0
 					);
 			
 			t.draw();
 			
 			GL11.glTranslated(0, l-overlap*px, 0);
+		}
+		GL11.glPopMatrix();
+		
+		mc.renderEngine.bindTexture(perpTex);
+		GL11.glPushMatrix();
+		if(space != -1) {
+			GL11.glTranslated(0, vertStart*px, 0);
+			for(double d = vertStart*px; d+space*px*scale < length; d += space*px*scale) {
+				
+				t.startDrawingQuads();
+
+				HookClientUtil.renderFace(
+						 2*sideLen, 0,  2*sideLen, 	1, 0,
+						 2*sideLen, 0, -2*sideLen, 	0, 0,
+						-2*sideLen, 0, -2*sideLen, 	0, 1,
+						-2*sideLen, 0,  2*sideLen, 	1, 1);
+				
+				t.draw();
+				
+				GL11.glTranslated(0, space*px, 0);
+			}
 		}
 		GL11.glPopMatrix();
 		

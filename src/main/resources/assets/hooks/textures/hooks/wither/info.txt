@@ -6,3 +6,6 @@ hook.size:.75
 chain.model:spine
 chain.overlap:1
 chain.tex.height:16
+chain.scale:0.5
+chain.spacing:4
+chain.spacing.start:2

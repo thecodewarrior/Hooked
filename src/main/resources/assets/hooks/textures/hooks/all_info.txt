@@ -8,6 +8,8 @@
 hook.model:(basic|diagonal|skull|slime)
 
 # hook.model = basic:
+# /hook.png
+# /hook_loop.png
 hook.hook.textureSize:[dimensions of hook texture]
 hook.loop.textureSize:[dimensions of loop texture]
 hook.hook.offset:[number of pixels to offset the hook texture]
@@ -22,6 +24,7 @@ hook.size:[scale of the hook]
 chain.model:(basic|spine)
 
 # chain.model = basic:
+# /chain.png
 chain.link.textureSize:[dimensions of the link texture]
 chain.link.offset:[number of pixels to offset each link from the last]
 chain.offset:[number of pixels to offset the entire chain]
@@ -30,5 +33,10 @@ chain.flat.double:[(integer) if not -1, duplicate links will be rotated by this 
 chain.flat.rot.[x]:[(integer) number of degrees to rotate the link, rotation indexes wrap, set one to 'END' to end (this is so another texture pack won't continue your rotations)]
 
 # chain.model = spine:
+# /chain.png
+# /vertebra.png
 chain.overlap:[(integer)number of pixels to overlap each link, used for tiling]
 chain.tex.height:[(integer)height in pixels of the link texture, used for overlap]
+chain.scale:[scaling factor of spine]
+chain.spacing:[(integer)number of pixels between each perpendicular face]
+chain.spacing.start:[(integer)number of pixels to offset the beginning of the perpendicular faces]
