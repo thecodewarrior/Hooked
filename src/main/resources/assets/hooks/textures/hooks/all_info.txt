@@ -52,3 +52,4 @@ particle.model:(basic)
 particle.name:[name of particle]
 particle.frequency:[frequency of particles]
 particle.distance:[maximum distance from line]
+particle.offset.[x/y/z]:[amount to offset each particle spawn]

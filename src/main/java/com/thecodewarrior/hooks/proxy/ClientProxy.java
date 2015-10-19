@@ -69,7 +69,7 @@ public class ClientProxy extends CommonProxy implements IResourceManagerReloadLi
 	{
 	    EntityPlayer p = Minecraft.getMinecraft().thePlayer;
 		
-	    if(Minecraft.getMinecraft().gameSettings.keyBindJump.isPressed()) {
+	    if(Minecraft.getMinecraft().gameSettings.keyBindJump.isPressed() && (shouldPull || p.isSneaking())) {
 	    	doRetractHook(p);
 	    	HookProperties prop = HookWrapper.getProperties(p);
 	    	if(!prop.isSteady) {
