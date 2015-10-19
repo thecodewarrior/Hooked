@@ -57,9 +57,9 @@ public class HookRegisterHelper
 		IHookRenderer renderer = new HookRenderer(name);
 		
 		HookStats stats = new HookStats(length, speed, retractSpeed);
-		stats.setRenderer(renderer);
 		
 		Hook hook = new Hook(HookMod.MODID + ":" + name + "Hook", stats );
+		hook.setRenderer(renderer);
 		
 		ItemHook item = new ItemHook(hook);
 		item.setDurability(durability);

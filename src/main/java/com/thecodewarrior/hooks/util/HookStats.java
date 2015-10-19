@@ -6,7 +6,6 @@ public class HookStats
 {
 	
 	double length, speed, retractSpeed;
-	IHookRenderer renderer;
 
 	public HookStats(double length, double speed, double retractSpeed)
 	{
@@ -44,16 +43,6 @@ public class HookStats
 	public HookStats setRetractSpeed(double retractSpeed)
 	{
 		this.retractSpeed = retractSpeed/20f;
-		return this;
-	}
-	
-	public IHookRenderer getRenderer()
-	{
-		return renderer;
-	}
-	public HookStats setRenderer(IHookRenderer renderer)
-	{
-		this.renderer = renderer;
 		return this;
 	}
 	

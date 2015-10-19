@@ -1,5 +1,6 @@
 package com.thecodewarrior.hooks;
 
+import net.minecraft.entity.player.EntityPlayer;
 import codechicken.lib.vec.Vector3;
 
 import com.thecodewarrior.hooks.util.ActiveHook;
@@ -21,4 +22,12 @@ public interface IHookRenderer
 	 * @param length The length of line to render
 	 */
 	public void renderLine(ActiveHook hook, Vector3 offsetToPlayer);
+	
+	
+	/**
+	 * Spawn particles for the hook
+	 * @param hook
+	 * @param player
+	 */
+	public void spawnParticles(ActiveHook hook, EntityPlayer player);
 }

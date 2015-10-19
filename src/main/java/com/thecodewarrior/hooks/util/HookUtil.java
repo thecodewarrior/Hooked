@@ -5,6 +5,7 @@ import java.util.List;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MathHelper;
@@ -123,6 +124,17 @@ public class HookUtil
 			}
 		}
 		return new ExtendedVector3<ForgeDirection>(offset).setData(null);
+	}
+	
+	public static Vector3 getPlayerHookPoint(EntityPlayer player, double partialTicks) {
+		return new Vector3(
+				player.lastTickPosX + (player.posX - player.lastTickPosX) * partialTicks,
+				(player.boundingBox.maxY+player.boundingBox.minY)/2 + (player.posY - player.lastTickPosY) * partialTicks,
+				player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * partialTicks
+				);
+	}
+	public static Vector3 getPlayerHookPoint(EntityPlayer player) {
+		return getPlayerHookPoint(player, 0);
 	}
 	
 	

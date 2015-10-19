@@ -1,10 +1,12 @@
 package com.thecodewarrior.hooks.util;
 
+import com.thecodewarrior.hooks.IHookRenderer;
+
 public class Hook {
 	
 	String id;
 	HookStats stats;
-	
+	IHookRenderer renderer;
 	public HookStats getStats()
 	{
 		return stats;
@@ -30,5 +32,12 @@ public class Hook {
 	public String getId()
 	{
 		return id;
+	}
+	public void setRenderer(IHookRenderer renderer)
+	{
+		this.renderer = renderer;
+	}
+	public IHookRenderer getRenderer() {
+		return renderer;
 	}
 }

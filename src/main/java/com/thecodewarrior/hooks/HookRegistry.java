@@ -6,6 +6,7 @@ import java.util.Map;
 import com.thecodewarrior.hooks.render.HookRenderer;
 import com.thecodewarrior.hooks.render.model.IChainModel;
 import com.thecodewarrior.hooks.render.model.IHookModel;
+import com.thecodewarrior.hooks.render.model.IParticleSpawner;
 import com.thecodewarrior.hooks.util.Hook;
 
 public class HookRegistry
@@ -21,19 +22,19 @@ public class HookRegistry
 	}
 	
 	// ------------------------------------------------------------------------
-	public static HookRenderer basicRenderer;
-	private static Map<String, IHookRenderer> renderers = new HashMap<String, IHookRenderer>();
-	public static void registerRenderer(String id, IHookRenderer hook)
-	{
-		renderers.put(id, hook);
-	}
-	public static IHookRenderer getRenderer(String id)
-	{
-		IHookRenderer renderer = renderers.get(id);
-		if(renderer == null)
-			return basicRenderer;
-		return renderer;
-	}
+//	public static HookRenderer basicRenderer;
+//	private static Map<String, IHookRenderer> renderers = new HashMap<String, IHookRenderer>();
+//	public static void registerRenderer(String id, IHookRenderer hook)
+//	{
+//		renderers.put(id, hook);
+//	}
+//	public static IHookRenderer getRenderer(String id)
+//	{
+//		IHookRenderer renderer = renderers.get(id);
+//		if(renderer == null)
+//			return basicRenderer;
+//		return renderer;
+//	}
 	
 	// ------------------------------------------------------------------------
 	public static Class<? extends IHookModel> basicHookModel;
@@ -62,6 +63,21 @@ public class HookRegistry
 		Class<? extends IChainModel> model = chainModels.get(id);
 		if(model == null)
 			return basicChainModel;
+		return model;
+	}
+	
+	// ------------------------------------------------------------------------
+	public static Class<? extends IParticleSpawner> basicParticleSpawner;
+	private static Map<String, Class<? extends IParticleSpawner>> particleSpawners = new HashMap<String, Class<? extends IParticleSpawner>>();
+	public static void registerParticleSpawner(String id, Class<? extends IParticleSpawner> hook)
+	{
+		particleSpawners.put(id, hook);
+	}
+	public static Class<? extends IParticleSpawner> getParticleSpawner(String id)
+	{
+		Class<? extends IParticleSpawner> model = particleSpawners.get(id);
+		if(model == null)
+			return basicParticleSpawner;
 		return model;
 	}
 }

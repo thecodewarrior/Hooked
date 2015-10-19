@@ -7,6 +7,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import codechicken.lib.raytracer.RayTracer;
 import codechicken.lib.vec.Vector3;
@@ -74,6 +75,9 @@ public class CommonProxy
 		for (ActiveHook hook : hooks)
 		{
 			hook.update(player);
+			if(isClientPlayer(player)) {
+				hook.getHook().getRenderer().spawnParticles(hook, player);
+			}
 			if(hook.isStopped() && !hook.isRetracting())
 			{
 				cumulitave.add(hook.getPullLocation());
@@ -116,8 +120,10 @@ public class CommonProxy
 			movement.normalize().multiply(0.5);
 		if(approxEqual(player.posX - player.lastTickPosX, 0) &&
 		   approxEqual(player.posY - player.lastTickPosY, 0) &&
-		   approxEqual(player.posZ - player.lastTickPosZ, 0)) {
+		   approxEqual(player.posZ - player.lastTickPosZ, 0) ||
+		   movement.mag() < 0.2) {
 			props.isSteady = true;
+			player.onGround = true;
 		}
 		if(shouldPull) {
 			player.motionX = movement.x;
@@ -126,16 +132,6 @@ public class CommonProxy
 		}
 	}
 	
-	@SubscribeEvent
-	public void digSpeed(PlayerEvent.BreakSpeed event)
-	{
-		if(!( event.entity instanceof EntityPlayer ))
-			return;
-		EntityPlayer p = (EntityPlayer) event.entity;
-		HookProperties prop = HookWrapper.getProperties(p);
-		if(!p.onGround && prop.isSteady)
-			event.newSpeed = event.originalSpeed*5;
-	}
 	
 	public double distance(Vector3 a, Vector3 b)
 	{

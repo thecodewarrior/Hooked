@@ -7,6 +7,7 @@ import java.util.Map;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.opengl.GL11;
@@ -19,7 +20,9 @@ import com.thecodewarrior.hooks.IHookRenderer;
 import com.thecodewarrior.hooks.proxy.CommonProxy.Axis;
 import com.thecodewarrior.hooks.render.model.IChainModel;
 import com.thecodewarrior.hooks.render.model.IHookModel;
+import com.thecodewarrior.hooks.render.model.IParticleSpawner;
 import com.thecodewarrior.hooks.util.ActiveHook;
+import com.thecodewarrior.hooks.util.HookUtil;
 import com.thecodewarrior.hooks.util.IResourceConfig;
 
 public class HookRenderer implements IHookRenderer, IResourceConfig
@@ -38,6 +41,7 @@ public class HookRenderer implements IHookRenderer, IResourceConfig
 	{
 		String hookModelName = data.get("hook.model");		
 		String chainModelName = data.get("chain.model");
+		String particleSpawnerName = data.get("particle.model");
 
 		try
 		{
@@ -53,17 +57,27 @@ public class HookRenderer implements IHookRenderer, IResourceConfig
 		catch (InstantiationException e) { e.printStackTrace(); }
 		catch (IllegalAccessException e) { e.printStackTrace(); }
 		
+		try
+		{
+			particleSpawner = HookRegistry.getParticleSpawner(particleSpawnerName).newInstance();
+		}
+		catch (InstantiationException e) { e.printStackTrace(); }
+		catch (IllegalAccessException e) { e.printStackTrace(); }
+		
 		
 		 hookModel.processConfig(data);
 		 hookModel.constructTexturesFor(hookName);
 		chainModel.processConfig(data);
 		chainModel.constructTexturesFor(hookName);
+		particleSpawner.processConfig(data);
+		particleSpawner.constructTexturesFor(hookName);
 	}
 	
 	String hookName;
 	
 	public IHookModel hookModel;
 	public IChainModel chainModel;
+	public IParticleSpawner particleSpawner;
 	
 	public HookRenderer(String hookName)
 	{
@@ -127,6 +141,14 @@ public class HookRenderer implements IHookRenderer, IResourceConfig
 			GL11.glPopMatrix();
 			GL11.glPushMatrix(); // give an empty matrix to pop after this method is called
 		}
+	}
+	
+	public void spawnParticles(ActiveHook hook, EntityPlayer player) {
+		double d = hookModel.getLoopCenterPointDistance(hook);
+		Vector3 heading = hook.getHeading().copy().multiply(-d);
+		
+		Vector3 correctedLocation = hook.getLocation().copy().add(heading);
+		particleSpawner.spawnParticles(player, hook, correctedLocation);
 	}
 	
 }

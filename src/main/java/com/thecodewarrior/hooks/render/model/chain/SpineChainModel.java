@@ -64,33 +64,33 @@ public class SpineChainModel implements IChainModel
 			t.startDrawingQuads();
 
 			HookClientUtil.renderFace(
-					sideLen, 	0, 		   0, 		16/w, 0,
-					0, 		0, 		   sideLen, 	24/w, 0,
-					0, 		l, sideLen, 	24/w, 1,
-					sideLen, 	l, 0, 		16/w, 1);
+					sideLen, 0, 0,			16/w, 0,
+					0, 		 0, sideLen, 	24/w, 0,
+					0, 		 l, sideLen, 	24/w, 1,
+					sideLen, l, 0,			16/w, 1);
 			
 			HookClientUtil.renderFace(
-					sideLen, 	0, 		   	0, 	   16/w,  0,
-					0, 		0, 		   	-sideLen, 8/w,  0,
-					0, 		l, 	-sideLen, 8/w,  1,
-					sideLen, 	l, 	0, 	   16/w,  1);
+					sideLen, 0, 0,			16/w, 0,
+					0, 		 0, -sideLen,	8/w,  0,
+					0, 		 l, -sideLen,	8/w,  1,
+					sideLen, l, 0,			16/w, 1);
 			
 			HookClientUtil.renderFace(
-					-sideLen, 0, 		   	0, 		32/w, 0,
-					0, 		0, 		   	sideLen, 	24/w, 0,
-					0, 		l, 	sideLen, 	24/w, 1,
-					-sideLen, l, 	0, 		32/w, 1);
+					-sideLen, 0, 0, 		32/w, 0,
+					0, 		  0, sideLen, 	24/w, 0,
+					0, 		  l, sideLen, 	24/w, 1,
+					-sideLen, l, 0, 		32/w, 1);
 			
 			HookClientUtil.renderFace(
-					-sideLen, 0, 		   	0, 	    0,   0,
-					0, 		0, 		   	-sideLen, 8/w, 0,
-					0, 		l, 	-sideLen, 8/w, 1,
-					-sideLen, l, 	0, 	    0,   1);
+					-sideLen, 0, 0, 		0,   0,
+					0, 		  0, -sideLen,	8/w, 0,
+					0, 		  l, -sideLen,	8/w, 1,
+					-sideLen, l, 0, 		0,   1);
 			HookClientUtil.renderFace(
-					sideLen+1, 0, 0, 32/w, 0,
-					sideLen+1, l, 0, 32/w, 1,
-					sideLen-1, l, 0, 48/w, 1,
-					sideLen-1, 0, 0, 48/w, 0
+					sideLen+1, 0, 0, 		32/w, 0,
+					sideLen+1, l, 0, 		32/w, 1,
+					sideLen-1, l, 0, 		48/w, 1,
+					sideLen-1, 0, 0, 		48/w, 0
 					);
 			
 			t.draw();

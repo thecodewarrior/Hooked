@@ -21,6 +21,8 @@ import com.thecodewarrior.hooks.render.model.hook.BasicHookModel;
 import com.thecodewarrior.hooks.render.model.hook.DiagonalHookModel;
 import com.thecodewarrior.hooks.render.model.hook.SkullHookModel;
 import com.thecodewarrior.hooks.render.model.hook.SlimeHookModel;
+import com.thecodewarrior.hooks.render.model.particle.BasicParticleSpawner;
+import com.thecodewarrior.hooks.render.model.particle.NullParticleSpawner;
 import com.thecodewarrior.hooks.util.Hook;
 
 import cpw.mods.fml.common.FMLCommonHandler;
@@ -94,19 +96,22 @@ public class HookMod {
 		items	  = new HashMap<String, ItemHook>();
 		renderers = new HashMap<String, IHookRenderer>();
 		
-		HookRegistry.basicRenderer = new HookRenderer("unknown");
+//		HookRegistry.basicRenderer = new HookRenderer("unknown");
 		
 		HookRegistry.basicHookModel = BasicHookModel.class;
 		HookRegistry.registerHookModel("basic", BasicHookModel.class);
 		
 		HookRegistry.basicChainModel = BasicChainModel.class;
 		HookRegistry.registerChainModel("basic", BasicChainModel.class);
-		HookRegistry.registerChainModel("spine", SpineChainModel.class);
 		
+		HookRegistry.basicParticleSpawner = NullParticleSpawner.class;
+		HookRegistry.registerParticleSpawner("basic", BasicParticleSpawner.class);
 		
 		HookRegistry.registerHookModel("diagonal", DiagonalHookModel.class);
 		HookRegistry.registerHookModel("slime", SlimeHookModel.class);
 		HookRegistry.registerHookModel("skull", SkullHookModel.class);
+		
+		HookRegistry.registerChainModel("spine", SpineChainModel.class);
 		
 		HookRegisterHelper h = new HookRegisterHelper();
 		

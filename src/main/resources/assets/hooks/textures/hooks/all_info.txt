@@ -22,6 +22,8 @@ hook.size:[scale of the hook]
 # hook.model = skull:
 hook.size:.75
 
+
+
 chain.model:(basic|spine)
 
 # chain.model = basic:
@@ -41,3 +43,12 @@ chain.tex.height:[(integer)height in pixels of the link texture, used for overla
 chain.scale:[scaling factor of spine]
 chain.spacing:[(integer)number of pixels between each perpendicular face]
 chain.spacing.start:[(integer)number of pixels to offset the beginning of the perpendicular faces]
+
+
+
+particle.model:(basic)
+
+# particle.model = basic:
+particle.name:[name of particle]
+particle.frequency:[frequency of particles]
+particle.distance:[maximum distance from line]

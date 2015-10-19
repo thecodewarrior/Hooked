@@ -71,7 +71,6 @@ public class ItemHook extends ItemHookProvider
 	public ItemHook register(String itemId) {
 		GameRegistry.registerItem(this, itemId);
 		HookRegistry.registerHook(hook.getId(), hook);
-		HookRegistry.registerRenderer(hook.getId(), hook.getStats().getRenderer());
 		return this;
 	}
 	

@@ -32,6 +32,7 @@ import com.thecodewarrior.hooks.HookRegistry;
 import com.thecodewarrior.hooks.IHookRenderer;
 import com.thecodewarrior.hooks.ItemHookProvider;
 import com.thecodewarrior.hooks.util.ActiveHook;
+import com.thecodewarrior.hooks.util.HookProperties;
 import com.thecodewarrior.hooks.util.HookWrapper;
 import com.thecodewarrior.hooks.util.IResourceConfig;
 
@@ -42,7 +43,6 @@ import cpw.mods.fml.common.gameevent.InputEvent.KeyInputEvent;
 public class ClientProxy extends CommonProxy implements IResourceManagerReloadListener
 {
 	public static KeyBinding fireBinding;
-	public static KeyBinding retractBinding;
 	public static KeyBinding togglePullBinding;
 	
 //	public static boolean isClient = true;
@@ -52,8 +52,7 @@ public class ClientProxy extends CommonProxy implements IResourceManagerReloadLi
 		isClient = true;
 		fireBinding    = new KeyBinding("key.hooks.fire.desc",    Keyboard.KEY_R, "key.categories.gameplay");
 		ClientRegistry.registerKeyBinding(fireBinding);
-		retractBinding = new KeyBinding("key.hooks.retract.desc", Keyboard.KEY_T, "key.categories.gameplay");
-		ClientRegistry.registerKeyBinding(retractBinding);
+		
 		togglePullBinding = new KeyBinding("key.hooks.togglePull.desc", Keyboard.KEY_P, "key.categories.gameplay");
 		ClientRegistry.registerKeyBinding(togglePullBinding);
 		
@@ -70,17 +69,19 @@ public class ClientProxy extends CommonProxy implements IResourceManagerReloadLi
 	{
 	    EntityPlayer p = Minecraft.getMinecraft().thePlayer;
 		
-		if (fireBinding.isPressed() || ( retractBinding.getKeyCode() == fireBinding.getKeyCode() && retractBinding.isPressed())) 
-	    {
-			if(( retractBinding.getKeyCode() == fireBinding.getKeyCode() ) && p.isSneaking())
-				doRetractHook(p);
-			else
-				doFireHook(p);
+	    if(Minecraft.getMinecraft().gameSettings.keyBindJump.isPressed()) {
+	    	doRetractHook(p);
+	    	HookProperties prop = HookWrapper.getProperties(p);
+	    	if(!prop.isSteady) {
+	    		p.motionX *= 2;
+	    		p.motionY *= 2;
+	    		p.motionZ *= 2;
+	    	}
 	    }
-		else if(retractBinding.isPressed())
-		{
-			doRetractHook(p);
-		}
+	    else if (fireBinding.isPressed()) 
+	    {
+			doFireHook(p);
+	    }
 		else if(togglePullBinding.isPressed())
 		{
 			this.shouldPull = !this.shouldPull;
@@ -105,12 +106,30 @@ public class ClientProxy extends CommonProxy implements IResourceManagerReloadLi
 	@SubscribeEvent
 	public void worldRender(RenderWorldLastEvent event)
 	{
+//		System.out.println(event.getPhase());
+		
 //		renderHooksFor(Minecraft.getMinecraft().thePlayer, event.partialTicks);
 		Minecraft mc = Minecraft.getMinecraft();
+
+		boolean lighting = GL11.glGetBoolean(GL11.GL_LIGHTING);
+		
+		mc.mcProfiler.startSection("hooks");
+		GL11.glDisable(GL11.GL_LIGHTING);
 		for(Object p : mc.theWorld.playerEntities)
 		{
 			renderHooksFor((EntityPlayer)p, event.partialTicks);
 		}
+		if(lighting) {
+			GL11.glEnable(GL11.GL_LIGHTING);
+		} else {
+			GL11.glDisable(GL11.GL_LIGHTING);
+		}
+		
+		mc.mcProfiler.endSection();
+		
+//		renderHooksFor(mc.thePlayer, event.partialTicks);
+
+
 	}
 	@SubscribeEvent
 	public void renderPlayer(RenderPlayerEvent.Post event)
@@ -124,7 +143,8 @@ public class ClientProxy extends CommonProxy implements IResourceManagerReloadLi
 	{
 		EntityPlayer rootPlayer = Minecraft.getMinecraft().thePlayer;
 		List<ActiveHook> hooks = HookWrapper.getProperties(player).getHooks();
-		
+		if(hooks.size() == 0)
+			return;
 		double x = rootPlayer.lastTickPosX + (rootPlayer.posX - rootPlayer.lastTickPosX) * partialTicks;
         double y = rootPlayer.lastTickPosY + (rootPlayer.posY - rootPlayer.lastTickPosY) * partialTicks;
         double z = rootPlayer.lastTickPosZ + (rootPlayer.posZ - rootPlayer.lastTickPosZ) * partialTicks;
@@ -135,7 +155,6 @@ public class ClientProxy extends CommonProxy implements IResourceManagerReloadLi
 		
 		GL11.glTranslated(-x, -y, -z);
 //		GL11.glDisable(GL11.GL_ALPHA_TEST);
-		GL11.glDisable(GL11.GL_LIGHTING);
 		OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240f, 240f);
 		for (ActiveHook hook : hooks)
 		{
@@ -144,14 +163,13 @@ public class ClientProxy extends CommonProxy implements IResourceManagerReloadLi
 			renderHook(hook, player, partialTicks);
 			GL11.glTranslated(-pos.x, -pos.y, -pos.z);
 		}
-		GL11.glEnable(GL11.GL_LIGHTING);
 //		GL11.glEnable(GL11.GL_ALPHA_TEST);
 
 		GL11.glPopMatrix();
 	}
 	
 	public void renderHook(ActiveHook hook, EntityPlayer player, float partialTicks) {
-		IHookRenderer renderer = HookRegistry.getRenderer(hook.getHook().getId());
+		IHookRenderer renderer = hook.getHook().getRenderer();//HookRegistry.getRenderer(hook.getHook().getId());
 		
 		GL11.glColor4f(1, 1, 1, 1);		
 		
