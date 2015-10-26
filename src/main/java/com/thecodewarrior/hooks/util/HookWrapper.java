@@ -13,7 +13,7 @@ import codechicken.lib.raytracer.RayTracer;
 import codechicken.lib.vec.Vector3;
 
 import com.thecodewarrior.hooks.HookMod;
-import com.thecodewarrior.hooks.ItemHookProvider;
+import com.thecodewarrior.hooks.item.ItemHookProvider;
 import com.thecodewarrior.hooks.net.NetHandler;
 import com.thecodewarrior.hooks.net.server.FireHookMessage;
 

@@ -6,10 +6,12 @@ import java.util.UUID;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import thecodewarrior.equipment.api.EquipmentApi;
+import thecodewarrior.equipment.common.container.InventoryEquipment;
 import codechicken.lib.vec.Vector3;
 
 import com.thecodewarrior.hooks.HookMod;
-import com.thecodewarrior.hooks.ItemHookProvider;
+import com.thecodewarrior.hooks.item.ItemHookProvider;
 import com.thecodewarrior.hooks.net.NetHandler;
 import com.thecodewarrior.hooks.net.client.LatchHookClientMessage;
 import com.thecodewarrior.hooks.util.ActiveHook;
@@ -74,46 +76,17 @@ public class LatchHookMessage implements IMessage
             	}
             }
             
-            ItemStack handStack = player.inventory.getCurrentItem();
+            ItemStack slotStack = EquipmentApi.getEquipment(player, HookMod.equipmentSlotId);
             ItemStack toDelete = null;
-            boolean didDamage = false;
-            if(handStack != null && handStack.getItem() instanceof ItemHookProvider) {
-				ItemHookProvider prov = (ItemHookProvider) handStack.getItem();
-				if(prov.getHook(handStack, player) == hook) {
-					prov.damageHook(handStack, player);
-					if(prov.isBroken(handStack, player)) {
-						toDelete = handStack;
+            if(slotStack != null && slotStack.getItem() instanceof ItemHookProvider) {
+				ItemHookProvider prov = (ItemHookProvider) slotStack.getItem();
+				if(prov.getHook(slotStack, player) == hook) {
+					prov.damageHook(slotStack, player);
+					if(prov.isBroken(slotStack, player)) {
+						( (InventoryEquipment)EquipmentApi.getEquipment(player) ).setStack(HookMod.equipmentSlotId, null);
 					}
-					player.inventoryContainer.detectAndSendChanges();
-					didDamage = true;
 				}
 			}
-            if(!didDamage) {
-	            for (ItemStack stack : player.inventory.mainInventory)
-				{
-					if(stack != null && stack.getItem() instanceof ItemHookProvider) {
-						ItemHookProvider prov = (ItemHookProvider) stack.getItem();
-						if(prov.getHook(stack, player) == hook) {
-							prov.damageHook(stack, player);
-							if(prov.isBroken(stack, player)) {
-								toDelete = handStack;
-							}
-							player.inventoryContainer.detectAndSendChanges();
-							break;
-						}
-					}
-				}
-            }
-            
-            if(toDelete != null) {
-            	for (int i = 0; i < player.inventory.mainInventory.length; i++)
-				{
-					if(player.inventory.mainInventory[i] == toDelete) {
-						player.inventory.setInventorySlotContents(i, null);
-						break;
-					}
-				}
-            }
 
             NetHandler.CHANNEL.sendToAllAround(new LatchHookClientMessage(player.getEntityId(), message.hookId, message.location),
             					new TargetPoint(player.dimension, player.posX, player.posY, player.posZ, 160));

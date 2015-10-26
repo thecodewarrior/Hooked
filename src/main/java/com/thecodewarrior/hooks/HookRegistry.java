@@ -67,7 +67,7 @@ public class HookRegistry
 	}
 	
 	// ------------------------------------------------------------------------
-	public static Class<? extends IParticleSpawner> basicParticleSpawner;
+	public static Class<? extends IParticleSpawner> nullParticleSpawner;
 	private static Map<String, Class<? extends IParticleSpawner>> particleSpawners = new HashMap<String, Class<? extends IParticleSpawner>>();
 	public static void registerParticleSpawner(String id, Class<? extends IParticleSpawner> hook)
 	{
@@ -77,7 +77,7 @@ public class HookRegistry
 	{
 		Class<? extends IParticleSpawner> model = particleSpawners.get(id);
 		if(model == null)
-			return basicParticleSpawner;
+			return nullParticleSpawner;
 		return model;
 	}
 }

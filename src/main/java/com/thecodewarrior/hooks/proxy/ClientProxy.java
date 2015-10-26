@@ -19,6 +19,8 @@ import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
@@ -26,11 +28,12 @@ import net.minecraftforge.client.event.RenderWorldLastEvent;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
+import thecodewarrior.equipment.api.EquipmentApi;
 import codechicken.lib.vec.Vector3;
 
-import com.thecodewarrior.hooks.HookRegistry;
+import com.thecodewarrior.hooks.HookMod;
 import com.thecodewarrior.hooks.IHookRenderer;
-import com.thecodewarrior.hooks.ItemHookProvider;
+import com.thecodewarrior.hooks.item.ItemHookProvider;
 import com.thecodewarrior.hooks.util.ActiveHook;
 import com.thecodewarrior.hooks.util.HookProperties;
 import com.thecodewarrior.hooks.util.HookWrapper;
@@ -91,9 +94,10 @@ public class ClientProxy extends CommonProxy implements IResourceManagerReloadLi
 	public void doFireHook(EntityPlayer player)
 	{
 		HookWrapper w = new HookWrapper(player);
-		if(player.getHeldItem() != null && player.getHeldItem().getItem() instanceof ItemHookProvider)
+		ItemStack stack = EquipmentApi.getEquipment(player, HookMod.equipmentSlotId);
+		if(stack != null && stack.getItem() instanceof ItemHookProvider)
         {
-			w.fireHook(player.getHeldItem());
+			w.fireHook(stack);
         }
 	}
 	
@@ -258,12 +262,11 @@ public class ClientProxy extends CommonProxy implements IResourceManagerReloadLi
 		for (IResourceConfig config : configs)
 		{
 			ResourceLocation loc = config.getConfigLocation();
+			Map<String, String> data = new HashMap<String, String>();
+
 			try
 			{
 				List<IResource> resources = manager.getAllResources(loc);
-				
-				
-				Map<String, String> data = new HashMap<String, String>();
 				
 				for(IResource resource : resources) {
 						InputStream is = resource.getInputStream();
@@ -281,12 +284,13 @@ public class ClientProxy extends CommonProxy implements IResourceManagerReloadLi
 			                line = reader.readLine();
 			            }
 				}
-	            config.processConfig(data);
 
 			}
 			catch (IOException e) {
 				e.printStackTrace();
 			}
+			
+            config.processConfig(data);
 		}
 	}
 	

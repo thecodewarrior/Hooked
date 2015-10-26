@@ -49,7 +49,6 @@ public class HookRenderer implements IHookRenderer, IResourceConfig
 		}
 		catch (InstantiationException e) { e.printStackTrace(); }
 		catch (IllegalAccessException e) { e.printStackTrace(); }
-		
 		try
 		{
 			chainModel = HookRegistry.getChainModel(chainModelName).newInstance();

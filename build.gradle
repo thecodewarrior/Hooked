@@ -17,6 +17,11 @@ buildscript {
 
 apply plugin: 'forge'
 
+configurations {
+    shade
+    compile.extendsFrom shade
+}
+
 repositories {
     maven {
         name = "chickenbones"
@@ -44,7 +49,7 @@ dependencies {
     // or you may define them like so..
     //compile "some.group:artifact:version:classifier"
     //compile "some.group:artifact:version"
-      
+    compile files('libs/opencsv-3.5.jar')
     // real examples
     //compile 'com.mod-buildcraft:buildcraft:6.0.8:dev'  // adds buildcraft to the dev env
     //compile 'com.googlecode.efficient-java-matrix-library:ejml:0.24' // adds ejml to the dev env

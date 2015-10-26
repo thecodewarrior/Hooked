@@ -5,13 +5,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.minecraft.client.resources.I18n;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import thecodewarrior.equipment.api.EquipmentApi;
+import thecodewarrior.equipment.api.EquipmentType;
+
+import com.thecodewarrior.hooks.item.ItemHook;
+import com.thecodewarrior.hooks.item.ItemHookProvider;
+import com.thecodewarrior.hooks.item.ItemRegisterer;
 import com.thecodewarrior.hooks.net.NetHandler;
 import com.thecodewarrior.hooks.proxy.CommonProxy;
 import com.thecodewarrior.hooks.render.HookRenderer;
@@ -33,7 +43,7 @@ import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 
-@Mod(modid = HookMod.MODID, version = HookMod.MODVER, name = HookMod.MODNAME, dependencies="required-after:CodeChickenCore")
+@Mod(modid = HookMod.MODID, version = HookMod.MODVER, name = HookMod.MODNAME, dependencies="required-after:CodeChickenCore;required-after:EquipmentApi")
 public class HookMod {
 	public static final String MODID   = "hooks";
 	public static final String MODVER  = "0.1.0";
@@ -81,10 +91,12 @@ public class HookMod {
 	public static Map<String, Hook>			 hooks;
 	public static Map<String, ItemHook>		 items;
 	public static Map<String, IHookRenderer> renderers;
-	
+	public static String equipmentSlotId;
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event)
 	{
+		equipmentSlotId = MODID + ":equipment_hook";
+		
 		proxy.init();
 		NetHandler.init();
 		FMLCommonHandler.instance().bus().register(proxy);
@@ -104,7 +116,7 @@ public class HookMod {
 		HookRegistry.basicChainModel = BasicChainModel.class;
 		HookRegistry.registerChainModel("basic", BasicChainModel.class);
 		
-		HookRegistry.basicParticleSpawner = NullParticleSpawner.class;
+		HookRegistry.nullParticleSpawner = NullParticleSpawner.class;
 		HookRegistry.registerParticleSpawner("basic", BasicParticleSpawner.class);
 		
 		HookRegistry.registerHookModel("diagonal", DiagonalHookModel.class);
@@ -113,35 +125,46 @@ public class HookMod {
 		
 		HookRegistry.registerChainModel("spine", SpineChainModel.class);
 		
-		HookRegisterHelper h = new HookRegisterHelper();
+		ItemRegisterer r = new ItemRegisterer.ActualRegisterer();
 		
-		h.reset("iron");
-		h.setLength(10).setSpeed(5).setRetractSpeed(10).setDurability(256);
-		h.register();
+		r.init();
 		
-		h.reset("gold");
-		h.setLength(35).setSpeed(35).setRetractSpeed(35).setDurability(64).setCount(4);
-		h.register();
+		r.vanilla();
+		r.thermalFoundation();
+		r.metallurgy_base();
+		r.metallurgy_precious();
+		r.metallurgy_nether();
+		r.metallurgy_fantasy();
+		r.metallurgy_ender();
 		
-		h.reset("diamond");
-		h.setLength(15).setSpeed(20).setRetractSpeed(40).setDurability(2048).setCount(3);
-		h.register();
-		
-		h.reset("emerald");
-		h.setLength(20).setSpeed(20).setRetractSpeed(40).setUnbreakable().setCount(3);
-		h.register();
-		
-		h.reset("ender");
-		h.setLength(25).setSpeed(25 * 20 / 2).setRetractSpeed(25 * 20 / 2).setUnbreakable().setCount(3);
-		h.register();
-		
-		h.reset("slime");
-		h.setLength(25).setSpeed(30).setRetractSpeed(60).setUnbreakable().setCount(3);
-		h.register();
-		
-		h.reset("wither");
-		h.setLength(30).setSpeed(30).setRetractSpeed(60).setUnbreakable().setCount(4);
-		h.register();
+		EquipmentApi.registerEquipment(equipmentSlotId, new EquipmentType() {
+			
+			ResourceLocation back = new ResourceLocation(MODID, "textures/slot.png");
+			
+			@Override
+			public ResourceLocation getSlotOverlay(ItemStack paramItemStack)
+			{
+				return back;
+			}
+			
+			@Override
+			public boolean canRemoveStack(ItemStack paramItemStack, EntityPlayer paramEntityPlayer)
+			{
+				return true;
+			}
+			
+			@Override
+			public boolean canPlaceStack(ItemStack stack)
+			{
+				return stack != null && stack.getItem() != null && stack.getItem() instanceof ItemHookProvider;
+			}
+
+			@Override
+			public String getSlotDescription(EntityPlayer player)
+			{
+				return I18n.format("tooltip.hookslot", new Object[0]);
+			}
+		});
 	}
 	
 	@EventHandler

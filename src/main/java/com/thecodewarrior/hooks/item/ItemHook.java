@@ -1,10 +1,16 @@
-package com.thecodewarrior.hooks;
+package com.thecodewarrior.hooks.item;
 
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.entity.item.EntityEnderPearl;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.world.World;
+import thecodewarrior.equipment.api.EquipmentApi;
+import thecodewarrior.equipment.common.container.InventoryEquipment;
 
+import com.thecodewarrior.hooks.HookMod;
+import com.thecodewarrior.hooks.HookRegistry;
 import com.thecodewarrior.hooks.util.Hook;
 
 import cpw.mods.fml.common.registry.GameRegistry;
@@ -31,12 +37,37 @@ public class ItemHook extends ItemHookProvider
 		setCreativeTab(CreativeTabs.tabTransport);
 	}
 	
-	
+	/**
+     * Called whenever this item is equipped and the right mouse button is pressed. Args: itemStack, world, entityPlayer
+     */
+    public ItemStack onItemRightClick(ItemStack p_77659_1_, World p_77659_2_, EntityPlayer p_77659_3_)
+    {
+        
+        if(EquipmentApi.getEquipment(p_77659_3_, HookMod.equipmentSlotId) == null )
+        {
+        	if (!p_77659_3_.capabilities.isCreativeMode)
+            {
+                -- p_77659_1_.stackSize;
+            }
+//            p_77659_2_.playSoundAtEntity(p_77659_3_, "random.bow", 0.5F, 0.4F / (itemRand.nextFloat() * 0.4F + 0.8F));
+
+            if (!p_77659_2_.isRemote)
+            {
+            	ItemStack s = p_77659_1_.copy();
+            	s.stackSize = 1;
+            	( (InventoryEquipment)EquipmentApi.getEquipment(p_77659_3_) ).setStack(HookMod.equipmentSlotId, s);
+//                p_77659_2_.spawnEntityInWorld(new EntityEnderPearl(p_77659_2_, p_77659_3_));
+            }
+
+            return p_77659_1_;
+        }
+        return p_77659_1_;
+    }
 	
 	@Override
 	public void registerIcons(IIconRegister reg)
 	{
-		this.itemIcon = reg.registerIcon(HookMod.MODID + ":hooks/"+hookName+"/item");
+		this.itemIcon = reg.registerIcon(HookMod.MODID + ":hooks/"+hookName);
 		
 //		super.registerIcons(p_94581_1_);
 	}

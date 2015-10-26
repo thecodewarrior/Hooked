@@ -1,5 +1,6 @@
 package com.thecodewarrior.hooks;
 
+import com.thecodewarrior.hooks.item.ItemHook;
 import com.thecodewarrior.hooks.render.HookRenderer;
 import com.thecodewarrior.hooks.util.Hook;
 import com.thecodewarrior.hooks.util.HookStats;
@@ -8,6 +9,7 @@ public class HookRegisterHelper
 {
 	private String name;
 	private String id;
+	private String domain;
 	
 	private double length = -1;
 	private double speed = -1;
@@ -21,6 +23,7 @@ public class HookRegisterHelper
 	public void reset(String hookName) {
 		name = null;
 		id = null;
+		domain = null;
 		
 		length = -1;
 		speed = -1;
@@ -53,8 +56,8 @@ public class HookRegisterHelper
 			RuntimeException e = new RuntimeException("Tried to register incomplete hook: " + ( name == null ? "NULL" : name ));
 			throw e;
 		}
-		
-		IHookRenderer renderer = new HookRenderer(name);
+		String texLoc = ( domain == null ? "" : domain + "/" ) + name;
+		IHookRenderer renderer = new HookRenderer(texLoc);
 		
 		HookStats stats = new HookStats(length, speed, retractSpeed);
 		
@@ -76,6 +79,13 @@ public class HookRegisterHelper
 	
 	public HookRegisterHelper setName(String name) {
 		this.name = name;
+		return this;
+	}
+	
+
+	public HookRegisterHelper setDomain(String domain)
+	{
+		this.domain = domain;
 		return this;
 	}
 	
@@ -110,6 +120,11 @@ public class HookRegisterHelper
 	}
 	public HookRegisterHelper setUnbreakable() {
 		this.durability = -1;
+		return this;
+	}
+	
+	public HookRegisterHelper setMulti(boolean multi) {
+		this.multi = multi;
 		return this;
 	}
 	

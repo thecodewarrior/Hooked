@@ -4,6 +4,7 @@ import java.util.List;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -116,16 +117,16 @@ public class CommonProxy
 		
 		Vector3 movement = cumulitave.multiply(1.0/cumulitaveCount);
 		movement.sub(playerCenter);
-		if(movement.mag() > 0.5)
-			movement.normalize().multiply(0.5);
-		if(approxEqual(player.posX - player.lastTickPosX, 0) &&
-		   approxEqual(player.posY - player.lastTickPosY, 0) &&
-		   approxEqual(player.posZ - player.lastTickPosZ, 0) ||
-		   movement.mag() < 0.2) {
-			props.isSteady = true;
-			player.onGround = true;
-		}
 		if(shouldPull) {
+			if(movement.mag() > 0.5)
+				movement.normalize().multiply(0.5);
+			if(approxEqual(player.posX - player.lastTickPosX, 0) &&
+			   approxEqual(player.posY - player.lastTickPosY, 0) &&
+			   approxEqual(player.posZ - player.lastTickPosZ, 0) ||
+			   movement.mag() < 0.2) {
+				props.isSteady = true;
+				player.onGround = true;
+			}
 			player.motionX = movement.x;
 			player.motionY = movement.y;
 			player.motionZ = movement.z;

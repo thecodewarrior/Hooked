@@ -1,4 +1,4 @@
-package com.thecodewarrior.hooks;
+package com.thecodewarrior.hooks.item;
 
 import java.util.ArrayList;
 import java.util.List;
