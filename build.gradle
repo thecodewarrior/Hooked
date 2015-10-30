@@ -36,12 +36,17 @@ dependencies {
 }
 
 version = "0.1.0"
-group= "com.thecodewarrior.hooks" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+group= "com.thecodewarrior.hooks"
 archivesBaseName = "hooks"
 
 minecraft {
     version = "1.7.10-10.13.4.1448-1.7.10"
     runDir = "eclipse"
+    
+    srgExtra "PK: com/opencsv com/thecodewarrior/hooks/shade/opencsv"
+    srgExtra "PK: com/opencsv/bean com/thecodewarrior/hooks/shade/opencsv/bean"
+    srgExtra "PK: com/opencsv/enums com/thecodewarrior/hooks/shade/opencsv/enums"
+    srgExtra "PK: com/opencsv/stream/reader com/thecodewarrior/hooks/shade/opencsv/stream/reader"
 }
 
 dependencies {
@@ -49,7 +54,7 @@ dependencies {
     // or you may define them like so..
     //compile "some.group:artifact:version:classifier"
     //compile "some.group:artifact:version"
-    compile files('libs/opencsv-3.5.jar')
+    shade files('libs/opencsv-3.5.jar')
     // real examples
     //compile 'com.mod-buildcraft:buildcraft:6.0.8:dev'  // adds buildcraft to the dev env
     //compile 'com.googlecode.efficient-java-matrix-library:ejml:0.24' // adds ejml to the dev env
@@ -58,6 +63,14 @@ dependencies {
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
 
+}
+
+jar {
+    configurations.shade.each { dep ->
+        from(project.zipTree(dep)){
+            exclude 'META-INF', 'META-INF/**'
+        }
+    }
 }
 
 processResources

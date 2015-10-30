@@ -7,9 +7,8 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.minecraftforge.oredict.OreDictionary;
-
 import com.opencsv.CSVReader;
+import com.thecodewarrior.hooks.HookMod;
 import com.thecodewarrior.hooks.HookRegisterHelper;
 import com.thecodewarrior.hooks.util.HookUtil;
 
@@ -29,8 +28,7 @@ public class ItemRegisterer
 		
 		try
 		{
-			BufferedReader csvBufferedReader = new BufferedReader(new InputStreamReader(getClass().getClassLoader()
-					.getResourceAsStream("com/thecodewarrior/hooks/data/hooks.csv"), "UTF-8"));
+			BufferedReader csvBufferedReader = new BufferedReader(new InputStreamReader(HookMod.class.getResourceAsStream("/data/hooks.csv"), "UTF-8"));
 			
 			CSVReader reader = new CSVReader(csvBufferedReader);
 			data = reader.readAll();

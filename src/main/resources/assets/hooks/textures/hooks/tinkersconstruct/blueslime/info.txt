@@ -1,0 +1,17 @@
+## SPECIAL RENDERER IN THE WORKS
+
+#the model type to use
+
+hook.model:basic
+hook.hook.textureSize:32
+hook.loop.textureSize:32
+hook.hook.offset:0
+hook.loop.offset:0
+hook.loop.center:27
+
+chain.model:basic
+
+# chain.model = basic:
+chain.link.textureSize:16
+chain.link.offset:7
+chain.offset:1

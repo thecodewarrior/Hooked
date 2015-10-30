@@ -23,7 +23,7 @@ public class ItemHook extends ItemHookProvider
 	Hook hook;
 	int durability = -1;
 	String hookName;
-	
+	String domain;
 	
 	public ItemHook(Hook hook) 						{ this(hook, 1,     false); }
 	public ItemHook(Hook hook, int count) 			{ this(hook, count, false); }
@@ -40,36 +40,40 @@ public class ItemHook extends ItemHookProvider
 	/**
      * Called whenever this item is equipped and the right mouse button is pressed. Args: itemStack, world, entityPlayer
      */
-    public ItemStack onItemRightClick(ItemStack p_77659_1_, World p_77659_2_, EntityPlayer p_77659_3_)
+    public ItemStack onItemRightClick(ItemStack stack, World world, EntityPlayer player)
     {
         
-        if(EquipmentApi.getEquipment(p_77659_3_, HookMod.equipmentSlotId) == null )
+        if(EquipmentApi.getEquipment(player, HookMod.equipmentSlotId) == null )
         {
-        	if (!p_77659_3_.capabilities.isCreativeMode)
+        	if (!player.capabilities.isCreativeMode)
             {
-                -- p_77659_1_.stackSize;
+                -- stack.stackSize;
             }
-//            p_77659_2_.playSoundAtEntity(p_77659_3_, "random.bow", 0.5F, 0.4F / (itemRand.nextFloat() * 0.4F + 0.8F));
 
-            if (!p_77659_2_.isRemote)
+            if (!world.isRemote)
             {
-            	ItemStack s = p_77659_1_.copy();
+            	ItemStack s = stack.copy();
             	s.stackSize = 1;
-            	( (InventoryEquipment)EquipmentApi.getEquipment(p_77659_3_) ).setStack(HookMod.equipmentSlotId, s);
-//                p_77659_2_.spawnEntityInWorld(new EntityEnderPearl(p_77659_2_, p_77659_3_));
+            	( (InventoryEquipment)EquipmentApi.getEquipment(player) ).setStack(HookMod.equipmentSlotId, s);
             }
 
-            return p_77659_1_;
+            return stack;
         }
-        return p_77659_1_;
+        return stack;
     }
 	
 	@Override
 	public void registerIcons(IIconRegister reg)
 	{
-		this.itemIcon = reg.registerIcon(HookMod.MODID + ":hooks/"+hookName);
+		this.itemIcon = reg.registerIcon(HookMod.MODID + ":hooks/" + (domain == null ? "" : domain + "/") + hookName);
 		
 //		super.registerIcons(p_94581_1_);
+	}
+	
+	public ItemHook setDomain(String domain)
+	{
+		this.domain = domain;
+		return this;
 	}
 	
 	public ItemHook setCount(int count)

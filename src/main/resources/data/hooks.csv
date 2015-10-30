@@ -12,13 +12,13 @@ ingotElectrum,thermalfoundation,Electrum,15,15,30,1,512,No
 ingotSignalum,thermalfoundation,Signalum,10,20,40,1,512,No
 ingotEnderium,thermalfoundation,Enderium,15,30,60,2,4096,No
 ingotPlatinum,thermalfoundation,Shiny,15,10,20,2,512,No
-ingotArdite,tinkersconstruct,Ardite,,,,,4096,No
-ingotCobalt,tinkersconstruct,Cobalt,,,,,,No
-ingotManyullyn,tinkersconstruct,Manyullyn,,,,,,No
-ingotAlumite,tinkersconstruct,Alumite,,,,,,No
+ingotArdite,tinkersconstruct,Ardite,15,15,30,2,4096,No
+ingotCobalt,tinkersconstruct,Cobalt,18,20,50,2,4096,No
+ingotManyullyn,tinkersconstruct,Manyullyn,20,20,40,2,8192,Yes
+ingotAlumite,tinkersconstruct,Alumite,15,10,25,2,2048,No
 ,tinkersconstruct,BlueSlime,25,30,60,3,-1,No
 ingotPigIron,tinkersconstruct,PigIron,25,30,60,3,-1,No
-ingotSteel,misc,Steel,15,,,,,No
+ingotSteel,misc,Steel,15,10,15,2,2048,No
 ingotAngmallen,metallurgy,Angmallen,35,35,70,4,64,Yes
 ingotDamascusSteel,metallurgy,DamascusSteel,10,10,10,1,500,No
 ingotHepatizon,metallurgy,Hepatizon,10,5,10,2,300,Yes
@@ -39,7 +39,7 @@ ingotAstralSilver,metallurgy,AstralSilver,45,40,70,5,35,Yes
 ingotAltarus,metallurgy,Altarus,75,45,25,1,1750,No
 ingotBlackSteel,metallurgy,BlackSteel,20,25,40,1,500,No
 ingotCarmot,metallurgy,Carmot,45,50,70,6,50,Yes
-ingotCelengil,metallurgy,Celengil,65,40,25,6,1600,Yes
+ingotCelenegil,metallurgy,Celenegil,65,40,25,6,1600,Yes
 ingotDeepIron,metallurgy,DeepIron,15,15,40,1,250,No
 ingotHaderoth,metallurgy,Haderoth,55,35,35,1,1250,No
 ingotMithril,metallurgy,Mithril,55,35,15,1,1000,No

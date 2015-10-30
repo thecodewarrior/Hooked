@@ -1,6 +1,7 @@
 package com.thecodewarrior.hooks.proxy;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -285,6 +286,9 @@ public class ClientProxy extends CommonProxy implements IResourceManagerReloadLi
 			            }
 				}
 
+			}
+			catch (FileNotFoundException e) {
+				HookMod.logger.warn("Could not read resource: " + loc.getResourceDomain() + ":" + loc.getResourcePath());
 			}
 			catch (IOException e) {
 				e.printStackTrace();
