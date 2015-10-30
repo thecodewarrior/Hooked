@@ -54,7 +54,7 @@ public class ClientProxy extends CommonProxy implements IResourceManagerReloadLi
 	public void init()
 	{
 		isClient = true;
-		fireBinding    = new KeyBinding("key.hooks.fire.desc",    Keyboard.KEY_R, "key.categories.gameplay");
+		fireBinding    = new KeyBinding("key.hooks.fire.desc",    Keyboard.KEY_F, "key.categories.gameplay");
 		ClientRegistry.registerKeyBinding(fireBinding);
 		
 		togglePullBinding = new KeyBinding("key.hooks.togglePull.desc", Keyboard.KEY_P, "key.categories.gameplay");
