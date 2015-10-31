@@ -91,6 +91,17 @@ public class HookProperties implements IExtendedEntityProperties
 		return count;
 	}
 	
+	public double getPullStrength() {
+		if(hooks.size() < 1)
+			return 0;
+		return hooks.get(0).getHook().getPullStrength();
+	}
+	public double getFlingBoost() {
+		if(hooks.size() < 1)
+			return 1;
+		return hooks.get(0).getHook().getFlingBoost();
+	}
+	
 	public void hookHit(ActiveHook hook)
 	{
 		EntityPlayer player = (EntityPlayer)e;
@@ -111,6 +122,7 @@ public class HookProperties implements IExtendedEntityProperties
 	
 	Hook currentHook;
 	int currentMaxCount;
+	public boolean	isHooked;
 	
 	public void fireHook(EntityPlayer player, Hook hook, ItemStack stack)
 	{

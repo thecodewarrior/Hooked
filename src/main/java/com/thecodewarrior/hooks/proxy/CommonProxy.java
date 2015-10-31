@@ -110,26 +110,49 @@ public class CommonProxy
 			
 			index++;
 		}
-			
+		props.isHooked = false;
 		if(cumulitaveCount < 1)
 			return;
+		props.isHooked = true;
 		player.fallDistance = 0;
 		
-		Vector3 movement = cumulitave.multiply(1.0/cumulitaveCount);
+		double GRAVITY = 0.1;
+		
+		double accel = props.getPullStrength()*GRAVITY;
+		double terminal = accel*4;
+		double friction = 1.25;
+		
+		Vector3 movement = cumulitave.copy().multiply(1.0/cumulitaveCount);
 		movement.sub(playerCenter);
 		if(shouldPull) {
-			if(movement.mag() > 0.5)
-				movement.normalize().multiply(0.5);
-			if(approxEqual(player.posX - player.lastTickPosX, 0) &&
-			   approxEqual(player.posY - player.lastTickPosY, 0) &&
-			   approxEqual(player.posZ - player.lastTickPosZ, 0) ||
-			   movement.mag() < 0.2) {
+			double distance = movement.mag();
+			Vector3 playerMotion = new Vector3(player.motionX, player.motionY, player.motionZ);
+
+			if(Math.abs(player.posX - player.lastTickPosX) < 0.01 &&
+			   Math.abs(player.posY - player.lastTickPosY) < 0.01 &&
+			   Math.abs(player.posZ - player.lastTickPosZ) < 0.01 ||
+			   distance < 3*accel) {
 				props.isSteady = true;
 				player.onGround = true;
 			}
-			player.motionX = movement.x;
-			player.motionY = movement.y;
-			player.motionZ = movement.z;
+			movement.sub(playerMotion).multiply(accel);
+			
+			if(playerMotion.x > movement.x)
+				playerMotion.x = playerMotion.x/friction;
+			if(playerMotion.y > movement.y)
+				playerMotion.y = playerMotion.y/friction;
+			if(playerMotion.z > movement.z)
+				playerMotion.z = playerMotion.z/friction;
+			
+			playerMotion.add(movement);
+			
+			if(playerMotion.mag() > terminal) {
+				playerMotion.normalize().multiply(terminal);
+			}
+			
+			player.motionX = playerMotion.x;
+			player.motionY = playerMotion.y;
+			player.motionZ = playerMotion.z;
 		}
 	}
 	

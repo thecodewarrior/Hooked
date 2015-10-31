@@ -25,6 +25,14 @@ public class Hook {
 	{
 		return stats.getRetractSpeed();
 	}
+	public double getPullStrength()
+	{
+		return stats.getPullStrength();
+	}
+	public double getFlingBoost()
+	{
+		return stats.getFlingBoost();
+	}
 	public double getLength()
 	{
 		return stats.length;

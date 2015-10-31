@@ -55,13 +55,16 @@ public class ItemRegisterer
 	private void registerHook(String[] hook) {
 		int col = 1;
 		
-		String domain  = hook[col++].trim().toLowerCase();
-		String name    = hook[col++].trim().toLowerCase();
-		double length  = HookUtil.parseWithDefault(5d, hook[col++].trim());
-		double speed   = HookUtil.parseWithDefault(5d, hook[col++].trim());
-		double retract = HookUtil.parseWithDefault(5d, hook[col++].trim());
-		int count      = HookUtil.parseWithDefault(1,  hook[col++].trim());
-		int durability = HookUtil.parseWithDefault(1,  hook[col++].trim());
+		String domain   = hook[col++].trim().toLowerCase();
+		String name     = hook[col++].trim().toLowerCase();
+		double length   = HookUtil.parseWithDefault(5d, hook[col++].trim());
+		double speed    = HookUtil.parseWithDefault(5d, hook[col++].trim());
+		double retract  = HookUtil.parseWithDefault(5d, hook[col++].trim());
+		int count       = HookUtil.parseWithDefault(1,  hook[col++].trim());
+		int durability  = HookUtil.parseWithDefault(1,  hook[col++].trim());
+		double strength = HookUtil.parseWithDefault(1d, hook[col++].trim());
+		double boost    = HookUtil.parseWithDefault(1d, hook[col++].trim());
+
 		
 		boolean multi = false;
 		String multiString = hook[col++].trim().toLowerCase();
@@ -72,6 +75,8 @@ public class ItemRegisterer
 		h.reset(name);
 		if(domain.length() > 0)
 			h.setDomain(domain);
+		h.setPullStrength(strength);
+		h.setFlingBoost(boost);
 		h.setLength(length);
 		h.setSpeed(speed);
 		h.setRetractSpeed(retract);

@@ -99,26 +99,30 @@ public class SpineChainModel implements IChainModel
 		}
 		GL11.glPopMatrix();
 		
-		mc.renderEngine.bindTexture(perpTex);
-		GL11.glPushMatrix();
-		if(space != -1) {
-			GL11.glTranslated(0, vertStart*px, 0);
-			for(double d = vertStart*px; d+space*px*scale < length; d += space*px*scale) {
-				
-				t.startDrawingQuads();
-
-				HookClientUtil.renderFace(
-						 2*sideLen, 0,  2*sideLen, 	1, 0,
-						 2*sideLen, 0, -2*sideLen, 	0, 0,
-						-2*sideLen, 0, -2*sideLen, 	0, 1,
-						-2*sideLen, 0,  2*sideLen, 	1, 1);
-				
-				t.draw();
-				
-				GL11.glTranslated(0, space*px, 0);
+		if(space > 0) {
+		
+			mc.renderEngine.bindTexture(perpTex);
+			GL11.glPushMatrix();
+			if(space != -1) {
+				GL11.glTranslated(0, vertStart*px, 0);
+				for(double d = vertStart*px; d+space*px*scale < length; d += space*px*scale) {
+					
+					t.startDrawingQuads();
+	
+					HookClientUtil.renderFace(
+							 2*sideLen, 0,  2*sideLen, 	1, 0,
+							 2*sideLen, 0, -2*sideLen, 	0, 0,
+							-2*sideLen, 0, -2*sideLen, 	0, 1,
+							-2*sideLen, 0,  2*sideLen, 	1, 1);
+					
+					t.draw();
+					
+					GL11.glTranslated(0, space*px, 0);
+				}
 			}
+			GL11.glPopMatrix();
+		
 		}
-		GL11.glPopMatrix();
 		
 		GL11.glPopMatrix();
 	}
