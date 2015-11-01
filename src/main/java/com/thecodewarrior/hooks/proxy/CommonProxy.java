@@ -172,16 +172,9 @@ public class CommonProxy
 			}
 			
 			Vector3 loc = hook.getLocation();
-//			if(playerLoc.copy().sub(loc).mag() >= hook.getHook().getLength()-0.1) {
-//				playerLoc.sub(loc).normalize().multiply(hook.getHook().getLength()-0.2).add(loc);
-//				player.posX = playerLoc.x;
-//				player.posY = playerLoc.y;
-//				player.posZ = playerLoc.z;
-//			}
-			
-			if(afterLoc.copy().sub(loc).mag() >= hook.getHook().getLength()-0.1) {
+			if(afterLoc.copy().sub(loc).mag() >= hook.getHook().getLength()) {
 				
-				afterLoc.sub(loc).normalize().multiply(hook.getHook().getLength()-0.2).sub(playerLoc).add(loc);
+				afterLoc.sub(loc).normalize().multiply(hook.getHook().getLength()).sub(playerLoc).add(loc);
 				
 				motion.set(afterLoc);
 				afterLoc = playerLoc.copy().add(motion);

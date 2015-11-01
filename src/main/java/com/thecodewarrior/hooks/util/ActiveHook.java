@@ -96,7 +96,7 @@ public class ActiveHook
 		Vector3 eLoc = new Vector3(e.posX, e.posY, e.posZ);
 		Vector3 loc = getLocation();
 		double d = distance(eLoc, getLocation());
-		if(d > getHook().getLength())
+		if(d > getHook().getLength()+1)
 			setRetracting();
 		if(d > 100*getHook().getLength())
 			destroy();
