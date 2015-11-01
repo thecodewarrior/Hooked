@@ -80,7 +80,9 @@ public class ActiveHook
 			NetHandler.CHANNEL.sendToServer(new DestroyHookMessage( getUUID() ));
 	}
 	
-	public static final AxisAlignedBB defaultAABB = AxisAlignedBB.getBoundingBox(-1.0/32, -1.0/32, -1.0/32, 1.0/32, 1.0/32, 1.0/32);
+	public static final AxisAlignedBB defaultAABB = AxisAlignedBB.getBoundingBox(
+			-HookUtil.MARGIN_OF_ERROR, -HookUtil.MARGIN_OF_ERROR, -HookUtil.MARGIN_OF_ERROR,
+			 HookUtil.MARGIN_OF_ERROR,  HookUtil.MARGIN_OF_ERROR,  HookUtil.MARGIN_OF_ERROR);
 	
 	public AxisAlignedBB getAABB()
 	{

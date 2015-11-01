@@ -20,6 +20,8 @@ public class HookUtil
 {	
 	private static List<AxisAlignedBB> collidingBoundingBoxes = new ArrayList<AxisAlignedBB>();
 	
+	public static float MARGIN_OF_ERROR = 1/16f;
+	
 	private static void addCollidingBoundingBoxes(Entity e, World w, AxisAlignedBB aabb) {
         int i = MathHelper.floor_double(aabb.minX);
         int j = MathHelper.floor_double(aabb.maxX + 1.0D);
@@ -57,7 +59,7 @@ public class HookUtil
 	private static ExtendedVector3<MovingObjectPosition> traceAABB(Vector3 start, Vector3 end, AxisAlignedBB aabb) {
 		if(aabb == null || start == null || end == null)
 			return null;
-		MovingObjectPosition mop = aabb.calculateIntercept(start.toVec3D(), end.toVec3D());
+		MovingObjectPosition mop = aabb.expand(MARGIN_OF_ERROR, MARGIN_OF_ERROR, MARGIN_OF_ERROR).calculateIntercept(start.toVec3D(), end.toVec3D());
 		if(mop == null)
 			return null;
 		else
@@ -100,6 +102,7 @@ public class HookUtil
 		for (AxisAlignedBB aabb : scanBBs)
 		{
 			collidingBoundingBoxes = new ArrayList<AxisAlignedBB>();
+			aabb.expand(MARGIN_OF_ERROR, MARGIN_OF_ERROR, MARGIN_OF_ERROR);
 			addCollidingBoundingBoxes(e, world, aabb);
 			
 			Vector3 shortestHit = null;

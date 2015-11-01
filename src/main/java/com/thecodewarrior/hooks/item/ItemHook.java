@@ -43,7 +43,7 @@ public class ItemHook extends ItemHookProvider
     public ItemStack onItemRightClick(ItemStack stack, World world, EntityPlayer player)
     {
         
-        if(EquipmentApi.getEquipment(player, HookMod.equipmentSlotId) == null )
+        if(EquipmentApi.getEquipment(player, HookMod.equipmentSlotId) == null || player.capabilities.isCreativeMode )
         {
         	if (!player.capabilities.isCreativeMode)
             {

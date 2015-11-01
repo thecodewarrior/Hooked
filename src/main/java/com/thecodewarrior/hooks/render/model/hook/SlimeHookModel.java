@@ -3,24 +3,46 @@ package com.thecodewarrior.hooks.render.model.hook;
 import java.util.Map;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.monster.EntitySlime;
-import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.opengl.GL11;
 
-import codechicken.lib.vec.Vector3;
+import tconstruct.world.entity.BlueSlime;
 
-import com.thecodewarrior.hooks.HookMod;
 import com.thecodewarrior.hooks.render.model.IHookModel;
 import com.thecodewarrior.hooks.util.ActiveHook;
 import com.thecodewarrior.hooks.util.HookUtil;
 
+import cpw.mods.fml.common.Optional;
+
 public class SlimeHookModel implements IHookModel
 {
 	double size = .75;
+	
+	private static class SlimeCreator {
+		public Entity getSlime() {
+			EntitySlime tmp = new EntitySlime(null);
+			while(tmp.getSlimeSize() != 1) {
+				tmp = new EntitySlime(null);
+			}
+			return tmp;
+		}
+	}
+	
+	private static class BlueSlimeCreator extends SlimeCreator {
+		@Override
+		@Optional.Method(modid = "TConstruct")
+		public Entity getSlime() {
+			BlueSlime tmp = new BlueSlime(null);
+			tmp.setSlimeSize(1);
+			return tmp;
+		}
+	}
+	
+	private static SlimeCreator         slimeCreator = new SlimeCreator();
+	private static BlueSlimeCreator blueSlimeCreator = new BlueSlimeCreator();
 	
 	@Override
 	public void constructTexturesFor(String hookName)
@@ -31,12 +53,11 @@ public class SlimeHookModel implements IHookModel
 	public void processConfig(Map<String, String> data)
 	{
 		size = HookUtil.parseWithDefault(size, data.get("hook.size"));
+		boolean blue = HookUtil.parseWithDefault(1, data.get("hook.blue")) < 0;
 		
-		EntitySlime tmp = new EntitySlime(null);
-		while(tmp.getSlimeSize() != 1) {
-			tmp = new EntitySlime(null);
-		}
-		slime = tmp;
+		
+		
+		slime = blue ? blueSlimeCreator.getSlime() : slimeCreator.getSlime();
 	}
 
 	private Entity slime;

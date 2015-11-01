@@ -116,7 +116,7 @@ public class CommonProxy
 		props.isHooked = true;
 		player.fallDistance = 0;
 		
-		double GRAVITY = 0.1;
+		double GRAVITY = 0.0784000015258789 / 1.85;
 		
 		double accel = props.getPullStrength()*GRAVITY;
 		double terminal = accel*4;
@@ -135,15 +135,19 @@ public class CommonProxy
 				props.isSteady = true;
 				player.onGround = true;
 			}
-			movement.sub(playerMotion).multiply(accel);
-			
-			if(playerMotion.x > movement.x)
-				playerMotion.x = playerMotion.x/friction;
-			if(playerMotion.y > movement.y)
-				playerMotion.y = playerMotion.y/friction;
-			if(playerMotion.z > movement.z)
-				playerMotion.z = playerMotion.z/friction;
-			
+			movement.normalize();
+			movement.multiply(accel);
+			if(distance < 3*accel) {
+				movement.y = -playerMotion.y;
+				movement.x /= 2;
+				movement.z /= 2;
+			}
+//			if(playerMotion.x > movement.x)
+//				playerMotion.x = playerMotion.x/friction;
+////			if(playerMotion.y > movement.y)
+//				playerMotion.y = playerMotion.y/friction;
+////			if(playerMotion.z > movement.z)
+//				playerMotion.z = playerMotion.z/friction;
 			playerMotion.add(movement);
 			
 			if(playerMotion.mag() > terminal) {
