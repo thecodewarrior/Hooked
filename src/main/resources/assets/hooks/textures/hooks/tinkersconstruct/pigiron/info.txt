@@ -2,12 +2,8 @@
 
 #the model type to use
 
-hook.model:basic
-hook.hook.textureSize:32
-hook.loop.textureSize:32
-hook.hook.offset:0
-hook.loop.offset:0
-hook.loop.center:27
+hook.model:pig
+hook.hook.size:.75
 
 chain.model:basic
 

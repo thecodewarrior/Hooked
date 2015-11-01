@@ -116,7 +116,7 @@ public class CommonProxy
 		props.isHooked = true;
 		player.fallDistance = 0;
 		
-		double GRAVITY = 0.0784000015258789 / 1.85;
+		double GRAVITY = 0.0784000015258789 / 1.89;
 		
 		double accel = props.getPullStrength()*GRAVITY;
 		double terminal = accel*4;
@@ -127,7 +127,6 @@ public class CommonProxy
 		if(shouldPull) {
 			double distance = movement.mag();
 			Vector3 playerMotion = new Vector3(player.motionX, player.motionY, player.motionZ);
-
 			if(Math.abs(player.posX - player.lastTickPosX) < 0.01 &&
 			   Math.abs(player.posY - player.lastTickPosY) < 0.01 &&
 			   Math.abs(player.posZ - player.lastTickPosZ) < 0.01 ||
@@ -137,20 +136,22 @@ public class CommonProxy
 			}
 			movement.normalize();
 			movement.multiply(accel);
+			if(playerMotion.y < 0 && movement.y < 0)
+				movement.y = 0;
 			if(distance < 3*accel) {
 				movement.y = -playerMotion.y;
 				movement.x /= 2;
 				movement.z /= 2;
 			}
-//			if(playerMotion.x > movement.x)
-//				playerMotion.x = playerMotion.x/friction;
-////			if(playerMotion.y > movement.y)
-//				playerMotion.y = playerMotion.y/friction;
-////			if(playerMotion.z > movement.z)
-//				playerMotion.z = playerMotion.z/friction;
-			playerMotion.add(movement);
 			
-			if(playerMotion.mag() > terminal) {
+			
+			
+			playerMotion.add(movement);
+			Vector3 playerMotionNoFall = playerMotion.copy();
+			if(playerMotionNoFall.y < 0)
+				playerMotionNoFall.y = 0;
+			
+			if(playerMotionNoFall.mag() > terminal) {
 				playerMotion.normalize().multiply(terminal);
 			}
 			
@@ -158,6 +159,38 @@ public class CommonProxy
 			player.motionY = playerMotion.y;
 			player.motionZ = playerMotion.z;
 		}
+		
+		Vector3 motion = new Vector3(player.motionX, player.motionY, player.motionZ);
+		
+		Vector3 playerLoc = new Vector3(player.posX, player.posY, player.posZ);
+		Vector3 afterLoc = playerLoc.copy().add(motion);
+
+		for (ActiveHook hook : hooks)
+		{
+			if(!hook.isStopped() || hook.isRetracting()) {
+				return;
+			}
+			
+			Vector3 loc = hook.getLocation();
+//			if(playerLoc.copy().sub(loc).mag() >= hook.getHook().getLength()-0.1) {
+//				playerLoc.sub(loc).normalize().multiply(hook.getHook().getLength()-0.2).add(loc);
+//				player.posX = playerLoc.x;
+//				player.posY = playerLoc.y;
+//				player.posZ = playerLoc.z;
+//			}
+			
+			if(afterLoc.copy().sub(loc).mag() >= hook.getHook().getLength()-0.1) {
+				
+				afterLoc.sub(loc).normalize().multiply(hook.getHook().getLength()-0.2).sub(playerLoc).add(loc);
+				
+				motion.set(afterLoc);
+				afterLoc = playerLoc.copy().add(motion);
+
+			}
+		}
+		player.motionX = motion.x;
+		player.motionY = motion.y;
+		player.motionZ = motion.z;
 	}
 	
 	
