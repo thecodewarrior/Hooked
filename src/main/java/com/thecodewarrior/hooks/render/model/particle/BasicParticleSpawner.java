@@ -44,7 +44,7 @@ public class BasicParticleSpawner implements IParticleSpawner
 		double distance = vecToPlayer.mag();
 //		double radius = 0.1;
 //		String name = "smoke";
-		Rotation rot = getAlignYRotation(vecToPlayer.copy().normalize().multiply(-1));
+		Rotation rot = HookUtil.getAlignYRotation(vecToPlayer.copy().normalize().multiply(-1));
 		
 //		int count = (int)(  frequency*(Math.random()+0.75) *distance);//2+(int)( (Math.random()-0.5) * 1 );
 		double div = frequency < 1 ? 2 : 2/frequency;
@@ -65,20 +65,6 @@ public class BasicParticleSpawner implements IParticleSpawner
 			position.add(adjustedChainEnd);
 			player.worldObj.spawnParticle(name, position.x, position.y, position.z, 0, 0, 0);
 		}
-	}
-	
-	static Vector3 Y = new Vector3(0, 1, 0);
-	public static Rotation getAlignYRotation(Vector3 along) {
-		double rot_angle = Math.acos( along.dotProduct(Y) );
-		if( Math.abs(rot_angle) > 1.0/65536 )
-		{
-			Vector3 rot_axis = along.copy().crossProduct(Y).normalize();
-		    rot_axis.x *= -1;
-		    rot_axis.z *= -1;
-		    
-		    return new Rotation(rot_angle, rot_axis);
-		}
-		return null;
 	}
 	
 }

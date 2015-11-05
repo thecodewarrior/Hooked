@@ -1,4 +1,12 @@
 RequiredOreDict,Domain, Name, Length, Speed, RetractSpeed, HookCount, Durability,PullStrength,FlingBoost, Multi
+,example,one,10,10,10,3,-1,1,2,Yes
+,example,two,10,10,10,3,-1,1,2,Yes
+,example,three,10,10,10,3,-1,1,2,Yes
+,example,four,10,10,10,3,-1,1,2,Yes
+,example,five,10,10,10,3,-1,1,2,Yes
+,example,six,10,10,10,3,-1,1,2,Yes
+,example,seven,10,10,10,3,-1,1,2,Yes
+,example,eight,10,10,10,3,-1,1,2,Yes
 ,minecraft,Iron,10,5,10,1,256,1,1,No
 ,minecraft,Gold,35,35,70,4,64,3,2,Yes
 ,minecraft,Diamond,15,20,40,2,2048,2,1.2,No

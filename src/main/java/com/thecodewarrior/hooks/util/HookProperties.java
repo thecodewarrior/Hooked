@@ -21,6 +21,8 @@ public class HookProperties implements IExtendedEntityProperties
 {
 	public static final String IDENT = "terrariaHookProps";
 	public boolean isSteady = false;
+	public Vector3 hookMotion = new Vector3();
+	public boolean wasHookedLastTick = false;
 	List<ActiveHook> hooks = new ArrayList<ActiveHook>();
 	Entity e;
 	@Override

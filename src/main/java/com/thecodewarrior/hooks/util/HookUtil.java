@@ -12,6 +12,7 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
+import codechicken.lib.vec.Rotation;
 import codechicken.lib.vec.Vector3;
 
 import com.thecodewarrior.hooks.HookMod;
@@ -168,5 +169,20 @@ public class HookUtil
 	        HookMod.logger.error("Error parsing integer value: '" + s + "'");
 	        return def;
 	    }
+	}
+	
+	
+	static Vector3 Y = new Vector3(0, 1, 0);
+	public static Rotation getAlignYRotation(Vector3 along) {
+		double rot_angle = Math.acos( along.dotProduct(Y) );
+		if( Math.abs(rot_angle) > 1.0/65536 )
+		{
+			Vector3 rot_axis = along.copy().crossProduct(Y).normalize();
+		    rot_axis.x *= -1;
+		    rot_axis.z *= -1;
+		    
+		    return new Rotation(rot_angle, rot_axis);
+		}
+		return null;
 	}
 }

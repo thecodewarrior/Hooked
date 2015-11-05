@@ -4,13 +4,11 @@ import java.util.List;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
-import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
 import codechicken.lib.raytracer.RayTracer;
+import codechicken.lib.vec.Rotation;
 import codechicken.lib.vec.Vector3;
 
 import com.thecodewarrior.hooks.util.ActiveHook;
@@ -20,8 +18,10 @@ import com.thecodewarrior.hooks.util.HookUtil;
 import com.thecodewarrior.hooks.util.HookWrapper;
 import com.thecodewarrior.hooks.util.IResourceConfig;
 
+import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
+import cpw.mods.fml.common.gameevent.TickEvent.Phase;
 
 public class CommonProxy
 {
@@ -52,9 +52,23 @@ public class CommonProxy
 		}
 	}
 	
-	@SubscribeEvent
+//	@SubscribeEvent(priority=EventPriority.LOWEST)
+//	public void onPlayerPreTick(TickEvent.PlayerTickEvent event) {
+//		HookProperties props = HookWrapper.getProperties(event.player);
+//		List<ActiveHook> hooks = props.getHooks();
+//		for (ActiveHook hook : hooks)
+//		{
+//			
+//		}
+//	}
+	
+	@SubscribeEvent(priority=EventPriority.LOWEST)
 	public void onPlayerTick(TickEvent.PlayerTickEvent event) {
+		if(event.phase != Phase.START)
+			return;
+		
 		HookProperties props = HookWrapper.getProperties(event.player);
+		Vector3 motion = props.hookMotion;
 		props.cleanHooks();
 		props.isSteady = false;
 		EntityPlayer player = event.player;
@@ -64,7 +78,6 @@ public class CommonProxy
 				(player.boundingBox.minZ+player.boundingBox.maxZ)/2
 				);
 		Vector3 playerEyes = new Vector3( RayTracer.getCorrectedHeadVec(player) );
-		
 		
 		World w = event.player.worldObj;
 		
@@ -111,14 +124,37 @@ public class CommonProxy
 			index++;
 		}
 		props.isHooked = false;
-		if(cumulitaveCount < 1)
+		if(cumulitaveCount < 1 && props.wasHookedLastTick) {
+			player.motionX = motion.x;
+			player.motionY = motion.y;
+			player.motionZ = motion.z;
+			motion.x = motion.y = motion.z = 0;
+			props.wasHookedLastTick = false;
+		}
+		else if(!props.wasHookedLastTick)
+		{
+			motion.x = player.motionX;
+			motion.y = player.motionY;
+			motion.z = player.motionZ;
+			props.wasHookedLastTick = true;
+		}
+		if(cumulitaveCount < 1) {
 			return;
+		}
+		player.moveForward = player.moveStrafing = 0;
+//		motion.x += player.motionX;
+//		motion.y += player.motionY;
+//		motion.z += player.motionZ;
+		player.motionX = player.motionY = player.motionZ = 0;
+		
 		props.isHooked = true;
 		player.fallDistance = 0;
 		
-		double GRAVITY = 0.0784000015258789 / 1.89;
+		boolean complicatedPhysicsStuffThatKindOfWorksButDoesntReally = true;
+		double GRAVITY = 0.0784000015258789;
+		motion.y -= GRAVITY;
 		
-		double accel = props.getPullStrength()*GRAVITY;
+		double accel = props.getPullStrength()*GRAVITY*1.05;
 		double terminal = accel*4;
 		double friction = 1.25;
 		
@@ -126,7 +162,6 @@ public class CommonProxy
 		movement.sub(playerCenter);
 		if(shouldPull) {
 			double distance = movement.mag();
-			Vector3 playerMotion = new Vector3(player.motionX, player.motionY, player.motionZ);
 			if(Math.abs(player.posX - player.lastTickPosX) < 0.01 &&
 			   Math.abs(player.posY - player.lastTickPosY) < 0.01 &&
 			   Math.abs(player.posZ - player.lastTickPosZ) < 0.01 ||
@@ -134,56 +169,120 @@ public class CommonProxy
 				props.isSteady = true;
 				player.onGround = true;
 			}
-			movement.normalize();
-			movement.multiply(accel);
-			if(playerMotion.y < 0 && movement.y < 0)
-				movement.y = 0;
-			if(distance < 3*accel) {
-				movement.y = -playerMotion.y;
-				movement.x /= 2;
-				movement.z /= 2;
+		
+			if(complicatedPhysicsStuffThatKindOfWorksButDoesntReally) {
+				movement.normalize();
+				movement.multiply(accel);
+				
+				if(motion.y < 0 && movement.y < 0)
+					movement.y = 0;
+				if(distance < 3*accel) {
+					movement.y = -motion.y;
+					movement.x /= 2;
+					movement.z /= 2;
+				}
+				
+				
+				
+				motion.add(movement);
+				Vector3 playerMotionNoFall = motion.copy();
+				if(playerMotionNoFall.y < 0)
+					playerMotionNoFall.y = 0;
+				
+				if(playerMotionNoFall.mag() > terminal) {
+					motion.normalize().multiply(terminal);
+				}
+			} else {
+				if(distance > accel) {
+					movement.normalize();
+					movement.multiply(accel);
+				}
+				
+				motion.set(movement);
 			}
-			
-			
-			
-			playerMotion.add(movement);
-			Vector3 playerMotionNoFall = playerMotion.copy();
-			if(playerMotionNoFall.y < 0)
-				playerMotionNoFall.y = 0;
-			
-			if(playerMotionNoFall.mag() > terminal) {
-				playerMotion.normalize().multiply(terminal);
-			}
-			
-			player.motionX = playerMotion.x;
-			player.motionY = playerMotion.y;
-			player.motionZ = playerMotion.z;
 		}
 		
-		Vector3 motion = new Vector3(player.motionX, player.motionY, player.motionZ);
-		
-		Vector3 playerLoc = new Vector3(player.posX, player.posY, player.posZ);
-		Vector3 afterLoc = playerLoc.copy().add(motion);
-
-		for (ActiveHook hook : hooks)
-		{
-			if(!hook.isStopped() || hook.isRetracting()) {
-				return;
-			}
-			
-			Vector3 loc = hook.getLocation();
-			if(afterLoc.copy().sub(loc).mag() >= hook.getHook().getLength()) {
+		if(complicatedPhysicsStuffThatKindOfWorksButDoesntReally) {			
+			Vector3 playerLoc = new Vector3(player.posX, player.posY, player.posZ);
+			Vector3 afterLoc = playerLoc.copy().add(motion); // get the location relative to the player
+	
+			for (ActiveHook hook : hooks)
+			{
+				if(!hook.isStopped() || hook.isRetracting()) {
+					continue;
+				}
 				
-				afterLoc.sub(loc).normalize().multiply(hook.getHook().getLength()).sub(playerLoc).add(loc);
+				Vector3 hookLoc = hook.getLocation();
+				Vector3 relLoc = playerLoc.copy().sub(hookLoc); // get the vector from the hook to the player
 				
-				motion.set(afterLoc);
-				afterLoc = playerLoc.copy().add(motion);
-
+				// if the final position after moving is too far from the hook
+				if(relLoc.mag() >= hook.getHook().getLength()) {
+					
+//					if(relLoc.mag() >= hook.getHook().getLength()-0.1 && relLoc.mag() <= hook.getHook().getLength()+0.1) {
+//						double velSq = motion.magSquared();
+//						double radius = hook.getHook().getLength();
+//						double centripetalAccelMag = velSq/radius;
+//						
+//						Vector3 centripitalAccel = relLoc.copy().normalize().multiply(centripetalAccelMag);
+//					} else {
+//						relLoc.set(afterLoc).sub(hookLoc);
+//						
+//						relLoc.normalize(); // get the direction only, not the magnitude
+//						relLoc.multiply(hook.getHook().getLength()); // make it only go to the max range of this hook
+//						relLoc.add(hookLoc); // move it back to the global space
+//						relLoc.sub(playerLoc); // get the distance between the player's position and the corrected final position - this is the movement
+//		
+//						motion.set(relLoc);
+//						afterLoc.set(playerLoc).add(motion);
+//					}
+					
+					
+					Vector3 normal = relLoc.copy().normalize();
+					double mag = motion.dotProduct(normal);
+					double over = relLoc.mag() - hook.getHook().getLength();
+					if(over > 0)
+						mag += over;
+					if(mag > 0) {
+						Vector3 forceByChain = normal.copy().multiply(mag);
+						motion.sub(forceByChain);
+						
+//						double velSq = motion.magSquared();
+//						double radius = hook.getHook().getLength();
+//						double centripetalAccelMag = velSq/radius;
+//						if(centripetalAccelMag > 0) {
+//							Vector3 centripitalAccel = relLoc.copy().normalize().multiply(-centripetalAccelMag);
+//							
+//							motion.add(centripitalAccel);
+//						}
+						
+					}
+					
+//					afterLoc.set(playerLoc).add(motion);
+//					relLoc.set(afterLoc).sub(hookLoc);
+//					if(relLoc.mag() >= hook.getHook().getLength()) {
+//						relLoc.normalize(); // get the direction only, not the magnitude
+//						relLoc.multiply(hook.getHook().getLength()); // make it only go to the max range of this hook
+//						relLoc.add(hookLoc); // move it back to the global space
+//						relLoc.sub(playerLoc); // get the distance between the player's position and the corrected final position - this is the movement
+//		
+//						motion.set(relLoc);
+//						afterLoc.set(playerLoc).add(motion);
+//					}
+				}
 			}
+	
+//			player.motionX = motion.x;
+//			player.motionY = motion.y;
+//			player.motionZ = motion.z;
 		}
-		player.motionX = motion.x;
-		player.motionY = motion.y;
-		player.motionZ = motion.z;
+		
+		Vector3 oldPos = new Vector3(player.posX, player.posY, player.posZ); 
+		player.motionX = player.motionY = player.motionZ = 1;
+		player.moveEntity(motion.x, motion.y, motion.z);
+		motion.x = player.motionX == 0 ? 0 : motion.x;
+		motion.y = player.motionY == 0 ? 0 : motion.y;
+		motion.z = player.motionZ == 0 ? 0 : motion.z;
+		player.motionX = player.motionY = player.motionZ = 0;		
 	}
 	
 	
