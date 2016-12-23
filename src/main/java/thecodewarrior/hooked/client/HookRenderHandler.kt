@@ -1,4 +1,4 @@
-package thecodewarrior.hooks.client
+package thecodewarrior.hooked.client
 
 import com.teamwizardry.librarianlib.common.util.minus
 import com.teamwizardry.librarianlib.common.util.times
@@ -13,9 +13,9 @@ import net.minecraftforge.client.event.TextureStitchEvent
 import net.minecraftforge.client.model.animation.Animation
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import thecodewarrior.hooks.common.HookTickHandler
-import thecodewarrior.hooks.common.HookType
-import thecodewarrior.hooks.common.capability.HooksCap
+import thecodewarrior.hooked.common.HookTickHandler
+import thecodewarrior.hooked.common.HookType
+import thecodewarrior.hooked.common.capability.HooksCap
 
 /**
  * Created by TheCodeWarrior

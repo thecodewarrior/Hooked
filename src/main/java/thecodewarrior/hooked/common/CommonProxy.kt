@@ -1,4 +1,4 @@
-package thecodewarrior.hooks.common
+package thecodewarrior.hooked.common
 
 import com.teamwizardry.librarianlib.common.network.PacketHandler
 import net.minecraft.entity.EntityLivingBase
@@ -6,9 +6,9 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 import net.minecraftforge.fml.relauncher.Side
-import thecodewarrior.hooks.common.items.ModItems
-import thecodewarrior.hooks.common.network.PacketFireHook
-import thecodewarrior.hooks.common.network.PacketRetractHooks
+import thecodewarrior.hooked.common.items.ModItems
+import thecodewarrior.hooked.common.network.PacketFireHook
+import thecodewarrior.hooked.common.network.PacketRetractHooks
 
 /**
  * Created by TheCodeWarrior

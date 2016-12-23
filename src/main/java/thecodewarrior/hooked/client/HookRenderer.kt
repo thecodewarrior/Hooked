@@ -1,4 +1,4 @@
-package thecodewarrior.hooks.client
+package thecodewarrior.hooked.client
 
 import com.teamwizardry.librarianlib.common.util.*
 import net.minecraft.client.Minecraft
@@ -16,9 +16,9 @@ import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
 import org.lwjgl.opengl.GL11
-import thecodewarrior.hooks.HooksMod
-import thecodewarrior.hooks.common.HookType
-import thecodewarrior.hooks.common.capability.HookInfo
+import thecodewarrior.hooked.HookedMod
+import thecodewarrior.hooked.common.HookType
+import thecodewarrior.hooked.common.capability.HookInfo
 
 
 
@@ -27,9 +27,9 @@ import thecodewarrior.hooks.common.capability.HookInfo
  */
 class HookRenderer(val type: HookType) {
 
-    val endHandle = ModelHandle(ResourceLocation(HooksMod.MODID + ":hooks/${type.name.toLowerCase()}"))
-    val ropeTextureVertical = ResourceLocation(HooksMod.MODID, "textures/hooks/${type.name.toLowerCase()}/chain1.png")
-    val ropeTextureHorizontal = ResourceLocation(HooksMod.MODID, "textures/hooks/${type.name.toLowerCase()}/chain2.png")
+    val endHandle = ModelHandle(ResourceLocation(HookedMod.MODID + ":hooks/${type.name.toLowerCase()}"))
+    val ropeTextureVertical = ResourceLocation(HookedMod.MODID, "textures/hooks/${type.name.toLowerCase()}/chain1.png")
+    val ropeTextureHorizontal = ResourceLocation(HookedMod.MODID, "textures/hooks/${type.name.toLowerCase()}/chain2.png")
 
     private var lastModel: IBakedModel? = null
     private var lastQuads: List<BakedQuad>? = null

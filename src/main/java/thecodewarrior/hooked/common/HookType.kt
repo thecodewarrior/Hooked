@@ -1,4 +1,4 @@
-package thecodewarrior.hooks.common
+package thecodewarrior.hooked.common
 
 /**
  * Created by TheCodeWarrior

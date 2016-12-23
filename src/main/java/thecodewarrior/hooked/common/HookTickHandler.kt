@@ -1,4 +1,4 @@
-package thecodewarrior.hooks.common
+package thecodewarrior.hooked.common
 
 import com.teamwizardry.librarianlib.common.util.*
 import net.minecraft.entity.Entity
@@ -13,10 +13,10 @@ import net.minecraftforge.event.AttachCapabilitiesEvent
 import net.minecraftforge.event.entity.living.LivingEvent
 import net.minecraftforge.event.entity.player.PlayerEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import thecodewarrior.hooks.HooksMod
-import thecodewarrior.hooks.common.capability.EnumHookStatus
-import thecodewarrior.hooks.common.capability.HooksCap
-import thecodewarrior.hooks.common.capability.HooksCapProvider
+import thecodewarrior.hooked.HookedMod
+import thecodewarrior.hooked.common.capability.EnumHookStatus
+import thecodewarrior.hooked.common.capability.HooksCap
+import thecodewarrior.hooked.common.capability.HooksCapProvider
 
 /**
  * Created by TheCodeWarrior
@@ -26,7 +26,7 @@ object HookTickHandler {
         MinecraftForge.EVENT_BUS.register(this)
     }
 
-    val rl = ResourceLocation(HooksMod.MODID, "playerHookWielder")
+    val rl = ResourceLocation(HookedMod.MODID, "playerHookWielder")
 
     @SubscribeEvent
     fun playerAttach(e: AttachCapabilitiesEvent.Entity) {
@@ -48,7 +48,7 @@ object HookTickHandler {
 
     @SubscribeEvent
     fun entityTick(e: LivingEvent.LivingUpdateEvent) {
-        HooksMod.PROXY.setAutoJump(e.entityLiving, true)
+        HookedMod.PROXY.setAutoJump(e.entityLiving, true)
         if (!e.entity.hasCapability(HooksCap.CAPABILITY, null)) {
             return
         }
@@ -114,7 +114,7 @@ object HookTickHandler {
             e.entity.fallDistance = 0f
             e.entity.onGround = true
             e.entityLiving.jumpTicks = 10
-            HooksMod.PROXY.setAutoJump(e.entityLiving, false)
+            HookedMod.PROXY.setAutoJump(e.entityLiving, false)
         }
         cap.centerPos?.let {
             if(!e.entity.world.isRemote)

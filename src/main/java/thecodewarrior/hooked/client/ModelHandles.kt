@@ -1,4 +1,4 @@
-package thecodewarrior.hooks.client
+package thecodewarrior.hooked.client
 
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.block.model.IBakedModel
@@ -10,7 +10,7 @@ import net.minecraft.util.ReportedException
 import net.minecraft.util.ResourceLocation
 import net.minecraftforge.client.model.ModelLoader
 import net.minecraftforge.client.model.ModelLoaderRegistry
-import thecodewarrior.hooks.HooksMod
+import thecodewarrior.hooked.HookedMod
 import java.io.PrintWriter
 import java.io.StringWriter
 
@@ -89,7 +89,7 @@ class StateHandle(val loc: ModelResourceLocation) {
 
         private fun loadModel(loc: ModelResourceLocation) {
             try {
-                val mod = if(HooksMod.DEV_ENVIRONMENT) {
+                val mod = if(HookedMod.DEV_ENVIRONMENT) {
                     val baseLoc = ResourceLocation(loc.resourcePath, loc.resourceDomain)
                     val m = try {
                         ModelLoaderRegistry.getModel(loc)
@@ -209,7 +209,7 @@ class ModelHandle(val loc: ResourceLocation) {
 
         private fun loadModel(loc: ResourceLocation) {
             try {
-                val mod = if(HooksMod.DEV_ENVIRONMENT) {
+                val mod = if(HookedMod.DEV_ENVIRONMENT) {
                     val m = try {
                         ModelLoaderRegistry.getModel(loc)
                     } catch (e: Exception) {

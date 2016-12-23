@@ -1,4 +1,4 @@
-package thecodewarrior.hooks.common.capability
+package thecodewarrior.hooked.common.capability
 
 import com.teamwizardry.librarianlib.common.util.div
 import com.teamwizardry.librarianlib.common.util.plus
@@ -16,7 +16,7 @@ import net.minecraftforge.common.capabilities.CapabilityInject
 import net.minecraftforge.common.capabilities.CapabilityManager
 import net.minecraftforge.common.capabilities.ICapabilityProvider
 import net.minecraftforge.common.util.INBTSerializable
-import thecodewarrior.hooks.common.HookType
+import thecodewarrior.hooked.common.HookType
 import java.util.*
 
 /**

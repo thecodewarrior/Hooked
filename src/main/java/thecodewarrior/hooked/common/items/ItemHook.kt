@@ -1,4 +1,4 @@
-package thecodewarrior.hooks.common.items
+package thecodewarrior.hooked.common.items
 
 import baubles.api.BaubleType
 import baubles.api.BaublesApi
@@ -8,8 +8,8 @@ import com.teamwizardry.librarianlib.common.util.ifCap
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
-import thecodewarrior.hooks.common.HookType
-import thecodewarrior.hooks.common.capability.HooksCap
+import thecodewarrior.hooked.common.HookType
+import thecodewarrior.hooked.common.capability.HooksCap
 
 /**
  * Created by TheCodeWarrior

@@ -1,4 +1,4 @@
-package thecodewarrior.hooks
+package thecodewarrior.hooked
 
 import com.teamwizardry.librarianlib.common.base.ModCreativeTab
 import com.teamwizardry.librarianlib.common.core.LoggerBase
@@ -9,11 +9,11 @@ import net.minecraftforge.fml.common.SidedProxy
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
-import thecodewarrior.hooks.common.CommonProxy
-import thecodewarrior.hooks.common.items.ModItems
+import thecodewarrior.hooked.common.CommonProxy
+import thecodewarrior.hooked.common.items.ModItems
 
-@Mod(modid = HooksMod.MODID, version = HooksMod.VERSION, name = HooksMod.MODNAME)
-class HooksMod {
+@Mod(modid = HookedMod.MODID, version = HookedMod.VERSION, name = HookedMod.MODNAME)
+class HookedMod {
 
     @Mod.EventHandler
     fun preInit(e: FMLPreInitializationEvent) {
@@ -32,11 +32,11 @@ class HooksMod {
 
     companion object {
 
-        const val MODID = "hooks"
-        const val MODNAME = "Hooks"
+        const val MODID = "hooked"
+        const val MODNAME = "Hooked"
         const val VERSION = "0.0.0"
-        const val CLIENT = "thecodewarrior.hooks.client.ClientProxy"
-        const val SERVER = "thecodewarrior.hooks.client.CommonProxy"
+        const val CLIENT = "thecodewarrior.hooked.client.ClientProxy"
+        const val SERVER = "thecodewarrior.hooked.client.CommonProxy"
 
         @JvmStatic
         @SidedProxy(clientSide = CLIENT, serverSide = SERVER)
@@ -58,4 +58,4 @@ class HooksMod {
 
 }
 
-object HookLog : LoggerBase("Hooks")
+object HookLog : LoggerBase("Hooked")

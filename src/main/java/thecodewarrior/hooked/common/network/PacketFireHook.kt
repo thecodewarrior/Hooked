@@ -1,4 +1,4 @@
-package thecodewarrior.hooks.common.network
+package thecodewarrior.hooked.common.network
 
 import com.teamwizardry.librarianlib.common.network.PacketBase
 import com.teamwizardry.librarianlib.common.util.ifCap
@@ -6,9 +6,9 @@ import com.teamwizardry.librarianlib.common.util.saving.Save
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.util.math.Vec3d
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext
-import thecodewarrior.hooks.common.capability.EnumHookStatus
-import thecodewarrior.hooks.common.capability.HookInfo
-import thecodewarrior.hooks.common.capability.HooksCap
+import thecodewarrior.hooked.common.capability.EnumHookStatus
+import thecodewarrior.hooked.common.capability.HookInfo
+import thecodewarrior.hooked.common.capability.HooksCap
 
 /**
  * Created by TheCodeWarrior

@@ -1,11 +1,11 @@
-package thecodewarrior.hooks.client
+package thecodewarrior.hooked.client
 
 import com.teamwizardry.librarianlib.common.util.MethodHandleHelper
 import net.minecraft.client.Minecraft
 import net.minecraft.client.entity.EntityPlayerSP
 import net.minecraft.entity.EntityLivingBase
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
-import thecodewarrior.hooks.common.CommonProxy
+import thecodewarrior.hooked.common.CommonProxy
 
 /**
  * Created by TheCodeWarrior

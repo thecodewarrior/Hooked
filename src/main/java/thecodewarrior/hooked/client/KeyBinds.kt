@@ -1,4 +1,4 @@
-package thecodewarrior.hooks.client
+package thecodewarrior.hooked.client
 
 import com.teamwizardry.librarianlib.common.network.PacketHandler
 import net.minecraft.client.Minecraft
@@ -9,14 +9,14 @@ import net.minecraftforge.fml.client.registry.ClientRegistry
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.InputEvent
 import org.lwjgl.input.Keyboard
-import thecodewarrior.hooks.common.network.PacketFireHook
-import thecodewarrior.hooks.common.network.PacketRetractHooks
+import thecodewarrior.hooked.common.network.PacketFireHook
+import thecodewarrior.hooked.common.network.PacketRetractHooks
 
 /**
  * Created by TheCodeWarrior
  */
 object KeyBinds {
-    val keyFire = KeyBinding("key.hooks:fire", KeyConflictContext.IN_GAME, Keyboard.KEY_C, "key.category.hooks")
+    val keyFire = KeyBinding("key.hooked.fire", KeyConflictContext.IN_GAME, Keyboard.KEY_C, "key.category.hooks")
 
     init {
         MinecraftForge.EVENT_BUS.register(this)
