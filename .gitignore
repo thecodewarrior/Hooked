@@ -1,0 +1,29 @@
+# eclipse
+bin
+*.launch
+.settings
+.metadata
+.classpath
+.project
+
+# idea
+out
+*.ipr
+*.iws
+*.iml
+.idea
+
+# gradle
+build
+.gradle
+
+# other
+eclipse
+run
+
+lib/kotlin-reflect.jar
+lib/kotlin-runtime-sources.jar
+lib/kotlin-runtime.jar
+
+hs_err_pid*.log
+java_pid*.hprof
