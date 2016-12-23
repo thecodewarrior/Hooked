@@ -38,9 +38,9 @@ object HookTickHandler {
 
     @SubscribeEvent
     fun breakSpeed(e: PlayerEvent.BreakSpeed) {
-        if(!e.entity.onGround) {
+        if (!e.entity.onGround) {
             e.entity.ifCap(HooksCap.CAPABILITY, null) {
-                if(hooks.count { it.status == EnumHookStatus.PLANTED } > 0) {
+                if (hooks.count { it.status == EnumHookStatus.PLANTED } > 0) {
                     e.newSpeed = e.newSpeed * 5
                 }
             }
@@ -62,13 +62,15 @@ object HookTickHandler {
         }
 
         val waist = getWaistPos(e.entity)
+        val spacing = 0.1
+        val rnd = { ThreadLocalRandom.current().nextDouble(-0.05, 0.05) }
 
         for (hook in cap.hooks) {
-            if(hook.status == EnumHookStatus.RETRACTING)
+            if (hook.status == EnumHookStatus.RETRACTING)
                 hook.status = EnumHookStatus.DEAD
 
             if (hook.status == EnumHookStatus.EXTENDING) {
-                val trace = RaycastUtils.raycast(e.entity.world, hook.pos, hook.pos + hook.direction * (Math.min(type.range-(hook.pos-waist).lengthVector(),type.speed+type.hookLength)))
+                val trace = RaycastUtils.raycast(e.entity.world, hook.pos, hook.pos + hook.direction * (Math.min(type.range - (hook.pos - waist).lengthVector(), type.speed + type.hookLength)))
                 if (trace == null || trace.typeOfHit == RayTraceResult.Type.MISS)
                     hook.pos += hook.direction * type.speed
                 else {
@@ -77,29 +79,54 @@ object HookTickHandler {
                     hook.block = trace.blockPos
                     hook.side = trace.sideHit
                     cap.updatePos()
+
+
                 }
             }
 
-            if(hook.pos.squareDistanceTo(e.entity.positionVector) > type.rangeSq) {
+            if (type == HookType.ENDER) {
+//                cap.hooks.forEach {
+                val len = (hook.pos - waist).lengthVector()
+                val normal = (hook.pos - waist) / len
+                val negNormal = -normal
+
+                var v = 1.0
+                while (v < len && len > 2) {
+
+                    if (ThreadLocalRandom.current().nextDouble() < 0.5) {
+                        val pos = waist + (normal * v)
+                        val vel = if (ThreadLocalRandom.current().nextBoolean()) negNormal else normal
+                        e.entity.world.spawnParticle(EnumParticleTypes.PORTAL, true,
+                                pos.xCoord + rnd(), pos.yCoord + rnd() + 0.1, pos.zCoord + rnd(),
+                                vel.xCoord + rnd(), vel.yCoord + rnd() - 0.65, vel.zCoord + rnd())
+                    }
+
+                    v += spacing
+                }
+
+//                }
+            }
+
+            if (hook.pos.squareDistanceTo(e.entity.positionVector) > type.rangeSq) {
                 hook.status = EnumHookStatus.TORETRACT
             }
 
-            if(hook.block != null) {
+            if (hook.block != null) {
                 if (hook.status == EnumHookStatus.PLANTED && e.entity.world.isAirBlock(hook.block)) {
                     hook.status = EnumHookStatus.TORETRACT
                 }
             }
 
-            if(hook.status == EnumHookStatus.TORETRACT) {
+            if (hook.status == EnumHookStatus.TORETRACT) {
                 hook.pos = waist
                 hook.status = EnumHookStatus.RETRACTING
             }
         }
 
-        if(cap.hooks.removeAll { it.status == EnumHookStatus.DEAD }) {
+        if (cap.hooks.removeAll { it.status == EnumHookStatus.DEAD }) {
             cap.updatePos()
         }
-        while(cap.hooks.count { it.status == EnumHookStatus.PLANTED } > type.count) {
+        while (cap.hooks.count { it.status == EnumHookStatus.PLANTED } > type.count) {
             cap.hooks.find { it.status == EnumHookStatus.PLANTED }?.status = EnumHookStatus.TORETRACT
             cap.updatePos()
         }
@@ -107,8 +134,8 @@ object HookTickHandler {
 
         cap.centerPos?.subtract(waist)?.let {
             val len = it.lengthVector()
-            if(len > type.pullStrength)
-                it.scale(type.pullStrength/len)
+            if (len > type.pullStrength)
+                it.scale(type.pullStrength / len)
             else
                 it
         }?.let {
@@ -122,34 +149,11 @@ object HookTickHandler {
         }
 
         cap.centerPos?.let {
-            if(!e.entity.world.isRemote)
+            if (!e.entity.world.isRemote)
                 e.entity.world.spawnParticle(EnumParticleTypes.FLAME, it.xCoord, it.yCoord, it.zCoord, 0.0, 0.0, 0.0, 0)
         }
 
-        if(type == HookType.ENDER) {
-            val spacing = 0.1
-            val rnd = { ThreadLocalRandom.current().nextDouble(-0.05, 0.05) }
-            cap.hooks.forEach {
-                val len = (it.pos-waist).lengthVector()
-                val normal = (it.pos-waist) / len
-                val negNormal = -normal
 
-                var v = 0.0
-                while(v < len) {
-
-                    if(ThreadLocalRandom.current().nextDouble() < 0.25) {
-                        val pos = waist + (normal * v)
-                        val vel = if(ThreadLocalRandom.current().nextBoolean()) negNormal else normal
-                        e.entity.world.spawnParticle(EnumParticleTypes.PORTAL,
-                                pos.xCoord + rnd(), pos.yCoord + rnd() + 0.1, pos.zCoord + rnd(),
-                                vel.xCoord + rnd(), vel.yCoord + rnd()-0.65, vel.zCoord + rnd())
-                    }
-
-                    v += spacing
-                }
-
-            }
-        }
     }
 
     fun getWaistPos(e: Entity): Vec3d {

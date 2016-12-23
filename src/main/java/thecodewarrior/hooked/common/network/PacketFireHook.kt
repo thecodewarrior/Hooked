@@ -32,6 +32,7 @@ class PacketFireHook : PacketBase() {
             if(hooks.count { it.status.active } <= type.count + 1) {
                 hooks.addLast(HookInfo(pos, normal, EnumHookStatus.EXTENDING, null, null))
             }
+
         }
     }
 }
