@@ -17,6 +17,7 @@ import thecodewarrior.hooked.HookedMod
 import thecodewarrior.hooked.common.capability.EnumHookStatus
 import thecodewarrior.hooked.common.capability.HooksCap
 import thecodewarrior.hooked.common.capability.HooksCapProvider
+import java.util.concurrent.ThreadLocalRandom
 
 /**
  * Created by TheCodeWarrior
@@ -78,23 +79,26 @@ object HookTickHandler {
                     cap.updatePos()
                 }
             }
+
             if(hook.pos.squareDistanceTo(e.entity.positionVector) > type.rangeSq) {
                 hook.status = EnumHookStatus.TORETRACT
             }
+
             if(hook.block != null) {
                 if (hook.status == EnumHookStatus.PLANTED && e.entity.world.isAirBlock(hook.block)) {
                     hook.status = EnumHookStatus.TORETRACT
                 }
             }
+
             if(hook.status == EnumHookStatus.TORETRACT) {
                 hook.pos = waist
                 hook.status = EnumHookStatus.RETRACTING
             }
         }
+
         if(cap.hooks.removeAll { it.status == EnumHookStatus.DEAD }) {
             cap.updatePos()
         }
-
         while(cap.hooks.count { it.status == EnumHookStatus.PLANTED } > type.count) {
             cap.hooks.find { it.status == EnumHookStatus.PLANTED }?.status = EnumHookStatus.TORETRACT
             cap.updatePos()
@@ -116,9 +120,35 @@ object HookTickHandler {
             e.entityLiving.jumpTicks = 10
             HookedMod.PROXY.setAutoJump(e.entityLiving, false)
         }
+
         cap.centerPos?.let {
             if(!e.entity.world.isRemote)
                 e.entity.world.spawnParticle(EnumParticleTypes.FLAME, it.xCoord, it.yCoord, it.zCoord, 0.0, 0.0, 0.0, 0)
+        }
+
+        if(type == HookType.ENDER) {
+            val spacing = 0.1
+            val rnd = { ThreadLocalRandom.current().nextDouble(-0.05, 0.05) }
+            cap.hooks.forEach {
+                val len = (it.pos-waist).lengthVector()
+                val normal = (it.pos-waist) / len
+                val negNormal = -normal
+
+                var v = 0.0
+                while(v < len) {
+
+                    if(ThreadLocalRandom.current().nextDouble() < 0.25) {
+                        val pos = waist + (normal * v)
+                        val vel = if(ThreadLocalRandom.current().nextBoolean()) negNormal else normal
+                        e.entity.world.spawnParticle(EnumParticleTypes.PORTAL,
+                                pos.xCoord + rnd(), pos.yCoord + rnd() + 0.1, pos.zCoord + rnd(),
+                                vel.xCoord + rnd(), vel.yCoord + rnd()-0.65, vel.zCoord + rnd())
+                    }
+
+                    v += spacing
+                }
+
+            }
         }
     }
 
