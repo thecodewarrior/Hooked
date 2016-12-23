@@ -44,7 +44,12 @@ import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 
-@Mod(modid = HookMod.MODID, version = HookMod.MODVER, name = HookMod.MODNAME, dependencies="required-after:CodeChickenCore;required-after:EquipmentApi")
+@Mod(modid = HookMod.MODID, version = HookMod.MODVER, name = HookMod.MODNAME, dependencies=""+
+		"required-after:CodeChickenCore;" +
+		"required-after:EquipmentApi;"+
+		"after:ThermalFoundation;"+
+		"after:TConstruct;"+
+		"after:Metallurgy")
 public class HookMod {
 	public static final String MODID   = "hooks";
 	public static final String MODVER  = "0.1.0";
@@ -108,9 +113,7 @@ public class HookMod {
 		hooks	  = new HashMap<String, Hook>();
 		items	  = new HashMap<String, ItemHook>();
 		renderers = new HashMap<String, IHookRenderer>();
-		
-//		HookRegistry.basicRenderer = new HookRenderer("unknown");
-		
+				
 		HookRegistry.basicHookModel = BasicHookModel.class;
 		HookRegistry.registerHookModel("basic", BasicHookModel.class);
 		
@@ -127,17 +130,9 @@ public class HookMod {
 		
 		HookRegistry.registerChainModel("spine", SpineChainModel.class);
 		
-		ItemRegisterer r = new ItemRegisterer.ActualRegisterer();
+		ItemRegisterer r = new ItemRegisterer();
 		
 		r.init();
-		
-		r.vanilla();
-		r.thermalFoundation();
-		r.metallurgy_base();
-		r.metallurgy_precious();
-		r.metallurgy_nether();
-		r.metallurgy_fantasy();
-		r.metallurgy_ender();
 		
 		EquipmentApi.registerEquipment(equipmentSlotId, new EquipmentType() {
 			

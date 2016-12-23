@@ -15,9 +15,6 @@ public class HookRegisterHelper
 	private double speed = -1;
 	private double retractSpeed = -1;
 	
-	private double pullStrength = 1;
-	private double flingBoost = 1;
-	
 	private int count = 1;
 	private int durability = 0;
 	
@@ -31,9 +28,6 @@ public class HookRegisterHelper
 		length = -1;
 		speed = -1;
 		retractSpeed = -1;
-		
-		pullStrength = 1;
-		flingBoost = 1;
 		
 		durability = 0;
 		count = 1;
@@ -66,8 +60,6 @@ public class HookRegisterHelper
 		IHookRenderer renderer = new HookRenderer(texLoc);
 		
 		HookStats stats = new HookStats(length, speed, retractSpeed);
-		stats.setPullStrength(pullStrength);
-		stats.setFlingBoost(flingBoost);
 		
 		Hook hook = new Hook(HookMod.MODID + ":" + name, stats );
 		hook.setRenderer(renderer);
@@ -115,15 +107,6 @@ public class HookRegisterHelper
 	
 	public HookRegisterHelper setRetractSpeed(double retractSpeed) {
 		this.retractSpeed = retractSpeed;
-		return this;
-	}
-	
-	public HookRegisterHelper setPullStrength(double pullStrength) {
-		this.pullStrength = pullStrength;
-		return this;
-	}
-	public HookRegisterHelper setFlingBoost(double flingBoost) {
-		this.flingBoost = flingBoost;
 		return this;
 	}
 	

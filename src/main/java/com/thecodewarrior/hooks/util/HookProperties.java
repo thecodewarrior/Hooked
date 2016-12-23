@@ -21,8 +21,6 @@ public class HookProperties implements IExtendedEntityProperties
 {
 	public static final String IDENT = "terrariaHookProps";
 	public boolean isSteady = false;
-	public Vector3 hookMotion = new Vector3();
-	public boolean wasHookedLastTick = false;
 	List<ActiveHook> hooks = new ArrayList<ActiveHook>();
 	Entity e;
 	@Override
@@ -91,17 +89,6 @@ public class HookProperties implements IExtendedEntityProperties
 				count++;
 		}
 		return count;
-	}
-	
-	public double getPullStrength() {
-		if(hooks.size() < 1)
-			return 0;
-		return hooks.get(0).getHook().getPullStrength();
-	}
-	public double getFlingBoost() {
-		if(hooks.size() < 1)
-			return 1;
-		return hooks.get(0).getHook().getFlingBoost();
 	}
 	
 	public void hookHit(ActiveHook hook)

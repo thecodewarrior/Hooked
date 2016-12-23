@@ -5,7 +5,7 @@ import com.thecodewarrior.hooks.IHookRenderer;
 public class HookStats
 {
 	
-	double length, speed, retractSpeed, pullStrength, flingBoost;
+	double length, speed, retractSpeed;
 
 	public HookStats(double length, double speed, double retractSpeed)
 	{
@@ -45,26 +45,4 @@ public class HookStats
 		this.retractSpeed = retractSpeed/20f;
 		return this;
 	}
-
-	public double getPullStrength()
-	{
-		return pullStrength;
-	}
-	public HookStats setPullStrength(double pullStrength)
-	{
-		this.pullStrength = pullStrength;
-		return this;
-	}
-
-	public double getFlingBoost()
-	{
-		return flingBoost;
-	}
-	public HookStats setFlingBoost(double flingBoost)
-	{
-		this.flingBoost = flingBoost;
-		return this;
-	}
-	
-	
 }
