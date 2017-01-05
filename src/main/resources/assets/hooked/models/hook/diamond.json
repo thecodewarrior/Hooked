@@ -1,0 +1,6 @@
+{
+	"parent": "hooked:hook/base",
+	"textures": {
+		"texture": "hooked:hooks/diamond/hook"
+	}
+}

@@ -8,6 +8,8 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 import net.minecraftforge.fml.relauncher.Side
 import thecodewarrior.hooked.common.items.ModItems
 import thecodewarrior.hooked.common.network.PacketFireHook
+import thecodewarrior.hooked.common.network.PacketHookCapSync
+import thecodewarrior.hooked.common.network.PacketRetractHook
 import thecodewarrior.hooked.common.network.PacketRetractHooks
 
 /**
@@ -28,7 +30,9 @@ open class CommonProxy {
 
     fun network() {
         PacketHandler.register(PacketFireHook::class.java, Side.SERVER)
+        PacketHandler.register(PacketRetractHook::class.java, Side.SERVER)
         PacketHandler.register(PacketRetractHooks::class.java, Side.SERVER)
+        PacketHandler.register(PacketHookCapSync::class.java, Side.CLIENT)
     }
 
     open fun  setAutoJump(entityLiving: EntityLivingBase, value: Boolean) {

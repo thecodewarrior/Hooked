@@ -12,7 +12,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 import thecodewarrior.hooked.common.CommonProxy
 import thecodewarrior.hooked.common.items.ModItems
 
-@Mod(modid = HookedMod.MODID, version = HookedMod.VERSION, name = HookedMod.MODNAME)
+@Mod(modid = HookedMod.MODID, version = HookedMod.VERSION, name = HookedMod.MODNAME, dependencies = HookedMod.DEPENDENCIES)
 class HookedMod {
 
     @Mod.EventHandler
@@ -35,6 +35,7 @@ class HookedMod {
         const val MODID = "hooked"
         const val MODNAME = "Hooked"
         const val VERSION = "0.0.0"
+        const val DEPENDENCIES = "required-after:librarianlib"
         const val CLIENT = "thecodewarrior.hooked.client.ClientProxy"
         const val SERVER = "thecodewarrior.hooked.client.CommonProxy"
 

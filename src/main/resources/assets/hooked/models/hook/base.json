@@ -1,9 +1,5 @@
 {
 	"__comment": "Designed by TheCodeWarrior with Cubik Studio - https://cubik.studio",
-	"textures": {
-		"particle": "blocks/particle",
-		"texture": "hooks:hooks/diamond/hook"
-	},
 	"elements": [
 		{
 			"__comment": "Center",

@@ -27,7 +27,7 @@ import thecodewarrior.hooked.common.capability.HookInfo
  */
 class HookRenderer(val type: HookType) {
 
-    val endHandle = ModelHandle(ResourceLocation(HookedMod.MODID + ":hooks/${type.name.toLowerCase()}"))
+    val endHandle = ModelHandle(ResourceLocation(HookedMod.MODID + ":hook/${type.name.toLowerCase()}"))
     val ropeTextureVertical = ResourceLocation(HookedMod.MODID, "textures/hooks/${type.name.toLowerCase()}/chain1.png")
     val ropeTextureHorizontal = ResourceLocation(HookedMod.MODID, "textures/hooks/${type.name.toLowerCase()}/chain2.png")
 

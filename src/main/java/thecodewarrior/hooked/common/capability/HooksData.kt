@@ -1,11 +1,13 @@
 package thecodewarrior.hooked.common.capability
 
+import com.teamwizardry.librarianlib.common.network.PacketHandler
 import com.teamwizardry.librarianlib.common.util.div
 import com.teamwizardry.librarianlib.common.util.plus
 import com.teamwizardry.librarianlib.common.util.saving.AbstractSaveHandler
-import com.teamwizardry.librarianlib.common.util.saving.ISerializeInPlace
 import com.teamwizardry.librarianlib.common.util.saving.Savable
 import com.teamwizardry.librarianlib.common.util.saving.Save
+import com.teamwizardry.librarianlib.common.util.saving.SaveInPlace
+import net.minecraft.entity.Entity
 import net.minecraft.nbt.NBTBase
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
@@ -16,7 +18,9 @@ import net.minecraftforge.common.capabilities.CapabilityInject
 import net.minecraftforge.common.capabilities.CapabilityManager
 import net.minecraftforge.common.capabilities.ICapabilityProvider
 import net.minecraftforge.common.util.INBTSerializable
+import net.minecraftforge.fml.common.network.NetworkRegistry
 import thecodewarrior.hooked.common.HookType
+import thecodewarrior.hooked.common.network.PacketHookCapSync
 import java.util.*
 
 /**
@@ -24,11 +28,12 @@ import java.util.*
  */
 enum class EnumHookStatus(val active: Boolean) { EXTENDING(true), PLANTED(true), TORETRACT(false), RETRACTING(false), DEAD(false);  }
 
-@Savable data class HookInfo(var pos: Vec3d, var direction: Vec3d, var status: EnumHookStatus, var block: BlockPos?, var side: EnumFacing?) {
+@Savable data class HookInfo(var pos: Vec3d, var direction: Vec3d, var status: EnumHookStatus, var block: BlockPos?, var side: EnumFacing?, var uuid: UUID = UUID.randomUUID()) {
     constructor() : this(Vec3d.ZERO, Vec3d.ZERO, EnumHookStatus.PLANTED, null, null)
 }
 
-class HooksCap : ISerializeInPlace {
+@SaveInPlace
+class HooksCap {
 
     @Save
     var hooks = LinkedList<HookInfo>()
@@ -38,6 +43,11 @@ class HooksCap : ISerializeInPlace {
 
     @Save
     var centerPos: Vec3d? = null
+
+    fun update(player: Entity) {
+        if(!player.world.isRemote)
+            PacketHandler.NETWORK.sendToAllAround(PacketHookCapSync(player), NetworkRegistry.TargetPoint(player.world.provider.dimension, player.posX, player.posY, player.posZ, 128.0))
+    }
 
     fun updatePos() {
         val filtered = hooks.filter { it.status == EnumHookStatus.PLANTED }
