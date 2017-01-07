@@ -37,7 +37,7 @@ class HookedMod {
         const val VERSION = "0.0.0"
         const val DEPENDENCIES = "required-after:librarianlib"
         const val CLIENT = "thecodewarrior.hooked.client.ClientProxy"
-        const val SERVER = "thecodewarrior.hooked.client.CommonProxy"
+        const val SERVER = "thecodewarrior.hooked.common.CommonProxy"
 
         @JvmStatic
         @SidedProxy(clientSide = CLIENT, serverSide = SERVER)

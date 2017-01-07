@@ -4,37 +4,37 @@ import com.teamwizardry.librarianlib.common.network.PacketBase
 import com.teamwizardry.librarianlib.common.util.ifCap
 import com.teamwizardry.librarianlib.common.util.saving.Save
 import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.util.math.Vec3d
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext
-import thecodewarrior.hooked.common.capability.EnumHookStatus
-import thecodewarrior.hooked.common.capability.HookInfo
 import thecodewarrior.hooked.common.capability.HooksCap
+import java.util.*
 
 /**
  * Created by TheCodeWarrior
  */
-class PacketFireHook : PacketBase() {
+class PacketUpdateWeights : PacketBase() {
 
     @Save
-    var pos: Vec3d = Vec3d.ZERO
+    var vertical: Double = 0.0
+
     @Save
-    var normal: Vec3d = Vec3d.ZERO
+    var weights: HashMap<UUID, Double>? = null
 
     override fun handle(ctx: MessageContext) {
         doTheThing(ctx.serverHandler.playerEntity)
         ctx.serverHandler.playerEntity.ifCap(HooksCap.CAPABILITY, null) {
-            update(ctx.serverHandler.playerEntity)
+            updatePos()
         }
-//        HookLog.info("%s @ %s", normal.toString(), pos.toString())
     }
 
     fun doTheThing(player: EntityPlayer) {
+        val w = weights ?: return
+
         player.ifCap(HooksCap.CAPABILITY, null) {
-            val type = hookType ?: return@ifCap
-            if(hooks.count { it.status.active } <= type.count + 1) {
-                if(hooks.count { it.status == EnumHookStatus.PLANTED } == 1)
-                    hooks.find { it.status == EnumHookStatus.PLANTED }?.weight = 1.0
-                hooks.addLast(HookInfo(pos, normal, EnumHookStatus.EXTENDING, null, null))
+            verticalHangDistance = vertical
+            hooks.forEach {
+                if(it.uuid in w) {
+                    it.weight = w[it.uuid] ?: it.weight
+                }
             }
         }
     }

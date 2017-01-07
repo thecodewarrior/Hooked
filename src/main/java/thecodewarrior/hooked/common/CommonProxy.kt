@@ -7,10 +7,8 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 import net.minecraftforge.fml.relauncher.Side
 import thecodewarrior.hooked.common.items.ModItems
-import thecodewarrior.hooked.common.network.PacketFireHook
-import thecodewarrior.hooked.common.network.PacketHookCapSync
-import thecodewarrior.hooked.common.network.PacketRetractHook
-import thecodewarrior.hooked.common.network.PacketRetractHooks
+import thecodewarrior.hooked.common.items.ModRecipes
+import thecodewarrior.hooked.common.network.*
 
 /**
  * Created by TheCodeWarrior
@@ -23,6 +21,7 @@ open class CommonProxy {
     }
 
     open fun init(e: FMLInitializationEvent) {
+        ModRecipes
     }
 
     open fun post(e: FMLPostInitializationEvent) {
@@ -32,6 +31,8 @@ open class CommonProxy {
         PacketHandler.register(PacketFireHook::class.java, Side.SERVER)
         PacketHandler.register(PacketRetractHook::class.java, Side.SERVER)
         PacketHandler.register(PacketRetractHooks::class.java, Side.SERVER)
+        PacketHandler.register(PacketUpdateWeights::class.java, Side.SERVER)
+
         PacketHandler.register(PacketHookCapSync::class.java, Side.CLIENT)
     }
 

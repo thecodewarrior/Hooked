@@ -1,15 +1,18 @@
 package thecodewarrior.hooked.common
 
+import com.teamwizardry.librarianlib.common.network.PacketHandler
 import com.teamwizardry.librarianlib.common.util.*
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.entity.player.EntityPlayerMP
 import net.minecraft.util.EnumParticleTypes
 import net.minecraft.util.ResourceLocation
 import net.minecraft.util.math.RayTraceResult
 import net.minecraft.util.math.Vec3d
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.AttachCapabilitiesEvent
+import net.minecraftforge.event.entity.EntityJoinWorldEvent
 import net.minecraftforge.event.entity.living.LivingEvent
 import net.minecraftforge.event.entity.player.PlayerEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
@@ -17,6 +20,7 @@ import thecodewarrior.hooked.HookedMod
 import thecodewarrior.hooked.common.capability.EnumHookStatus
 import thecodewarrior.hooked.common.capability.HooksCap
 import thecodewarrior.hooked.common.capability.HooksCapProvider
+import thecodewarrior.hooked.common.network.PacketHookCapSync
 import java.util.concurrent.ThreadLocalRandom
 
 /**
@@ -33,6 +37,24 @@ object HookTickHandler {
     fun playerAttach(e: AttachCapabilitiesEvent.Entity) {
         if (e.entity is EntityPlayer) {
             e.addCapability(rl, HooksCapProvider())
+        }
+    }
+
+    @SubscribeEvent
+    fun track(e: PlayerEvent.StartTracking) {
+        if(e.entityPlayer.world.isRemote)
+            return
+        val target = e.target
+        target.ifCap(HooksCap.CAPABILITY, null) {
+            PacketHandler.NETWORK.sendTo(PacketHookCapSync(target), e.entityPlayer as EntityPlayerMP)
+        }
+    }
+
+    @SubscribeEvent
+    fun join(e: EntityJoinWorldEvent) {
+        val entity = e.entity
+        if(entity is EntityPlayer && !entity.world.isRemote) {
+            PacketHandler.NETWORK.sendTo(PacketHookCapSync(entity), entity as EntityPlayerMP)
         }
     }
 
@@ -58,7 +80,12 @@ object HookTickHandler {
         val type = cap.hookType
         if (type == null) {
             cap.hooks.clear()
+            cap.verticalHangDistance = 0.0
+            cap.centerPos = null
             return
+        }
+        if(type != HookType.RED || cap.hooks.size != 1) {
+            cap.verticalHangDistance = 0.0
         }
 
         val waist = getWaistPos(e.entity)
@@ -88,7 +115,7 @@ object HookTickHandler {
                 }
             }
 
-            if (type == HookType.ENDER) {
+            if (e.entity.world.isRemote && type == HookType.ENDER) {
                 val len = (hook.pos - waist).lengthVector()
                 val normal = (hook.pos - waist) / len
                 val negNormal = -normal
@@ -137,6 +164,9 @@ object HookTickHandler {
 
         if(updatePos) cap.updatePos()
         if(update) cap.update(e.entity)
+
+        if(cap.hookType == HookType.RED && cap.hooks.count { it.status == EnumHookStatus.PLANTED } > 0)
+            cap.updateRedMovement(e.entity)
 
         var shouldSet = false
         cap.centerPos?.subtract(waist)?.let {
@@ -190,7 +220,7 @@ object HookTickHandler {
                 }
             }
             e.entity.fallDistance = 0f
-            e.entity.onGround = true
+//            e.entity.onGround = true
             e.entityLiving.jumpTicks = 10
             HookedMod.PROXY.setAutoJump(e.entityLiving, false)
         }

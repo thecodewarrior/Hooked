@@ -14,7 +14,10 @@ import thecodewarrior.hooked.common.capability.HooksCap
 /**
  * Created by TheCodeWarrior
  */
-class ItemHook : ItemMod("hook", *HookType.values().map { it.toString().toLowerCase() }.toTypedArray()), IBauble {
+class ItemHook : ItemMod("hook", *HookType.values().map { "hook_" + it.toString().toLowerCase() }.toTypedArray()), IBauble {
+    init {
+        setMaxStackSize(1)
+    }
     override fun getBaubleType(p0: ItemStack?): BaubleType {
         return BaubleType.TRINKET
     }
@@ -22,12 +25,14 @@ class ItemHook : ItemMod("hook", *HookType.values().map { it.toString().toLowerC
     override fun onUnequipped(itemstack: ItemStack, player: EntityLivingBase?) {
         player?.ifCap(HooksCap.CAPABILITY, null) {
             hookType = null
+            update(player)
         }
     }
 
     override fun onEquipped(itemstack: ItemStack, player: EntityLivingBase?) {
         player?.ifCap(HooksCap.CAPABILITY, null) {
             hookType = HookType.values()[itemstack.itemDamage % HookType.values().size]
+            update(player)
         }
     }
 

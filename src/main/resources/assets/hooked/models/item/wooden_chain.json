@@ -1,6 +1,6 @@
 {
 	"parent": "item/generated",
 	"textures": {
-		"layer0": "hooks:items/ender"
+		"layer0": "hooked:items/wooden_chain"
 	}
 }
