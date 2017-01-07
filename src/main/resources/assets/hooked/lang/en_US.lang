@@ -1,0 +1,27 @@
+item.hooked:hook_wood.name=Wooden Hook
+item.hooked:hook_iron.name=Iron Hook
+item.hooked:hook_diamond.name=Diamond Hook
+item.hooked:hook_red.name=Red Hook
+item.hooked:hook_ender.name=Ender Hook
+
+item.hooked:plant_fiber.name=Plant Fiber
+item.hooked:rope.name=Rope
+item.hooked:iron_chain_link.name=Iron Chain Link
+item.hooked:iron_chain.name=Iron Chain
+
+tile.hooked:balloon_white.name=White Balloon
+tile.hooked:balloon_orange.name=Orange Balloon
+tile.hooked:balloon_magenta.name=Magenta Balloon
+tile.hooked:balloon_lightBlue.name=Light Blue Balloon
+tile.hooked:balloon_yellow.name=Yellow Balloon
+tile.hooked:balloon_lime.name=Lime Balloon
+tile.hooked:balloon_pink.name=Pink Balloon
+tile.hooked:balloon_gray.name=Gray Balloon
+tile.hooked:balloon_silver.name=Light Gray Balloon
+tile.hooked:balloon_cyan.name=Cyan Balloon
+tile.hooked:balloon_purple.name=Purple Balloon
+tile.hooked:balloon_blue.name=Blue Balloon
+tile.hooked:balloon_brown.name=Brown Balloon
+tile.hooked:balloon_green.name=Green Balloon
+tile.hooked:balloon_red.name=Red Balloon
+tile.hooked:balloon_black.name=Black Balloon
