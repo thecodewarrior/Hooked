@@ -8,6 +8,7 @@ import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.entity.player.EntityPlayerMP
 import net.minecraft.util.EnumParticleTypes
 import net.minecraft.util.ResourceLocation
+import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.RayTraceResult
 import net.minecraft.util.math.Vec3d
 import net.minecraftforge.common.MinecraftForge
@@ -71,11 +72,13 @@ object HookTickHandler {
 
     @SubscribeEvent
     fun entityTick(e: LivingEvent.LivingUpdateEvent) {
+        val entity = e.entity as? EntityPlayer ?: return
+
         HookedMod.PROXY.setAutoJump(e.entityLiving, true)
-        if (!e.entity.hasCapability(HooksCap.CAPABILITY, null)) {
+        if (!entity.hasCapability(HooksCap.CAPABILITY, null)) {
             return
         }
-        val cap = e.entity.getCapability(HooksCap.CAPABILITY, null)!!
+        val cap = entity.getCapability(HooksCap.CAPABILITY, null)!!
 
         val type = cap.hookType
         if (type == null) {
@@ -88,7 +91,7 @@ object HookTickHandler {
             cap.verticalHangDistance = 0.0
         }
 
-        val waist = getWaistPos(e.entity)
+        val waist = getWaistPos(entity)
         val spacing = 0.1
         val rnd = { ThreadLocalRandom.current().nextDouble(-0.05, 0.05) }
         var update = false
@@ -101,7 +104,7 @@ object HookTickHandler {
             }
 
             if (hook.status == EnumHookStatus.EXTENDING) {
-                val trace = RaycastUtils.raycast(e.entity.world, hook.pos, hook.pos + hook.direction * (Math.min(type.range - (hook.pos - waist).lengthVector(), type.speed + type.hookLength)))
+                val trace = RaycastUtils.raycast(entity.world, hook.pos, hook.pos + hook.direction * (Math.min(type.range - (hook.pos - waist).lengthVector(), type.speed + type.hookLength)))
                 if (trace == null || trace.typeOfHit == RayTraceResult.Type.MISS)
                     hook.pos += hook.direction * type.speed
                 else {
@@ -115,7 +118,7 @@ object HookTickHandler {
                 }
             }
 
-            if (e.entity.world.isRemote && type == HookType.ENDER) {
+            if (entity.world.isRemote && type == HookType.ENDER) {
                 val len = (hook.pos - waist).lengthVector()
                 val normal = (hook.pos - waist) / len
                 val negNormal = -normal
@@ -126,7 +129,7 @@ object HookTickHandler {
                     if (ThreadLocalRandom.current().nextDouble() < 0.5) {
                         val pos = waist + (normal * v)
                         val vel = if (ThreadLocalRandom.current().nextBoolean()) negNormal else normal
-                        e.entity.world.spawnParticle(EnumParticleTypes.PORTAL, true,
+                        entity.world.spawnParticle(EnumParticleTypes.PORTAL, true,
                                 pos.xCoord + rnd(), pos.yCoord + rnd() + 0.1, pos.zCoord + rnd(),
                                 vel.xCoord + rnd(), vel.yCoord + rnd() - 0.65, vel.zCoord + rnd())
                     }
@@ -140,17 +143,20 @@ object HookTickHandler {
             }
 
             if (hook.block != null) {
-                if (hook.status == EnumHookStatus.PLANTED && e.entity.world.isAirBlock(hook.block)) {
+                if (hook.status == EnumHookStatus.PLANTED && entity.world.isAirBlock(hook.block)) {
                     hook.status = EnumHookStatus.TORETRACT
                 }
             }
 
             if (hook.status == EnumHookStatus.TORETRACT) {
+                hook.block = BlockPos(hook.pos)
                 hook.pos = waist
                 hook.status = EnumHookStatus.RETRACTING
                 update = true
             }
         }
+
+        cap.hooks.forEach { it.tick(entity) }
 
         if (cap.hooks.removeAll { it.status == EnumHookStatus.DEAD }) {
             update = true
@@ -163,10 +169,10 @@ object HookTickHandler {
         }
 
         if(updatePos) cap.updatePos()
-        if(update) cap.update(e.entity)
+        if(update) cap.update(entity)
 
         if(cap.hookType == HookType.RED && cap.hooks.count { it.status == EnumHookStatus.PLANTED } > 0)
-            cap.updateRedMovement(e.entity)
+            cap.updateRedMovement(entity)
 
         var shouldSet = false
         cap.centerPos?.subtract(waist)?.let {
@@ -180,9 +186,9 @@ object HookTickHandler {
         }?.let {
             val forceCoeff = 0.5
             if(shouldSet) {
-                e.entity.motionX = it.xCoord
-                e.entity.motionY = it.yCoord
-                e.entity.motionZ = it.zCoord
+                entity.motionX = it.xCoord
+                entity.motionY = it.yCoord
+                entity.motionZ = it.zCoord
             } else {
                 cap.hooks.forEach {
                     if(it.status != EnumHookStatus.PLANTED)
@@ -192,36 +198,36 @@ object HookTickHandler {
                     val projection = (vec(e.entity.motionX, e.entity.motionY, e.entity.motionZ) dot pullVec) / pullVec.lengthVector()
                     if (projection < 0) {
                         val add = pullVec * (projection / pullVec.lengthVector())
-                        e.entity.motionX -= add.xCoord
-                        e.entity.motionY -= add.yCoord
-                        e.entity.motionZ -= add.zCoord
+                        entity.motionX -= add.xCoord
+                        entity.motionY -= add.yCoord
+                        entity.motionZ -= add.zCoord
                     }
                 }
                 if (Math.abs(e.entity.motionX) < Math.abs(it.xCoord)) {
                     val adjusted = e.entity.motionX + it.xCoord * forceCoeff
                     if (Math.abs(adjusted) > Math.abs(it.xCoord))
-                        e.entity.motionX = it.xCoord
+                        entity.motionX = it.xCoord
                     else
-                        e.entity.motionX = adjusted
+                        entity.motionX = adjusted
                 }
                 if (Math.abs(e.entity.motionY) < Math.abs(it.yCoord)){
                     val adjusted = e.entity.motionY + it.yCoord * forceCoeff
                     if (Math.abs(adjusted) > Math.abs(it.yCoord))
-                        e.entity.motionY = it.yCoord
+                        entity.motionY = it.yCoord
                     else
-                        e.entity.motionY = adjusted
+                        entity.motionY = adjusted
                 }
                 if (Math.abs(e.entity.motionZ) < Math.abs(it.zCoord)) {
                     val adjusted = e.entity.motionZ + it.zCoord * forceCoeff
                     if (Math.abs(adjusted) > Math.abs(it.zCoord))
-                        e.entity.motionZ = it.zCoord
+                        entity.motionZ = it.zCoord
                     else
-                        e.entity.motionZ = adjusted
+                        entity.motionZ = adjusted
                 }
             }
-            e.entity.fallDistance = 0f
-//            e.entity.onGround = true
-            e.entityLiving.jumpTicks = 10
+            entity.fallDistance = 0f
+//            entity.onGround = true
+            entity.jumpTicks = 10
             HookedMod.PROXY.setAutoJump(e.entityLiving, false)
         }
 

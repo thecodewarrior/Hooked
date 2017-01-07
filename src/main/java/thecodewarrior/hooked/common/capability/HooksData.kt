@@ -10,6 +10,8 @@ import com.teamwizardry.librarianlib.common.util.saving.SaveInPlace
 import net.minecraft.client.Minecraft
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.item.EnumDyeColor
+import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTBase
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
@@ -24,6 +26,8 @@ import net.minecraftforge.common.util.INBTSerializable
 import net.minecraftforge.fml.common.network.NetworkRegistry
 import thecodewarrior.hooked.common.HookTickHandler
 import thecodewarrior.hooked.common.HookType
+import thecodewarrior.hooked.common.block.BlockBalloon
+import thecodewarrior.hooked.common.block.ModBlocks
 import thecodewarrior.hooked.common.network.PacketHookCapSync
 import thecodewarrior.hooked.common.network.PacketUpdateWeights
 import thecodewarrior.hooked.common.util.Barycentric
@@ -34,7 +38,52 @@ import java.util.*
  */
 enum class EnumHookStatus(val active: Boolean) { EXTENDING(true), PLANTED(true), TORETRACT(false), RETRACTING(false), DEAD(false); }
 
-@Savable data class HookInfo(var pos: Vec3d, var direction: Vec3d, var status: EnumHookStatus, var block: BlockPos?, var side: EnumFacing?, var weight: Double = 1.0, var uuid: UUID = UUID.randomUUID()) {
+@Savable data class HookInfo(var pos: Vec3d, var direction: Vec3d, var status: EnumHookStatus, var block: BlockPos?, var side: EnumFacing?, var balloonColor: EnumDyeColor? = null, var weight: Double = 1.0, var uuid: UUID = UUID.randomUUID()) {
+
+    fun tick(e: EntityPlayer) {
+
+        if (e.world.isRemote) return
+
+        val color = balloonColor
+        if (color != null && status == EnumHookStatus.RETRACTING) {
+            var found = false
+            if (e.world.isAirBlock(block) && e.canPlayerEdit(block, null, null)) {
+                for (i in 0..e.inventory.sizeInventory - 1) {
+                    val stack = e.inventory.getStackInSlot(i)
+                    if (stack?.item == ModBlocks.balloon.itemForm && stack?.metadata == color.metadata) {
+                        if (!e.capabilities.isCreativeMode)
+                            stack!!.stackSize--
+                        found = true
+                        break
+                    }
+                }
+                if (found)
+                    e.world.setBlockState(block, ModBlocks.balloon.defaultState.withProperty(BlockBalloon.COLOR, color))
+            }
+            balloonColor = null
+        }
+        if (color != null && status == EnumHookStatus.PLANTED) {
+            if (e.world.getBlockState(block).block != ModBlocks.balloon) {
+                val p = block!!.offset(side)
+                if (e.world.isAirBlock(p) && e.canPlayerEdit(p, side, ItemStack(ModBlocks.balloon.itemForm, 1, color.metadata))) {
+                    var found = false
+                    for (i in 0..e.inventory.sizeInventory - 1) {
+                        val stack = e.inventory.getStackInSlot(i)
+                        if (stack?.item == ModBlocks.balloon.itemForm && stack?.metadata == color.metadata) {
+                            if (!e.capabilities.isCreativeMode)
+                                stack!!.stackSize--
+                            found = true
+                            break
+                        }
+                    }
+                    if (found)
+                        e.world.setBlockState(p, ModBlocks.balloon.defaultState.withProperty(BlockBalloon.COLOR, color))
+                }
+            }
+            balloonColor = null
+        }
+    }
+
     constructor() : this(Vec3d.ZERO, Vec3d.ZERO, EnumHookStatus.PLANTED, null, null)
 }
 
@@ -67,7 +116,7 @@ class HooksCap {
     }
 
     fun updateRedMovement(player: Entity) {
-        if(hooks.count { it.status == EnumHookStatus.PLANTED } != 1)
+        if (hooks.count { it.status == EnumHookStatus.PLANTED } != 1)
             verticalHangDistance = 0.0
         if (player !is EntityPlayer)
             return
@@ -86,7 +135,7 @@ class HooksCap {
         var strafe = player.moveStrafing
         var forward = player.moveForward
 
-        if(player.isSneaking) {
+        if (player.isSneaking) {
             strafe /= 0.3f
             forward /= 0.3f
         }
@@ -117,7 +166,7 @@ class HooksCap {
             val closest = closestPointOnLine(center, hook0.pos, hook1.pos).second
 
             hook1.weight = (closest - hook0.pos).lengthVector() / (hook1.pos - hook0.pos).lengthVector()
-            hook0.weight = 1-hook1.weight
+            hook0.weight = 1 - hook1.weight
 
             hook0.weight *= 2
             hook1.weight *= 2
@@ -161,10 +210,10 @@ class HooksCap {
             return 0.0 to p
 
         return listOf(
-                (a-p).lengthSquared() to a,
-                (b-p).lengthSquared() to b,
-                (c-p).lengthSquared() to c,
-                (d-p).lengthSquared() to d,
+                (a - p).lengthSquared() to a,
+                (b - p).lengthSquared() to b,
+                (c - p).lengthSquared() to c,
+                (d - p).lengthSquared() to d,
 
                 closestPointOnLineRay(p, a, b),
                 closestPointOnLineRay(p, a, c),
@@ -220,7 +269,7 @@ class HooksCap {
 
     fun closestPointOnTrianglePlane(p: Vec3d, a: Vec3d, b: Vec3d, c: Vec3d): Pair<Double, Vec3d> {
         val proj = projectToTri(p, a, b, c)
-        if(insideTri(proj, a, b, c))
+        if (insideTri(proj, a, b, c))
             return (p - proj).lengthSquared() to proj
         else
             return Double.POSITIVE_INFINITY to proj
@@ -238,8 +287,8 @@ class HooksCap {
     }
 
     fun sameSide(p1: Vec3d, p2: Vec3d, a: Vec3d, b: Vec3d): Boolean {
-        val cp1 = (b-a) cross (p1-a)
-        val cp2 = (b-a) cross (p2-a)
+        val cp1 = (b - a) cross (p1 - a)
+        val cp2 = (b - a) cross (p2 - a)
         return cp1 dot cp2 >= 0
     }
 
@@ -251,9 +300,9 @@ class HooksCap {
     }
 
     fun sameSide(v1: Vec3d, v2: Vec3d, v3: Vec3d, v4: Vec3d, p: Vec3d): Boolean {
-        val normal = (v2-v1) cross (v3-v1)
-        val dotV4 = normal dot (v4-v1)
-        val dotP = normal dot (p-v1)
+        val normal = (v2 - v1) cross (v3 - v1)
+        val dotV4 = normal dot (v4 - v1)
+        val dotP = normal dot (p - v1)
         return (dotV4 < 0 && dotP < 0) || (dotV4 > 0 && dotP > 0)
     }
 

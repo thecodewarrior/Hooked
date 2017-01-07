@@ -1,0 +1,52 @@
+{
+	"variants": {
+		"color=white": {
+			"model": "hooked:balloon"
+		},
+		"color=orange": {
+			"model": "hooked:balloon"
+		},
+		"color=magenta": {
+			"model": "hooked:balloon"
+		},
+		"color=light_blue": {
+			"model": "hooked:balloon"
+		},
+		"color=yellow": {
+			"model": "hooked:balloon"
+		},
+		"color=lime": {
+			"model": "hooked:balloon"
+		},
+		"color=pink": {
+			"model": "hooked:balloon"
+		},
+		"color=gray": {
+			"model": "hooked:balloon"
+		},
+		"color=silver": {
+			"model": "hooked:balloon"
+		},
+		"color=cyan": {
+			"model": "hooked:balloon"
+		},
+		"color=purple": {
+			"model": "hooked:balloon"
+		},
+		"color=blue": {
+			"model": "hooked:balloon"
+		},
+		"color=brown": {
+			"model": "hooked:balloon"
+		},
+		"color=green": {
+			"model": "hooked:balloon"
+		},
+		"color=red": {
+			"model": "hooked:balloon"
+		},
+		"color=black": {
+			"model": "hooked:balloon"
+		}
+	}
+}

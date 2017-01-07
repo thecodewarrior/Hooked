@@ -6,6 +6,7 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 import net.minecraftforge.fml.relauncher.Side
+import thecodewarrior.hooked.common.block.ModBlocks
 import thecodewarrior.hooked.common.items.ModItems
 import thecodewarrior.hooked.common.items.ModRecipes
 import thecodewarrior.hooked.common.network.*
@@ -15,6 +16,7 @@ import thecodewarrior.hooked.common.network.*
  */
 open class CommonProxy {
     open fun pre(e: FMLPreInitializationEvent) {
+        ModBlocks
         ModItems
         network()
         HookTickHandler

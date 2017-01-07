@@ -4,6 +4,7 @@ import com.teamwizardry.librarianlib.common.util.*
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.Tessellator
+import net.minecraft.client.renderer.VertexBuffer
 import net.minecraft.client.renderer.block.model.BakedQuad
 import net.minecraft.client.renderer.block.model.IBakedModel
 import net.minecraft.client.renderer.texture.TextureMap
@@ -21,7 +22,6 @@ import thecodewarrior.hooked.common.HookType
 import thecodewarrior.hooked.common.capability.HookInfo
 
 
-
 /**
  * Created by TheCodeWarrior
  */
@@ -34,20 +34,19 @@ class HookRenderer(val type: HookType) {
     private var lastModel: IBakedModel? = null
     private var lastQuads: List<BakedQuad>? = null
     val quads: List<BakedQuad>
+        get() {
+            val model = endHandle.get()
+            if (lastModel == model && lastQuads != null) {
+                return lastQuads!!
+            }
+            val quads = mutableListOf<BakedQuad>()
+            quads.addAll(model.getQuads(Blocks.AIR.defaultState, null, 123456789))
+            EnumFacing.values().forEach { quads.addAll(model.getQuads(Blocks.AIR.defaultState, it, 123456789)) }
 
-    get() {
-        val model = endHandle.get()
-        if(lastModel == model && lastQuads != null) {
-            return lastQuads!!
+            lastModel = model
+            lastQuads = quads
+            return quads
         }
-        val quads = mutableListOf<BakedQuad>()
-        quads.addAll(model.getQuads(Blocks.AIR.defaultState, null, 123456789))
-        EnumFacing.values().forEach { quads.addAll(model.getQuads(Blocks.AIR.defaultState, it, 123456789)) }
-
-        lastModel = model
-        lastQuads = quads
-        return quads
-    }
 
     fun signAngle(a: Vec3d, b: Vec3d, n: Vec3d?): Float {
         val cross = a cross b
@@ -55,7 +54,7 @@ class HookRenderer(val type: HookType) {
         val c = a dot b
         var angle = MathHelper.atan2(s, c)
 
-        if(n != null) {
+        if (n != null) {
             if (n dot cross < 0) { // Or > 0
                 angle = -angle
             }
@@ -76,16 +75,14 @@ class HookRenderer(val type: HookType) {
         GlStateManager.rotate(rX, 1f, 0f, 0f)
         GlStateManager.translate(-0.5, 0.0, -0.5)
 
+        val hookLightPos = BlockPos(hook.pos + hook.direction * (type.hookLength / 2))
         Minecraft.getMinecraft().renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE)
-        Minecraft.getMinecraft().blockRendererDispatcher.blockModelRenderer.renderModelBrightnessColor(endHandle.get(), 1f, 1f,1f,1f)
+        Minecraft.getMinecraft().blockRendererDispatcher.blockModelRenderer.renderModelBrightnessColor(endHandle.get(),
+                (world.getLightBrightness(hookLightPos) * 2f).clamp(0f, 1f), 1f, 1f, 1f)
 
         GlStateManager.popMatrix()
 
-
         GlStateManager.pushMatrix()
-
-        val tess = Tessellator.getInstance()
-        val vb = tess.buffer
 
         val distance = (hook.pos - waist).lengthVector()
         val normal = (hook.pos - waist) / distance
@@ -100,40 +97,52 @@ class HookRenderer(val type: HookType) {
 
         val radius = 0.5
 
-
-        val maxV = distance/(radius*2)
-
         Minecraft.getMinecraft().renderEngine.bindTexture(ropeTextureVertical)
-        vb.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX)
-        // @formatter:off
-        vb.pos( radius, 0.0,      0.0).tex(0.0, maxV).endVertex()
-        vb.pos(-radius, 0.0,      0.0).tex(1.0, maxV).endVertex()
-        vb.pos(-radius, distance, 0.0).tex(1.0, 0.0).endVertex()
-        vb.pos( radius, distance, 0.0).tex(0.0, 0.0).endVertex()
-
-        vb.pos( radius, distance, 0.0).tex(0.0, 0.0).endVertex()
-        vb.pos(-radius, distance, 0.0).tex(1.0, 0.0).endVertex()
-        vb.pos(-radius, 0.0,      0.0).tex(1.0, maxV).endVertex()
-        vb.pos( radius, 0.0,      0.0).tex(0.0, maxV).endVertex()
-        // @formatter:on
-        tess.draw()
-
+        chain(distance, waist, normal, vec(radius, 0, 0), world)
         Minecraft.getMinecraft().renderEngine.bindTexture(ropeTextureHorizontal)
-        vb.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX)
-        // @formatter:off
-        vb.pos(0.0, 0.0,       radius).tex(0.0, maxV).endVertex()
-        vb.pos(0.0, 0.0,      -radius).tex(1.0, maxV).endVertex()
-        vb.pos(0.0, distance, -radius).tex(1.0, 0.0).endVertex()
-        vb.pos(0.0, distance,  radius).tex(0.0, 0.0).endVertex()
-
-        vb.pos(0.0, distance,  radius).tex(0.0, 0.0).endVertex()
-        vb.pos(0.0, distance, -radius).tex(1.0, 0.0).endVertex()
-        vb.pos(0.0, 0.0,      -radius).tex(1.0, maxV).endVertex()
-        vb.pos(0.0, 0.0,       radius).tex(0.0, maxV).endVertex()
-        // @formatter:on
-        tess.draw()
+        chain(distance, waist, normal, vec(0, 0, radius), world)
 
         GlStateManager.popMatrix()
+    }
+
+    fun chain(distance: Double, waist: Vec3d, normal: Vec3d, offset: Vec3d, world: World) {
+        val tess = Tessellator.getInstance()
+        val vb = tess.buffer
+
+        vb.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR)
+
+        var len = distance
+        while (len > 0) {
+            if (len > 1) {
+                len -= 1.0 // decrement before because we are rendering backward, hook to waist instead of waist to hook
+                val blockPos = BlockPos(waist + normal * (len + 0.5))
+                chainQuad(blockPos, len, offset, 1.0, world, vb)
+            } else {
+                chainQuad(BlockPos(waist + normal * (len / 2)), 0.0, offset, len, world, vb)
+
+                len = 0.0
+            }
+        }
+        tess.draw()
+    }
+
+    fun chainQuad(blockpos: BlockPos, distance: Double, offset: Vec3d, length: Double, world: World, vb: VertexBuffer) {
+        val b = (world.getLightBrightness(blockpos) * 2).clamp(0f, 1f)
+
+        val beg = distance
+        val end = distance+length
+        // @formatter:off
+        vb.pos( offset.xCoord, beg,  offset.zCoord).tex(0.0, length).color(b, b, b, 1f).endVertex()
+        vb.pos(-offset.xCoord, beg, -offset.zCoord).tex(1.0, length).color(b, b, b, 1f).endVertex()
+        vb.pos(-offset.xCoord, end, -offset.zCoord).tex(1.0, 0.0   ).color(b, b, b, 1f).endVertex()
+        vb.pos( offset.xCoord, end,  offset.zCoord).tex(0.0, 0.0   ).color(b, b, b, 1f).endVertex()
+
+
+        vb.pos( offset.xCoord, end,  offset.zCoord).tex(0.0, 0.0   ).color(b, b, b, 1f).endVertex()
+        vb.pos(-offset.xCoord, end, -offset.zCoord).tex(1.0, 0.0   ).color(b, b, b, 1f).endVertex()
+        vb.pos(-offset.xCoord, beg, -offset.zCoord).tex(1.0, length).color(b, b, b, 1f).endVertex()
+        vb.pos( offset.xCoord, beg,  offset.zCoord).tex(0.0, length).color(b, b, b, 1f).endVertex()
+        // @formatter:on
     }
 
     fun renderModel(quads: List<BakedQuad>, pos: Vec3d, world: World) {
@@ -147,7 +156,7 @@ class HookRenderer(val type: HookType) {
             vb.addVertexData(it.vertexData)
             val normal = it.face.directionVec
             vb.putNormal(normal.x.toFloat(), normal.y.toFloat(), normal.z.toFloat())
-            vb.putBrightness4(b,b,b,b)
+            vb.putBrightness4(b, b, b, b)
         }
         tess.draw()
     }
