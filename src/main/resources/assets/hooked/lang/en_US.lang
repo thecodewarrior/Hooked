@@ -25,3 +25,5 @@ tile.hooked:balloon_brown.name=Brown Balloon
 tile.hooked:balloon_green.name=Green Balloon
 tile.hooked:balloon_red.name=Red Balloon
 tile.hooked:balloon_black.name=Black Balloon
+
+key.hooked.fire=Fire Hook

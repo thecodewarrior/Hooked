@@ -1,0 +1,6 @@
+{
+	"parent": "hooked:block/balloon",
+	"textures": {
+		"inside": "hooked:blocks/balloon_red"
+	}
+}

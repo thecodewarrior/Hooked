@@ -15,6 +15,7 @@ import net.minecraftforge.fml.common.registry.GameRegistry
 import net.minecraftforge.oredict.OreDictionary
 import net.minecraftforge.oredict.ShapedOreRecipe
 import thecodewarrior.hooked.common.HookType
+import thecodewarrior.hooked.common.block.ModBlocks
 import java.util.*
 import java.util.concurrent.ThreadLocalRandom
 
@@ -58,6 +59,7 @@ object ModRecipes {
                 'L', iron_chain_link))
         //endregion Microcrafting
 
+        //region hooks
         GameRegistry.addRecipe(ShapedOreRecipe(wood_hook,
                 "SSP",
                 " LS",
@@ -101,6 +103,21 @@ object ModRecipes {
                 'P', Items.ENDER_PEARL,
                 'E', Items.ENDER_EYE,
                 'D', Items.BLAZE_POWDER))
+        //endregion hooks
+
+        //region balloons
+
+        for(i in 0..15) {
+            GameRegistry.addRecipe(ShapedOreRecipe(ItemStack(ModBlocks.balloon, 1, i),
+                    " I ",
+                    "IWI",
+                    " S ",
+                    'I', Blocks.IRON_BARS,
+                    'W', ItemStack(Blocks.WOOL, 1, i),
+                    'S', "string"))
+        }
+
+        //endregion balloons
     }
 
 }

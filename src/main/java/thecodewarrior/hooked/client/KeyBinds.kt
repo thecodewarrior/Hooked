@@ -1,9 +1,7 @@
 package thecodewarrior.hooked.client
 
 import com.teamwizardry.librarianlib.common.network.PacketHandler
-import com.teamwizardry.librarianlib.common.util.dot
-import com.teamwizardry.librarianlib.common.util.ifCap
-import com.teamwizardry.librarianlib.common.util.minus
+import com.teamwizardry.librarianlib.common.util.*
 import net.minecraft.client.Minecraft
 import net.minecraft.client.settings.KeyBinding
 import net.minecraftforge.client.model.animation.Animation
@@ -24,7 +22,7 @@ import thecodewarrior.hooked.common.network.PacketRetractHooks
  * Created by TheCodeWarrior
  */
 object KeyBinds {
-    val keyFire = KeyBinding("key.hooked.fire", KeyConflictContext.IN_GAME, Keyboard.KEY_C, "key.category.hooks")
+    val keyFire = KeyBinding("key.hooked.fire", KeyConflictContext.IN_GAME, Keyboard.KEY_C, "key.category.movement")
     val minCos = Math.cos(Math.toRadians(10.0))
 
     var jumpTimer = 0
@@ -47,20 +45,28 @@ object KeyBinds {
 
         if (keyFire.isPressed) {
             if (player.isSneaking) {
-                val look = player.getLook(Animation.getPartialTickTime())
-                val eye = player.getPositionEyes(Animation.getPartialTickTime())
-                val found = player.ifCap(HooksCap.CAPABILITY, null) {
-                    hooks.maxBy { (it.pos - eye).normalize() dot look }
+                player.ifCap(HooksCap.CAPABILITY, null) {
+                    val look = player.getLook(Animation.getPartialTickTime())
+                    val eye = player.getPositionEyes(Animation.getPartialTickTime())
+                    val found = hooks.maxBy { Math.max(
+                            (it.pos - eye).normalize() dot look ,
+                            ((it.pos + it.direction * hookType!!.hookLength) - eye).normalize() dot look
+                    )}
                     // max because cos(theta) increases as theta approaches 0
                     // the dot of two normalized vectors is cos(theta) where theta is the angle between them
                     // and instead of a bunch of inverse cosines, I check the cosine itself.
+
+                    if (found != null && Math.max(
+                            (found.pos - eye).normalize() dot look ,
+                            ((found.pos + found.direction * hookType!!.hookLength) - eye).normalize() dot look
+                    ) > minCos) {
+                        PacketHandler.NETWORK.sendToServer(PacketRetractHook().apply {
+                            uuid = found.uuid
+                            doTheThing(player)
+                        })
+                    }
                 }
-                if (found != null && (found.pos - eye).normalize() dot look > minCos) {
-                    PacketHandler.NETWORK.sendToServer(PacketRetractHook().apply {
-                        uuid = found.uuid
-                        doTheThing(player)
-                    })
-                }
+
             } else {
                 PacketHandler.NETWORK.sendToServer(PacketFireHook().apply {
                     pos = player.getPositionEyes(1f)

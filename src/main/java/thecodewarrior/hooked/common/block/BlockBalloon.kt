@@ -6,6 +6,7 @@ import net.minecraft.block.properties.PropertyEnum
 import net.minecraft.block.state.BlockStateContainer
 import net.minecraft.block.state.IBlockState
 import net.minecraft.item.EnumDyeColor
+import net.minecraft.util.BlockRenderLayer
 
 /**
  * Created by TheCodeWarrior
@@ -26,6 +27,10 @@ class BlockBalloon : BlockMod("balloon", Material.CLOTH, *EnumDyeColor.values().
 
     override fun getMetaFromState(state: IBlockState): Int {
         return state.getValue(COLOR).ordinal
+    }
+
+    override fun getBlockLayer(): BlockRenderLayer {
+        return BlockRenderLayer.CUTOUT
     }
 
     companion object {
