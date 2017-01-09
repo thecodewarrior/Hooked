@@ -11,7 +11,6 @@ import net.minecraft.client.Minecraft
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.EnumDyeColor
-import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTBase
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
@@ -50,9 +49,11 @@ enum class EnumHookStatus(val active: Boolean) { EXTENDING(true), PLANTED(true),
             if (e.world.isAirBlock(block) && e.canPlayerEdit(block, null, null)) {
                 for (i in 0..e.inventory.sizeInventory - 1) {
                     val stack = e.inventory.getStackInSlot(i)
-                    if (stack?.item == ModBlocks.balloon.itemForm && stack?.metadata == color.metadata) {
+                    if (stack != null && stack.item == ModBlocks.balloon.itemForm && stack.metadata == color.metadata) {
                         if (!e.capabilities.isCreativeMode)
-                            stack!!.stackSize--
+                            stack.stackSize--
+                        if(stack.stackSize <= 0)
+                            e.inventory.removeStackFromSlot(i)
                         found = true
                         break
                     }
@@ -62,6 +63,7 @@ enum class EnumHookStatus(val active: Boolean) { EXTENDING(true), PLANTED(true),
             }
             balloonColor = null
         }
+        /*
         if (color != null && status == EnumHookStatus.PLANTED) {
             if (e.world.getBlockState(block).block != ModBlocks.balloon) {
                 val p = block!!.offset(side)
@@ -69,9 +71,11 @@ enum class EnumHookStatus(val active: Boolean) { EXTENDING(true), PLANTED(true),
                     var found = false
                     for (i in 0..e.inventory.sizeInventory - 1) {
                         val stack = e.inventory.getStackInSlot(i)
-                        if (stack?.item == ModBlocks.balloon.itemForm && stack?.metadata == color.metadata) {
+                        if (stack != null && stack.item == ModBlocks.balloon.itemForm && stack.metadata == color.metadata) {
                             if (!e.capabilities.isCreativeMode)
-                                stack!!.stackSize--
+                                stack.stackSize--
+                            if(stack.stackSize <= 0)
+                                e.inventory.removeStackFromSlot(i)
                             found = true
                             break
                         }
@@ -82,6 +86,7 @@ enum class EnumHookStatus(val active: Boolean) { EXTENDING(true), PLANTED(true),
             }
             balloonColor = null
         }
+        */
     }
 
     constructor() : this(Vec3d.ZERO, Vec3d.ZERO, EnumHookStatus.PLANTED, null, null)
@@ -132,8 +137,8 @@ class HooksCap {
         if (Minecraft.getMinecraft().gameSettings.keyBindJump.isKeyDown) {
             movementY += verticalSpeed
         }
-        var strafe = player.moveStrafing
-        var forward = player.moveForward
+        var strafe = if(hooks.count { it.status == EnumHookStatus.PLANTED } == 1) 0f else player.moveStrafing
+        var forward = if(hooks.count { it.status == EnumHookStatus.PLANTED } == 1) 0f else player.moveForward
 
         if (player.isSneaking) {
             strafe /= 0.3f

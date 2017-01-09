@@ -16,12 +16,12 @@ buildscript {
 apply plugin: "net.minecraftforge.gradle.forge"
 apply plugin: 'kotlin'
 
-version = "1.0-SNAPSHOT"
+version = "1.0.0"
 group = "thecodewarrior"
 archivesBaseName = "hooks"
 
 minecraft {
-    version = "1.10.2-12.18.1.2026"
+    version = "1.10.2-12.18.3.2202"
     runDir = "run"
 
     // the mappings can be changed at any time, and must be in the following format.

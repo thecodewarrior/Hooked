@@ -33,6 +33,14 @@ class BlockBalloon : BlockMod("balloon", Material.CLOTH, *EnumDyeColor.values().
         return BlockRenderLayer.CUTOUT
     }
 
+    override fun damageDropped(state: IBlockState): Int {
+        return state.getValue(COLOR).metadata
+    }
+
+    override fun isOpaqueCube(state: IBlockState?): Boolean {
+        return false
+    }
+
     companion object {
         val COLOR = PropertyEnum.create("color", EnumDyeColor::class.java)
     }
