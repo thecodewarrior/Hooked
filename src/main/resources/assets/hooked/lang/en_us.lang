@@ -12,7 +12,7 @@ item.hooked:iron_chain.name=Iron Chain
 tile.hooked:balloon_white.name=White Balloon
 tile.hooked:balloon_orange.name=Orange Balloon
 tile.hooked:balloon_magenta.name=Magenta Balloon
-tile.hooked:balloon_lightBlue.name=Light Blue Balloon
+tile.hooked:balloon_light_blue.name=Light Blue Balloon
 tile.hooked:balloon_yellow.name=Yellow Balloon
 tile.hooked:balloon_lime.name=Lime Balloon
 tile.hooked:balloon_pink.name=Pink Balloon
@@ -27,3 +27,5 @@ tile.hooked:balloon_red.name=Red Balloon
 tile.hooked:balloon_black.name=Black Balloon
 
 key.hooked.fire=Fire Hook
+
+item_group.hooked=Hooked

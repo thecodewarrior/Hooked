@@ -50,17 +50,6 @@ dependencies {
 //    compile "net.shadowfacts:Forgelin:1.5"
 }
 
-jar {
-    // We need to make sure we package kotlin runtimes.
-
-    archiveName "${archivesBaseName}-${version}.jar"
-    dependsOn configurations.compile
-    from {
-        configurations.required.collect {
-            it.isDirectory() ? it : zipTree(it)
-        }
-    }
-}
 
 processResources {
     // this will ensure that this task is redone when the versions change.

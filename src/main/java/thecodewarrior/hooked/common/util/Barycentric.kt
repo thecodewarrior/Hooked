@@ -1,6 +1,5 @@
 package thecodewarrior.hooked.common.util
 
-import com.sun.javafx.geom.Vec4d
 import com.teamwizardry.librarianlib.features.helpers.vec
 import com.teamwizardry.librarianlib.features.kotlin.*
 import net.minecraft.util.math.Vec3d

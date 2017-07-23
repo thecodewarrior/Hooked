@@ -36,7 +36,7 @@ class HookedMod {
         const val MODID = "hooked"
         const val MODNAME = "Hooked"
         const val VERSION = "1.0.0"
-        const val DEPENDENCIES = "required-after:librarianlib"
+        const val DEPENDENCIES = "required-after:librarianlib;required-after:baubles"
         const val CLIENT = "thecodewarrior.hooked.client.ClientProxy"
         const val SERVER = "thecodewarrior.hooked.common.CommonProxy"
 
