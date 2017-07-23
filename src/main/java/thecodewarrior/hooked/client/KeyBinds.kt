@@ -1,7 +1,7 @@
 package thecodewarrior.hooked.client
 
-import com.teamwizardry.librarianlib.common.network.PacketHandler
-import com.teamwizardry.librarianlib.common.util.*
+import com.teamwizardry.librarianlib.features.kotlin.*
+import com.teamwizardry.librarianlib.features.network.PacketHandler
 import net.minecraft.client.Minecraft
 import net.minecraft.client.settings.KeyBinding
 import net.minecraftforge.client.model.animation.Animation
@@ -45,12 +45,12 @@ object KeyBinds {
 
         if (keyFire.isPressed) {
             if (player.isSneaking) {
-                player.ifCap(HooksCap.CAPABILITY, null) {
+                player.ifCap(HooksCap.CAPABILITY, null) { cap ->
                     val look = player.getLook(Animation.getPartialTickTime())
                     val eye = player.getPositionEyes(Animation.getPartialTickTime())
-                    val found = hooks.maxBy { Math.max(
+                    val found = cap.hooks.maxBy { Math.max(
                             (it.pos - eye).normalize() dot look ,
-                            ((it.pos + it.direction * hookType!!.hookLength) - eye).normalize() dot look
+                            ((it.pos + it.direction * cap.hookType!!.hookLength) - eye).normalize() dot look
                     )}
                     // max because cos(theta) increases as theta approaches 0
                     // the dot of two normalized vectors is cos(theta) where theta is the angle between them
@@ -58,7 +58,7 @@ object KeyBinds {
 
                     if (found != null && Math.max(
                             (found.pos - eye).normalize() dot look ,
-                            ((found.pos + found.direction * hookType!!.hookLength) - eye).normalize() dot look
+                            ((found.pos + found.direction * cap.hookType!!.hookLength) - eye).normalize() dot look
                     ) > minCos) {
                         PacketHandler.NETWORK.sendToServer(PacketRetractHook().apply {
                             uuid = found.uuid
@@ -78,8 +78,8 @@ object KeyBinds {
         val wasDown = jumpDown
         jumpDown = Minecraft.getMinecraft().gameSettings.keyBindJump.isKeyDown
         if(!wasDown && jumpDown) {
-            player.ifCap(HooksCap.CAPABILITY, null) {
-                if(hookType != HookType.RED) {
+            player.ifCap(HooksCap.CAPABILITY, null) { cap ->
+                if(cap.hookType != HookType.RED) {
                     PacketHandler.NETWORK.sendToServer(PacketRetractHooks().apply {
                         jumping = true
                         doTheThing(player)
@@ -89,8 +89,8 @@ object KeyBinds {
             if (jumpTimer == 0) {
                 jumpTimer = 7
             } else {
-                player.ifCap(HooksCap.CAPABILITY, null) {
-                    if (hookType == HookType.RED) {
+                player.ifCap(HooksCap.CAPABILITY, null) { cap ->
+                    if (cap.hookType == HookType.RED) {
                         PacketHandler.NETWORK.sendToServer(PacketRetractHooks().apply {
                             jumping = true
                             doTheThing(player)

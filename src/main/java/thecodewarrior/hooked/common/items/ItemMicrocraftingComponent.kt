@@ -1,6 +1,6 @@
 package thecodewarrior.hooked.common.items
 
-import com.teamwizardry.librarianlib.common.base.item.ItemMod
+import com.teamwizardry.librarianlib.features.base.item.ItemMod
 
 /**
  * Created by TheCodeWarrior

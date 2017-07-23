@@ -1,6 +1,6 @@
 package thecodewarrior.hooked.common.block
 
-import com.teamwizardry.librarianlib.common.base.block.BlockMod
+import com.teamwizardry.librarianlib.features.base.block.BlockMod
 import net.minecraft.block.material.Material
 import net.minecraft.block.properties.PropertyEnum
 import net.minecraft.block.state.BlockStateContainer

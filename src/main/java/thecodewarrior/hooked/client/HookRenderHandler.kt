@@ -1,9 +1,9 @@
 package thecodewarrior.hooked.client
 
-import com.teamwizardry.librarianlib.common.util.minus
-import com.teamwizardry.librarianlib.common.util.times
-import com.teamwizardry.librarianlib.common.util.unaryMinus
-import com.teamwizardry.librarianlib.common.util.vec
+import com.teamwizardry.librarianlib.features.helpers.vec
+import com.teamwizardry.librarianlib.features.kotlin.minus
+import com.teamwizardry.librarianlib.features.kotlin.times
+import com.teamwizardry.librarianlib.features.kotlin.unaryMinus
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.entity.Entity
@@ -42,7 +42,7 @@ object HookRenderHandler {
         val partialOffset = (player.positionVector-lastPos)*(1-Animation.getPartialTickTime())
 
         val globalize = -(player.positionVector-partialOffset)
-        GlStateManager.translate(globalize.xCoord, globalize.yCoord, globalize.zCoord)
+        GlStateManager.translate(globalize.x, globalize.y, globalize.z)
 
 //        render(Minecraft.getMinecraft().player)
 

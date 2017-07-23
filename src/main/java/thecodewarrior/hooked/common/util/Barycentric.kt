@@ -1,10 +1,9 @@
 package thecodewarrior.hooked.common.util
 
 import com.sun.javafx.geom.Vec4d
-import com.teamwizardry.librarianlib.common.util.*
+import com.teamwizardry.librarianlib.features.helpers.vec
+import com.teamwizardry.librarianlib.features.kotlin.*
 import net.minecraft.util.math.Vec3d
-
-
 
 /**
  * Created by TheCodeWarrior
@@ -65,8 +64,8 @@ object Barycentric {
     }
 
     fun toCartesian(p: Vec3d, a: Vec3d, b: Vec3d, c: Vec3d): Vec3d {
-        val n = p.xCoord + p.yCoord + p.zCoord
-        return a*(p.xCoord/n) + b*(p.yCoord/n) + c*(p.zCoord/n)
+        val n = p.x + p.y + p.z
+        return a*(p.x/n) + b*(p.y/n) + c*(p.z/n)
     }
 }
 

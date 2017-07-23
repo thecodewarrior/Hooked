@@ -1,8 +1,8 @@
 package thecodewarrior.hooked.common.network
 
-import com.teamwizardry.librarianlib.common.network.PacketBase
-import com.teamwizardry.librarianlib.common.util.ifCap
-import com.teamwizardry.librarianlib.common.util.saving.Save
+import com.teamwizardry.librarianlib.features.kotlin.ifCap
+import com.teamwizardry.librarianlib.features.network.PacketBase
+import com.teamwizardry.librarianlib.features.saving.Save
 import net.minecraft.entity.item.EntityItem
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext
@@ -20,11 +20,11 @@ class PacketRetractHook : PacketBase() {
     var uuid: UUID = UUID.randomUUID()
 
     override fun handle(ctx: MessageContext) {
-        doTheThing(ctx.serverHandler.playerEntity)
-        val player = ctx.serverHandler.playerEntity
-        player.ifCap(HooksCap.CAPABILITY, null) {
-            update(ctx.serverHandler.playerEntity)
-            hooks.forEach {
+        doTheThing(ctx.serverHandler.player)
+        val player = ctx.serverHandler.player
+        player.ifCap(HooksCap.CAPABILITY, null) { cap ->
+            cap.update(ctx.serverHandler.player)
+            cap.hooks.forEach {
                 if (it.uuid == uuid && it.block != null && player.world.getBlockState(it.block).block == ModBlocks.balloon) {
                     val state = player.world.getBlockState(it.block)
                     val drops = state.block.getDrops(player.world, it.block, state, 0)
@@ -41,13 +41,13 @@ class PacketRetractHook : PacketBase() {
     }
 
     fun doTheThing(player: EntityPlayer) {
-        player.ifCap(HooksCap.CAPABILITY, null) {
-            hooks.forEach {
+        player.ifCap(HooksCap.CAPABILITY, null) { cap ->
+            cap.hooks.forEach {
                 if (it.uuid == uuid) {
                     it.status = EnumHookStatus.TORETRACT
                 }
             }
-            updatePos()
+            cap.updatePos()
         }
     }
 }

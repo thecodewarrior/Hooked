@@ -1,7 +1,10 @@
 package thecodewarrior.hooked.common
 
-import com.teamwizardry.librarianlib.common.network.PacketHandler
-import com.teamwizardry.librarianlib.common.util.*
+import com.teamwizardry.librarianlib.features.helpers.vec
+import com.teamwizardry.librarianlib.features.kotlin.*
+import com.teamwizardry.librarianlib.features.methodhandles.MethodHandleHelper
+import com.teamwizardry.librarianlib.features.network.PacketHandler
+import com.teamwizardry.librarianlib.features.utilities.RaycastUtils
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
@@ -35,10 +38,8 @@ object HookTickHandler {
     val rl = ResourceLocation(HookedMod.MODID, "playerHookWielder")
 
     @SubscribeEvent
-    fun playerAttach(e: AttachCapabilitiesEvent.Entity) {
-        if (e.entity is EntityPlayer) {
-            e.addCapability(rl, HooksCapProvider())
-        }
+    fun playerAttach(e: AttachCapabilitiesEvent<Entity>) {
+        if(e.`object` is EntityPlayer) e.addCapability(rl, HooksCapProvider())
     }
 
     @SubscribeEvent
@@ -62,8 +63,8 @@ object HookTickHandler {
     @SubscribeEvent
     fun breakSpeed(e: PlayerEvent.BreakSpeed) {
         if (!e.entity.onGround) {
-            e.entity.ifCap(HooksCap.CAPABILITY, null) {
-                if (hooks.count { it.status == EnumHookStatus.PLANTED } > 0) {
+            e.entity.ifCap(HooksCap.CAPABILITY, null) { cap ->
+                if (cap.hooks.count { it.status == EnumHookStatus.PLANTED } > 0) {
                     e.newSpeed = e.newSpeed * 5
                 }
             }
@@ -112,6 +113,7 @@ object HookTickHandler {
                     hook.status = EnumHookStatus.PLANTED
                     hook.block = trace.blockPos
                     hook.side = trace.sideHit
+                    hook.balloonColor = null
                     update = true
                     updatePos = true
 
@@ -130,8 +132,8 @@ object HookTickHandler {
                         val pos = waist + (normal * v)
                         val vel = if (ThreadLocalRandom.current().nextBoolean()) negNormal else normal
                         entity.world.spawnParticle(EnumParticleTypes.PORTAL, true,
-                                pos.xCoord + rnd(), pos.yCoord + rnd() + 0.1, pos.zCoord + rnd(),
-                                vel.xCoord + rnd(), vel.yCoord + rnd() - 0.65, vel.zCoord + rnd())
+                                pos.x + rnd(), pos.y + rnd() + 0.1, pos.z + rnd(),
+                                vel.x + rnd(), vel.y + rnd() - 0.65, vel.z + rnd())
                     }
 
                     v += spacing
@@ -186,9 +188,9 @@ object HookTickHandler {
         }?.let {
             val forceCoeff = 0.5
             if(shouldSet) {
-                entity.motionX = it.xCoord
-                entity.motionY = it.yCoord
-                entity.motionZ = it.zCoord
+                entity.motionX = it.x
+                entity.motionY = it.y
+                entity.motionZ = it.z
             } else {
                 cap.hooks.forEach {
                     if(it.status != EnumHookStatus.PLANTED)
@@ -198,29 +200,29 @@ object HookTickHandler {
                     val projection = (vec(e.entity.motionX, e.entity.motionY, e.entity.motionZ) dot pullVec) / pullVec.lengthVector()
                     if (projection < 0) {
                         val add = pullVec * (projection / pullVec.lengthVector())
-                        entity.motionX -= add.xCoord
-                        entity.motionY -= add.yCoord
-                        entity.motionZ -= add.zCoord
+                        entity.motionX -= add.x
+                        entity.motionY -= add.y
+                        entity.motionZ -= add.z
                     }
                 }
-                if (Math.abs(e.entity.motionX) < Math.abs(it.xCoord)) {
-                    val adjusted = e.entity.motionX + it.xCoord * forceCoeff
-                    if (Math.abs(adjusted) > Math.abs(it.xCoord))
-                        entity.motionX = it.xCoord
+                if (Math.abs(e.entity.motionX) < Math.abs(it.x)) {
+                    val adjusted = e.entity.motionX + it.x * forceCoeff
+                    if (Math.abs(adjusted) > Math.abs(it.x))
+                        entity.motionX = it.x
                     else
                         entity.motionX = adjusted
                 }
-                if (Math.abs(e.entity.motionY) < Math.abs(it.yCoord)){
-                    val adjusted = e.entity.motionY + it.yCoord * forceCoeff
-                    if (Math.abs(adjusted) > Math.abs(it.yCoord))
-                        entity.motionY = it.yCoord
+                if (Math.abs(e.entity.motionY) < Math.abs(it.y)){
+                    val adjusted = e.entity.motionY + it.y * forceCoeff
+                    if (Math.abs(adjusted) > Math.abs(it.y))
+                        entity.motionY = it.y
                     else
                         entity.motionY = adjusted
                 }
-                if (Math.abs(e.entity.motionZ) < Math.abs(it.zCoord)) {
-                    val adjusted = e.entity.motionZ + it.zCoord * forceCoeff
-                    if (Math.abs(adjusted) > Math.abs(it.zCoord))
-                        entity.motionZ = it.zCoord
+                if (Math.abs(e.entity.motionZ) < Math.abs(it.z)) {
+                    val adjusted = e.entity.motionZ + it.z * forceCoeff
+                    if (Math.abs(adjusted) > Math.abs(it.z))
+                        entity.motionZ = it.z
                     else
                         entity.motionZ = adjusted
                 }
@@ -233,7 +235,7 @@ object HookTickHandler {
 
         cap.centerPos?.let {
             if (!e.entity.world.isRemote)
-                e.entity.world.spawnParticle(EnumParticleTypes.FLAME, it.xCoord, it.yCoord, it.zCoord, 0.0, 0.0, 0.0, 0)
+                e.entity.world.spawnParticle(EnumParticleTypes.FLAME, it.x, it.y, it.z, 0.0, 0.0, 0.0, 0)
         }
 
 

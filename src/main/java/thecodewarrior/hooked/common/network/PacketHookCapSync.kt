@@ -1,11 +1,11 @@
 package thecodewarrior.hooked.common.network
 
-import com.teamwizardry.librarianlib.common.network.PacketBase
-import com.teamwizardry.librarianlib.common.util.hasNullSignature
-import com.teamwizardry.librarianlib.common.util.saving.AbstractSaveHandler
-import com.teamwizardry.librarianlib.common.util.saving.Save
-import com.teamwizardry.librarianlib.common.util.writeNonnullSignature
-import com.teamwizardry.librarianlib.common.util.writeNullSignature
+import com.teamwizardry.librarianlib.features.kotlin.hasNullSignature
+import com.teamwizardry.librarianlib.features.kotlin.writeNonnullSignature
+import com.teamwizardry.librarianlib.features.kotlin.writeNullSignature
+import com.teamwizardry.librarianlib.features.network.PacketBase
+import com.teamwizardry.librarianlib.features.saving.AbstractSaveHandler
+import com.teamwizardry.librarianlib.features.saving.Save
 import io.netty.buffer.ByteBuf
 import net.minecraft.client.Minecraft
 import net.minecraft.entity.Entity

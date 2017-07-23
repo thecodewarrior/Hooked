@@ -1,0 +1,25 @@
+{
+	"type": "forge:ore_shaped",
+	"pattern": [
+		"DDP",
+		" HD",
+		"D D"
+	],
+	"key": {
+		"P": {
+			"item": "minecraft:diamond_pickaxe"
+		},
+		"H": {
+			"item": "hooked:hook",
+			"data": 1
+		},
+		"D": {
+			"type": "forge:ore_dict",
+			"ore": "gemDiamond"
+		}
+	},
+	"result": {
+		"item": "hooked:hook",
+		"data": 2
+	}
+}

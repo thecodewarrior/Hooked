@@ -1,8 +1,8 @@
 package thecodewarrior.hooked.common.network
 
-import com.teamwizardry.librarianlib.common.network.PacketBase
-import com.teamwizardry.librarianlib.common.util.ifCap
-import com.teamwizardry.librarianlib.common.util.saving.Save
+import com.teamwizardry.librarianlib.features.kotlin.ifCap
+import com.teamwizardry.librarianlib.features.network.PacketBase
+import com.teamwizardry.librarianlib.features.saving.Save
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.EnumDyeColor
 import net.minecraft.util.math.Vec3d
@@ -23,19 +23,19 @@ class PacketFireHook : PacketBase() {
     var normal: Vec3d = Vec3d.ZERO
 
     override fun handle(ctx: MessageContext) {
-        doTheThing(ctx.serverHandler.playerEntity)
-        ctx.serverHandler.playerEntity.ifCap(HooksCap.CAPABILITY, null) {
-            update(ctx.serverHandler.playerEntity)
+        doTheThing(ctx.serverHandler.player)
+        ctx.serverHandler.player.ifCap(HooksCap.CAPABILITY, null) { cap ->
+            cap.update(ctx.serverHandler.player)
         }
 //        HookLog.info("%s @ %s", normal.toString(), pos.toString())
     }
 
     fun doTheThing(player: EntityPlayer) {
-        player.ifCap(HooksCap.CAPABILITY, null) {
-            val type = hookType ?: return@ifCap
-            if(hooks.count { it.status.active } <= type.count + 1) {
-                if(hooks.count { it.status == EnumHookStatus.PLANTED } == 1)
-                    hooks.find { it.status == EnumHookStatus.PLANTED }?.weight = 1.0
+        player.ifCap(HooksCap.CAPABILITY, null) { cap ->
+            val type = cap.hookType ?: return@ifCap
+            if(cap.hooks.count { it.status.active } <= type.count + 1) {
+                if(cap.hooks.count { it.status == EnumHookStatus.PLANTED } == 1)
+                    cap.hooks.find { it.status == EnumHookStatus.PLANTED }?.weight = 1.0
                 val hook = HookInfo(pos, normal, EnumHookStatus.EXTENDING, null, null)
 
                 if(player.heldItemOffhand?.item == ModBlocks.balloon.itemForm) {
@@ -45,7 +45,7 @@ class PacketFireHook : PacketBase() {
                     hook.balloonColor = EnumDyeColor.values()[player.heldItemMainhand!!.metadata]
                 }
 
-                hooks.addLast(hook)
+                cap.hooks.addLast(hook)
             }
         }
     }

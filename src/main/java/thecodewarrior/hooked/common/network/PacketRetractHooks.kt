@@ -1,8 +1,8 @@
 package thecodewarrior.hooked.common.network
 
-import com.teamwizardry.librarianlib.common.network.PacketBase
-import com.teamwizardry.librarianlib.common.util.ifCap
-import com.teamwizardry.librarianlib.common.util.saving.Save
+import com.teamwizardry.librarianlib.features.kotlin.ifCap
+import com.teamwizardry.librarianlib.features.network.PacketBase
+import com.teamwizardry.librarianlib.features.saving.Save
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext
 import thecodewarrior.hooked.common.capability.EnumHookStatus
@@ -17,19 +17,19 @@ class PacketRetractHooks : PacketBase() {
     var jumping: Boolean = false
 
     override fun handle(ctx: MessageContext) {
-        doTheThing(ctx.serverHandler.playerEntity)
+        doTheThing(ctx.serverHandler.player)
     }
 
     fun doTheThing(player: EntityPlayer) {
-        player.ifCap(HooksCap.CAPABILITY, null) {
-            if(jumping && hooks.count { it.status == EnumHookStatus.PLANTED } > 0) {
+        player.ifCap(HooksCap.CAPABILITY, null) { cap ->
+            if(jumping && cap.hooks.count { it.status == EnumHookStatus.PLANTED } > 0) {
                 player.motionX *= 1.25
                 player.motionY *= 1.25
                 player.motionZ *= 1.25
                 player.jump()
             }
-            hooks.forEach { it.status = EnumHookStatus.TORETRACT }
-            updatePos()
+            cap.hooks.forEach { it.status = EnumHookStatus.TORETRACT }
+            cap.updatePos()
         }
     }
 }

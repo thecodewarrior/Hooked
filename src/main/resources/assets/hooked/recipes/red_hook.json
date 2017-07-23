@@ -1,0 +1,32 @@
+{
+	"type": "forge:ore_shaped",
+	"pattern": [
+		"PDR",
+		" HD",
+		"C P"
+	],
+	"key": {
+		"P": {
+			"item": "minecraft:piston"
+		},
+		"H": {
+			"item": "hooked:hook",
+			"data": 2
+		},
+		"D": {
+			"type": "forge:ore_dict",
+			"ore": "dustRedstone"
+		},
+		"R": {
+			"type": "forge:ore_dict",
+			"ore": "blockRedstone"
+		},
+		"C": {
+			"item": "minecraft:comparator"
+		}
+	},
+	"result": {
+		"item": "hooked:hook",
+		"data": 3
+	}
+}

@@ -1,10 +1,11 @@
 package thecodewarrior.hooked.client
 
-import com.teamwizardry.librarianlib.common.util.*
+import com.teamwizardry.librarianlib.features.helpers.vec
+import com.teamwizardry.librarianlib.features.kotlin.*
 import net.minecraft.client.Minecraft
+import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.Tessellator
-import net.minecraft.client.renderer.VertexBuffer
 import net.minecraft.client.renderer.block.model.BakedQuad
 import net.minecraft.client.renderer.block.model.IBakedModel
 import net.minecraft.client.renderer.texture.TextureMap
@@ -65,20 +66,32 @@ class HookRenderer(val type: HookType) {
 
     fun renderHook(waist: Vec3d, hook: HookInfo, world: World) {
 
+        Minecraft.getMinecraft().entityRenderer.enableLightmap()
+
         GlStateManager.pushMatrix()
 
         var rY = signAngle(vec(0, 0, 1), (hook.direction * vec(1, 0, 1)).normalize(), vec(0, 1, 0))
         var rX = signAngle(vec(0, 1, 0), hook.direction, null)
 
-        GlStateManager.translate(hook.pos.xCoord, hook.pos.yCoord, hook.pos.zCoord)
+        GlStateManager.translate(hook.pos.x, hook.pos.y, hook.pos.z)
         GlStateManager.rotate(rY, 0f, 1f, 0f)
         GlStateManager.rotate(rX, 1f, 0f, 0f)
         GlStateManager.translate(-0.5, 0.0, -0.5)
 
         val hookLightPos = BlockPos(hook.pos + hook.direction * (type.hookLength / 2))
         Minecraft.getMinecraft().renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE)
-        Minecraft.getMinecraft().blockRendererDispatcher.blockModelRenderer.renderModelBrightnessColor(endHandle.get(),
-                (world.getLightBrightness(hookLightPos) * 2f).clamp(0f, 1f), 1f, 1f, 1f)
+
+        val state = world.getBlockState(hookLightPos)
+        val lightmap = state.getPackedLightmapCoords(world, hookLightPos)
+        val quads = endHandle.get().getQuads(null, null, 0)
+
+        val vb = Tessellator.getInstance().buffer
+        vb.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK)
+        quads.forEach { quad ->
+            vb.addVertexData(quad.vertexData)
+            vb.putBrightness4(lightmap, lightmap, lightmap, lightmap)
+        }
+        Tessellator.getInstance().draw()
 
         GlStateManager.popMatrix()
 
@@ -90,7 +103,7 @@ class HookRenderer(val type: HookType) {
         rY = signAngle(vec(0, 0, 1), (normal * vec(1, 0, 1)).normalize(), vec(0, 1, 0))
         rX = signAngle(vec(0, 1, 0), normal, null)
 
-        GlStateManager.translate(waist.xCoord, waist.yCoord, waist.zCoord)
+        GlStateManager.translate(waist.x, waist.y, waist.z)
         GlStateManager.rotate(rY, 0f, 1f, 0f)
         GlStateManager.rotate(rX, 1f, 0f, 0f)
         GlStateManager.rotate(45f, 0f, 1f, 0f)
@@ -103,13 +116,15 @@ class HookRenderer(val type: HookType) {
         chain(distance, waist, normal, vec(0, 0, radius), world)
 
         GlStateManager.popMatrix()
+
+        Minecraft.getMinecraft().entityRenderer.disableLightmap()
     }
 
     fun chain(distance: Double, waist: Vec3d, normal: Vec3d, offset: Vec3d, world: World) {
         val tess = Tessellator.getInstance()
         val vb = tess.buffer
 
-        vb.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR)
+        vb.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_LMAP_COLOR)
 
         var len = distance
         while (len > 0) {
@@ -126,22 +141,26 @@ class HookRenderer(val type: HookType) {
         tess.draw()
     }
 
-    fun chainQuad(blockpos: BlockPos, distance: Double, offset: Vec3d, length: Double, world: World, vb: VertexBuffer) {
-        val b = (world.getLightBrightness(blockpos) * 2).clamp(0f, 1f)
+    fun chainQuad(blockpos: BlockPos, distance: Double, offset: Vec3d, length: Double, world: World, vb: BufferBuilder) {
+        val state = world.getBlockState(blockpos)
+        val lightmap = state.getPackedLightmapCoords(world, blockpos)
+        val skylight = (lightmap shr 16) and 0xFFFF
+        val blocklight = lightmap and 0xFFFF
+        val b = 1f
 
         val beg = distance
         val end = distance+length
         // @formatter:off
-        vb.pos( offset.xCoord, beg,  offset.zCoord).tex(0.0, length).color(b, b, b, 1f).endVertex()
-        vb.pos(-offset.xCoord, beg, -offset.zCoord).tex(1.0, length).color(b, b, b, 1f).endVertex()
-        vb.pos(-offset.xCoord, end, -offset.zCoord).tex(1.0, 0.0   ).color(b, b, b, 1f).endVertex()
-        vb.pos( offset.xCoord, end,  offset.zCoord).tex(0.0, 0.0   ).color(b, b, b, 1f).endVertex()
+        vb.pos( offset.x, beg,  offset.z).tex(0.0, length).lightmap(skylight, blocklight).color(b, b, b, 1f).endVertex()
+        vb.pos(-offset.x, beg, -offset.z).tex(1.0, length).lightmap(skylight, blocklight).color(b, b, b, 1f).endVertex()
+        vb.pos(-offset.x, end, -offset.z).tex(1.0, 0.0   ).lightmap(skylight, blocklight).color(b, b, b, 1f).endVertex()
+        vb.pos( offset.x, end,  offset.z).tex(0.0, 0.0   ).lightmap(skylight, blocklight).color(b, b, b, 1f).endVertex()
 
 
-        vb.pos( offset.xCoord, end,  offset.zCoord).tex(0.0, 0.0   ).color(b, b, b, 1f).endVertex()
-        vb.pos(-offset.xCoord, end, -offset.zCoord).tex(1.0, 0.0   ).color(b, b, b, 1f).endVertex()
-        vb.pos(-offset.xCoord, beg, -offset.zCoord).tex(1.0, length).color(b, b, b, 1f).endVertex()
-        vb.pos( offset.xCoord, beg,  offset.zCoord).tex(0.0, length).color(b, b, b, 1f).endVertex()
+        vb.pos( offset.x, end,  offset.z).tex(0.0, 0.0   ).lightmap(skylight, blocklight).color(b, b, b, 1f).endVertex()
+        vb.pos(-offset.x, end, -offset.z).tex(1.0, 0.0   ).lightmap(skylight, blocklight).color(b, b, b, 1f).endVertex()
+        vb.pos(-offset.x, beg, -offset.z).tex(1.0, length).lightmap(skylight, blocklight).color(b, b, b, 1f).endVertex()
+        vb.pos( offset.x, beg,  offset.z).tex(0.0, length).lightmap(skylight, blocklight).color(b, b, b, 1f).endVertex()
         // @formatter:on
     }
 
@@ -160,4 +179,5 @@ class HookRenderer(val type: HookType) {
         }
         tess.draw()
     }
+
 }

@@ -1,0 +1,18 @@
+{
+	"type": "forge:ore_shaped",
+	"pattern": [
+		" FF",
+		"FFF",
+		"FF "
+	],
+	"key": {
+		"F": {
+			"item": "hooked:microcrafting",
+			"data": 0
+		}
+	},
+	"result": {
+		"item": "hooked:microcrafting",
+		"data": 1
+	}
+}

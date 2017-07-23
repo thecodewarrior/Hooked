@@ -3,8 +3,8 @@ package thecodewarrior.hooked.common.items
 import baubles.api.BaubleType
 import baubles.api.BaublesApi
 import baubles.api.IBauble
-import com.teamwizardry.librarianlib.common.base.item.ItemMod
-import com.teamwizardry.librarianlib.common.util.ifCap
+import com.teamwizardry.librarianlib.features.base.item.ItemMod
+import com.teamwizardry.librarianlib.features.kotlin.ifCap
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
@@ -23,16 +23,16 @@ class ItemHook : ItemMod("hook", *HookType.values().map { "hook_" + it.toString(
     }
 
     override fun onUnequipped(itemstack: ItemStack, player: EntityLivingBase?) {
-        player?.ifCap(HooksCap.CAPABILITY, null) {
-            hookType = null
-            update(player)
+        player?.ifCap(HooksCap.CAPABILITY, null) { cap ->
+            cap.hookType = null
+            cap.update(player)
         }
     }
 
     override fun onEquipped(itemstack: ItemStack, player: EntityLivingBase?) {
-        player?.ifCap(HooksCap.CAPABILITY, null) {
-            hookType = HookType.values()[itemstack.itemDamage % HookType.values().size]
-            update(player)
+        player?.ifCap(HooksCap.CAPABILITY, null) { cap ->
+            cap.hookType = HookType.values()[itemstack.itemDamage % HookType.values().size]
+            cap.update(player)
         }
     }
 

@@ -1,8 +1,8 @@
 package thecodewarrior.hooked.common.network
 
-import com.teamwizardry.librarianlib.common.network.PacketBase
-import com.teamwizardry.librarianlib.common.util.ifCap
-import com.teamwizardry.librarianlib.common.util.saving.Save
+import com.teamwizardry.librarianlib.features.kotlin.ifCap
+import com.teamwizardry.librarianlib.features.network.PacketBase
+import com.teamwizardry.librarianlib.features.saving.Save
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext
 import thecodewarrior.hooked.common.capability.HooksCap
@@ -20,18 +20,18 @@ class PacketUpdateWeights : PacketBase() {
     var weights: HashMap<UUID, Double>? = null
 
     override fun handle(ctx: MessageContext) {
-        doTheThing(ctx.serverHandler.playerEntity)
-        ctx.serverHandler.playerEntity.ifCap(HooksCap.CAPABILITY, null) {
-            updatePos()
+        doTheThing(ctx.serverHandler.player)
+        ctx.serverHandler.player.ifCap(HooksCap.CAPABILITY, null) { cap ->
+            cap.updatePos()
         }
     }
 
     fun doTheThing(player: EntityPlayer) {
         val w = weights ?: return
 
-        player.ifCap(HooksCap.CAPABILITY, null) {
-            verticalHangDistance = vertical
-            hooks.forEach {
+        player.ifCap(HooksCap.CAPABILITY, null) { cap ->
+            cap.verticalHangDistance = vertical
+            cap.hooks.forEach {
                 if(it.uuid in w) {
                     it.weight = w[it.uuid] ?: it.weight
                 }

@@ -1,12 +1,13 @@
 package thecodewarrior.hooked.common.capability
 
-import com.teamwizardry.librarianlib.common.network.PacketHandler
-import com.teamwizardry.librarianlib.common.util.*
-import com.teamwizardry.librarianlib.common.util.math.Vec2d
-import com.teamwizardry.librarianlib.common.util.saving.AbstractSaveHandler
-import com.teamwizardry.librarianlib.common.util.saving.Savable
-import com.teamwizardry.librarianlib.common.util.saving.Save
-import com.teamwizardry.librarianlib.common.util.saving.SaveInPlace
+import com.teamwizardry.librarianlib.features.helpers.vec
+import com.teamwizardry.librarianlib.features.kotlin.*
+import com.teamwizardry.librarianlib.features.math.Vec2d
+import com.teamwizardry.librarianlib.features.network.PacketHandler
+import com.teamwizardry.librarianlib.features.saving.AbstractSaveHandler
+import com.teamwizardry.librarianlib.features.saving.Savable
+import com.teamwizardry.librarianlib.features.saving.Save
+import com.teamwizardry.librarianlib.features.saving.SaveInPlace
 import net.minecraft.client.Minecraft
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.EntityPlayer
@@ -51,8 +52,8 @@ enum class EnumHookStatus(val active: Boolean) { EXTENDING(true), PLANTED(true),
                     val stack = e.inventory.getStackInSlot(i)
                     if (stack != null && stack.item == ModBlocks.balloon.itemForm && stack.metadata == color.metadata) {
                         if (!e.capabilities.isCreativeMode)
-                            stack.stackSize--
-                        if(stack.stackSize <= 0)
+                            stack.count--
+                        if(stack.count <= 0)
                             e.inventory.removeStackFromSlot(i)
                         found = true
                         break
@@ -162,7 +163,7 @@ class HooksCap {
 
         if (filtered.size == 1) {
             val hook0 = filtered[0]
-            verticalHangDistance = hook0.pos.yCoord - Math.min(hook0.pos.yCoord, center.yCoord)
+            verticalHangDistance = hook0.pos.y - Math.min(hook0.pos.y, center.y)
         }
         if (filtered.size == 2) {
             val hook0 = filtered[0]
@@ -186,9 +187,9 @@ class HooksCap {
 
             val bary = Barycentric.toBarycentric(closest, hook0.pos, hook1.pos, hook2.pos)
 
-            hook0.weight = bary.xCoord * 3
-            hook1.weight = bary.yCoord * 3
-            hook2.weight = bary.zCoord * 3
+            hook0.weight = bary.x * 3
+            hook1.weight = bary.y * 3
+            hook2.weight = bary.z * 3
         }
         if (filtered.size == 4) {
             val hook0 = filtered[0]

@@ -1,0 +1,25 @@
+{
+	"type": "forge:ore_shaped",
+	"pattern": [
+		"SSP",
+		" RS",
+		"R S"
+	],
+	"key": {
+		"P": {
+			"item": "minecraft:stone_pickaxe"
+		},
+		"R": {
+			"item": "hooked:microcrafting",
+			"data": 1
+		},
+		"S": {
+			"type": "forge:ore_dict",
+			"ore": "stickWood"
+		}
+	},
+	"result": {
+		"item": "hooked:hook",
+		"data": 0
+	}
+}

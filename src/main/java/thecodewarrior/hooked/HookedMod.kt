@@ -1,8 +1,9 @@
 package thecodewarrior.hooked
 
-import com.teamwizardry.librarianlib.common.base.ModCreativeTab
-import com.teamwizardry.librarianlib.common.core.LoggerBase
+import com.teamwizardry.librarianlib.features.base.ModCreativeTab
+import com.teamwizardry.librarianlib.features.utilities.LoggerBase
 import net.minecraft.item.Item
+import net.minecraft.item.ItemStack
 import net.minecraft.launchwrapper.Launch
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.SidedProxy
@@ -47,9 +48,7 @@ class HookedMod {
         val DEV_ENVIRONMENT = Launch.blackboard["fml.deobfuscatedEnvironment"] as Boolean
 
         val creativeTab = object : ModCreativeTab() {
-            override fun getTabIconItem(): Item {
-                return ModItems.hook
-            }
+            override val iconStack = ItemStack(ModItems.hook)
 
             init {
                 this.registerDefaultTab()

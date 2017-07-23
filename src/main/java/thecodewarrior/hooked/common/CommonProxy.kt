@@ -1,6 +1,6 @@
 package thecodewarrior.hooked.common
 
-import com.teamwizardry.librarianlib.common.network.PacketHandler
+import com.teamwizardry.librarianlib.features.network.PacketHandler
 import net.minecraft.entity.EntityLivingBase
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
@@ -8,7 +8,6 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 import net.minecraftforge.fml.relauncher.Side
 import thecodewarrior.hooked.common.block.ModBlocks
 import thecodewarrior.hooked.common.items.ModItems
-import thecodewarrior.hooked.common.items.ModRecipes
 import thecodewarrior.hooked.common.network.*
 
 /**
@@ -23,7 +22,6 @@ open class CommonProxy {
     }
 
     open fun init(e: FMLInitializationEvent) {
-        ModRecipes
     }
 
     open fun post(e: FMLPostInitializationEvent) {

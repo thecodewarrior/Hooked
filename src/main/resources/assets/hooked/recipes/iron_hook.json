@@ -1,0 +1,25 @@
+{
+	"type": "forge:ore_shaped",
+	"pattern": [
+		"IIP",
+		" CI",
+		"C I"
+	],
+	"key": {
+		"P": {
+			"item": "minecraft:iron_pickaxe"
+		},
+		"C": {
+			"item": "hooked:microcrafting",
+			"data": 3
+		},
+		"I": {
+			"type": "forge:ore_dict",
+			"ore": "ingotIron"
+		}
+	},
+	"result": {
+		"item": "hooked:hook",
+		"data": 1
+	}
+}
