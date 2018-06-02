@@ -10,11 +10,12 @@ import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import thecodewarrior.hooked.common.HookType
 import thecodewarrior.hooked.common.capability.HooksCap
+import java.util.*
 
 /**
  * Created by TheCodeWarrior
  */
-class ItemHook : ItemMod("hook", *HookType.values().map { "hook_" + it.toString().toLowerCase() }.toTypedArray()), IBauble {
+class ItemHook : ItemMod("hook", *HookType.values().map { "hook_" + it.toString().toLowerCase(Locale.ROOT) }.toTypedArray()), IBauble {
     init {
         setMaxStackSize(1)
     }

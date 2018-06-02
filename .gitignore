@@ -25,5 +25,7 @@ lib/kotlin-reflect.jar
 lib/kotlin-runtime-sources.jar
 lib/kotlin-runtime.jar
 
+.DS_Store
 hs_err_pid*.log
 java_pid*.hprof
+
