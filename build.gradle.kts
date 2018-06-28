@@ -2,7 +2,6 @@ import net.minecraftforge.gradle.user.TaskSourceCopy
 import net.minecraftforge.gradle.user.patcherUser.forge.ForgeExtension
 import net.minecraftforge.gradle.user.patcherUser.forge.ForgePlugin
 import org.gradle.api.internal.HasConvention
-import org.gradle.internal.impldep.bsh.commands.dir
 import org.gradle.plugins.ide.idea.model.IdeaLanguageLevel
 import org.jetbrains.kotlin.contracts.model.structure.UNKNOWN_COMPUTATION.type
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformJvmPlugin
@@ -20,31 +19,16 @@ val SourceSet.kotlin: SourceDirectorySet
 fun SourceSet.kotlin(action: SourceDirectorySet.() -> Unit) =
         kotlin.action()
 
-inline fun <reified T: Task> task(name: String, vararg args: Pair<String, Any>): Task
-        = task<T>(name, *args) { }
-
-inline fun <reified T: Task> task(name: String, vararg args: Pair<String, Any>, noinline cfg: T.() -> Unit): Task
+inline fun <reified T: Task> task(name: String, vararg args: Pair<String, Any>, noinline cfg: T.() -> Unit = { })
         = if (!T::class.isAbstract) task(name, T::class, *args, cfg = cfg) else task(mapOf(*args), name, closureOf(cfg))
 
-
-fun <T: Task> task(name: String, type: KClass<T>, vararg args: Pair<String, Any>): Task
-        = task(name, type, *args) { }
-
-fun <T: Task> task(name: String, type: KClass<T>, vararg args: Pair<String, Any>, cfg: T.() -> Unit): Task
+fun <T: Task> task(name: String, type: KClass<T>, vararg args: Pair<String, Any>, cfg: T.() -> Unit = { })
         = task(mapOf(*args, "type" to type.java), name, closureOf(cfg))
 
-
-inline fun <reified T : Task> TaskContainer.withType(name: String): T
-        = withType(name) {}
-
-inline fun <reified T : Task> TaskContainer.withType(name: String, cfg: T.() -> Unit): T
+inline fun <reified T : Task> TaskContainer.withType(name: String, cfg: T.() -> Unit = { })
         = withType(T::class.java).getByName(name).apply(cfg)
 
-
-inline fun <reified T : Task> TaskContainer.withTypeIfPresent(name: String): T?
-        = withTypeIfPresent(name) {}
-
-inline fun <reified T : Task> TaskContainer.withTypeIfPresent(name: String, cfg: T.() -> Unit): T?
+inline fun <reified T : Task> TaskContainer.withTypeIfPresent(name: String, cfg: T.() -> Unit = { })
         = withType(T::class.java).findByName(name)?.apply(cfg)
 
 
@@ -52,41 +36,50 @@ buildscript {
     repositories {
         jcenter()
         maven(url = "https://files.minecraftforge.net/maven")
-        maven(url = "https://plugins.gradle.org/m2/")
+        maven(url = "https://plugins.gradle.org/m2/" )
     }
 
     val kotlinVersion = extra["kotlin_version"].toString()
 
     dependencies {
-        classpath("net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT")
         classpath(kotlin("gradle-plugin", version = kotlinVersion))
+        classpath("net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT")
     }
 }
 
 plugins {
     idea
     java
-    maven
 }
 
 apply<KotlinPlatformJvmPlugin>()
 apply<ForgePlugin>()
 
 val modVersion = extra["mod_version"].toString()
-val modBuild = extra["build_number"].toString()
 val modName = extra["mod_name"].toString().toLowerCase()
-val corePlugin = project.findProperty("core_plugin")?.toString()
-val corePluginArgString = corePlugin?.let { "-Dfml.coreMods.load=$it" }
-val modGroup = extra["mod_group"].toString()
+val modDescription = project.findProperty("mod_description")?.toString() ?: ""
+val capitalizedName = modName.capitalize()
+val modFancyName = project.findProperty("mod_fancy_name") ?: capitalizedName
+val modAuthor = extra["mod_author"].toString().toLowerCase()
+val corePlugin = project.findProperty("core_plugin") == "true"
+val corePluginClass = "$modAuthor.$modName.asm.${capitalizedName}ClassTransformer"
+val corePluginArgs = mutableListOf<String>()
+if (corePlugin)
+    corePluginArgs.add(corePluginClass)
+if (project.findProperty("other_core_plugins")?.toString()?.isNotEmpty() == true)
+    corePluginArgs.add(extra["other_core_plugins"].toString())
+
+val corePluginArgString = "-Dfml.coreMods.load=" + corePluginArgs.joinToString(",")
 
 val mcVersion = extra["mc_version"].toString()
 val forgeProjectVersion = extra["forge_version"].toString()
-val mcpProjectVersion = extra["mc_mappings"].toString()
+val mcpProjectVersion = extra["mcp_version"].toString()
+val jeiVersion = extra["jei_version"].toString()
 val kotlinVersion = extra["kotlin_version"].toString()
 val liblibVersion = extra["liblib_version"].toString()
 
-version = "$modVersion.$modBuild"
-group = modGroup
+version = modVersion
+group = "$modAuthor.$modName"
 setProperty("archivesBaseName", modName)
 
 
@@ -99,20 +92,19 @@ extensions.getByType(ForgeExtension::class.java).apply {
     mappings = mcpProjectVersion
     runDir = "run"
 
-	corePluginArgString?.let {
-		clientJvmArgs = listOf(it)
-		serverJvmArgs = listOf(it)
-	}
+    if (corePlugin) {
+        clientJvmArgs = listOf(corePluginArgString)
+        serverJvmArgs = listOf(corePluginArgString)
+    }
 
-    replaceIn("HookedMod.kt")
+    replaceIn("$capitalizedName.java")
     replaceIn("mcmod.info")
 
-    replace("GRADLE:VERSION", modVersion)
-    replace("GRADLE:BUILD", modBuild)
+    replace("%VERSION%", modVersion)
 }
 
 for (set in java.sourceSets) {
-    if (set == null || set.name == "test") continue
+    if (set != null && set.name == "test") continue
     val taskName = "source${set.name.capitalize()}Kotlin"
     val dir = File(project.buildDir, "sources/${set.name}/kotlin")
 
@@ -124,14 +116,14 @@ for (set in java.sourceSets) {
 
     val compileTask = tasks.withTypeIfPresent<KotlinCompile>(set.getCompileTaskName("kotlin"))
     if (compileTask != null) {
+        compileTask.source = fileTree(dir)
         compileTask.dependsOn(taskName)
         val dirPath = dir.toPath()
-        tasks.withType<KotlinCompile>("compileKotlin") {
+        tasks.withType<KotlinCompile> {
             include { it.file.toPath().startsWith(dirPath) }
         }
     }
 }
-
 
 tasks.withType<KotlinCompile> {
     kotlinOptions {
@@ -153,9 +145,6 @@ val genTask: Task = tasks.getByName("genIntellijRuns") {
 idea {
     module {
         excludeDirs.addAll(listOf(file("run"), file("out"), file("gradle"), file(".idea")))
-
-        inheritOutputDirs = true
-        testSourceDirs = setOf()
     }
 
     if (project != null) project {
@@ -174,19 +163,56 @@ task("deobfJar", Jar::class) {
     classifier = "deobf"
 }
 
-tasks.withType<Jar> {
-    from(java.sourceSets["main"].output)
+if (corePlugin) {
+    tasks.withType<Jar> {
+        manifest {
+            attributes(mapOf(
+                    "FMLCorePluginContainsFMLMod" to "true",
+                    "FMLCorePlugin" to corePluginClass))
+        }
+    }
+}
 
-    archiveName = "$modName-$version.jar"
-    dependsOn(configurations.getByName("compile"))
+fun copyFileTask(name: String, from: String, to: String, target: String) {
+    task(name, Copy::class) {
+        onlyIf { !file("src/main/$to/$target").exists() }
 
-	corePlugin?.let {
-		manifest {
-			attributes(mapOf(
-					"FMLCorePluginContainsFMLMod" to "true",
-					"FMLCorePlugin" to it))
-		}
-	}
+        from("gradle/assets/$from")
+        expand(mapOf("mod_id" to modName,
+                "mod_class" to capitalizedName,
+                "mod_name" to modFancyName,
+                "mod_group" to "$modAuthor.$modName"))
+
+        into("src/main/$to/")
+        rename { target }
+    }
+}
+
+copyFileTask("copyBaseModFile", "basic_class.kt", "java/$modAuthor/$modName", "$capitalizedName.kt")
+copyFileTask("copyModInfoFile", "mcmod.info", "resources", "mcmod.info")
+copyFileTask("copyResourcesFile", "pack.mcmeta", "resources", "pack.mcmeta")
+
+task("copyAsm", Copy::class) {
+    onlyIf { corePlugin && !file("src/main/java/$modAuthor/$modName/asm").exists() }
+    from("gradle/assets/asm/")
+    expand(mapOf("mod_id" to modName,
+            "mod_class" to capitalizedName,
+            "mod_name" to modFancyName,
+            "mod_group" to "$modAuthor.$modName",
+            "mod_group_uri" to "$modAuthor/$modName"))
+    into("src/main/java/$modAuthor/$modName/asm/")
+    rename { capitalizedName + it }
+}
+
+task<Task>("copyModFiles") {
+    dependsOn("copyBaseModFile")
+    dependsOn("copyModInfoFile")
+    dependsOn("copyResourcesFile")
+    dependsOn("copyAsm")
+}
+
+tasks.getByName("setupDecompWorkspace") {
+    dependsOn("copyModFiles")
 }
 
 task<Task>("setup") {
@@ -195,40 +221,41 @@ task<Task>("setup") {
     dependsOn("genIntellijRuns")
 }
 
-artifacts {
-    add("archives", tasks.withType<Jar>("sourceJar"))
-    add("archives", tasks.withType<Jar>("deobfJar"))
-}
-
 repositories {
     mavenCentral()
     maven(url = "http://maven.bluexin.be/repository/snapshots/")
+    maven(url = "http://dvs1.progwml6.com/files/maven")
     maven(url = "http://maven.shadowfacts.net/")
 }
 
 dependencies {
     compile("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
     compile("net.shadowfacts:Forgelin:1.6.0")
-	compile("com.teamwizardry.librarianlib:librarianlib-$mcVersion:$liblibVersion-SNAPSHOT:deobf")
+	compile("com.teamwizardry.librarianlib:librarianlib-$mcVersion:$liblibVersion-SNAPSHOT")
+
+    compile("mezz.jei:jei_$mcVersion:$jeiVersion:api")
+    runtime("mezz.jei:jei_$mcVersion:$jeiVersion")
 }
 
-tasks.withType<ProcessResources>("processResources") {
-    val props = mapOf("version" to version,
+tasks.withType<ProcessResources> {
+    val props = mapOf("version" to modVersion,
             "forge_version" to forgeProjectVersion,
             "mc_version" to mcVersion,
-            "mod_id" to modName)
+            "mod_id" to modName,
+            "mod_name" to modFancyName,
+            "description" to modDescription,
+            "author" to modAuthor)
 
     inputs.properties(props)
 
     from(java.sourceSets["main"].resources.srcDirs) {
-        include("mcmod.info")
+        include("mcmod.info", "pack.mcmeta")
         expand(props)
     }
 
     from(java.sourceSets["main"].resources.srcDirs) {
-        exclude("mcmod.info")
+        exclude("mcmod.info", "pack.mcmeta")
     }
 
     rename("(.+_at.cfg)", "META-INF/$1")
 }
-

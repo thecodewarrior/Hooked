@@ -6,6 +6,7 @@ import net.minecraft.block.properties.PropertyEnum
 import net.minecraft.block.state.BlockStateContainer
 import net.minecraft.block.state.IBlockState
 import net.minecraft.item.EnumDyeColor
+import net.minecraft.item.ItemBlock
 import net.minecraft.util.BlockRenderLayer
 
 /**
@@ -13,8 +14,8 @@ import net.minecraft.util.BlockRenderLayer
  */
 class BlockBalloon : BlockMod("balloon", Material.CLOTH, *EnumDyeColor.values().map { "balloon_" + it.unlocalizedName }.toTypedArray()) {
 
-    init {
-
+    override fun createItemForm(): ItemBlock? {
+        return ItemBlockBalloon(this)
     }
 
     override fun createBlockState(): BlockStateContainer {

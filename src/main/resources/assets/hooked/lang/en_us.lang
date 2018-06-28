@@ -1,3 +1,17 @@
+tooltip.hooked.showControls=<Hold Shift>
+
+tooltip.hooked:hook_wood.info=A simple solution to escaping ditches and climbing trees
+tooltip.hooked:hook_iron.info=Allows floating midair by firing two hooks at opposing points
+tooltip.hooked:hook_diamond.info=Plenty of hooks, plenty of speed.
+tooltip.hooked:hook_red.info=Creative flight within the volume defined by the hooks
+tooltip.hooked:hook_ender.info=Fast. Very, very fast.
+
+tooltip.hooked:hook_wood.controls=Press %1$s to fire hook.\nJump to retract all hooks.\nSneak + press %1$s while looking toward a hook to retract it.
+tooltip.hooked:hook_iron.controls=Press %1$s to fire hook.\nJump to retract all hooks.\nSneak + press %1$s while looking toward a hook to retract it.
+tooltip.hooked:hook_diamond.controls=Press %1$s to fire hook.\nJump to retract all hooks.\nSneak + press %1$s while looking toward a hook to retract it.
+tooltip.hooked:hook_red.controls=Press %1$s to fire hook.\nDouble jump to retract all hooks.\nSneak + press %1$s while looking toward a hook to retract it.
+tooltip.hooked:hook_ender.controls=Press %1$s to fire hook.\nJump to retract all hooks.\nSneak + press %1$s while looking toward a hook to retract it.
+
 item.hooked:hook_wood.name=Wooden Hook
 item.hooked:hook_iron.name=Iron Hook
 item.hooked:hook_diamond.name=Diamond Hook
@@ -9,6 +23,7 @@ item.hooked:rope.name=Rope
 item.hooked:iron_chain_link.name=Iron Chain Link
 item.hooked:iron_chain.name=Iron Chain
 
+tile.hooked:balloon.info=Hold in hand while firing hook to place midair. Pick up by retracting an attached hook with sneak + %s.
 tile.hooked:balloon_white.name=White Balloon
 tile.hooked:balloon_orange.name=Orange Balloon
 tile.hooked:balloon_magenta.name=Magenta Balloon
