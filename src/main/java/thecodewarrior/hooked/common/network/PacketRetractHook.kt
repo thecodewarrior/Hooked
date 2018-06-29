@@ -6,7 +6,6 @@ import com.teamwizardry.librarianlib.features.saving.Save
 import net.minecraft.entity.item.EntityItem
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext
-import thecodewarrior.hooked.common.block.ModBlocks
 import thecodewarrior.hooked.common.capability.EnumHookStatus
 import thecodewarrior.hooked.common.capability.HooksCap
 import java.util.*
@@ -21,23 +20,6 @@ class PacketRetractHook : PacketBase() {
 
     override fun handle(ctx: MessageContext) {
         doTheThing(ctx.serverHandler.player)
-        val player = ctx.serverHandler.player
-        player.ifCap(HooksCap.CAPABILITY, null) { cap ->
-            cap.update(ctx.serverHandler.player)
-            cap.hooks.forEach {
-                if (it.uuid == uuid && it.block != null && player.world.getBlockState(it.block).block == ModBlocks.balloon) {
-                    val state = player.world.getBlockState(it.block)
-                    val drops = state.block.getDrops(player.world, it.block, state, 0)
-                    player.world.setBlockToAir(it.block)
-
-                    if(!player.capabilities.isCreativeMode) {
-                        drops?.forEach { drop ->
-                            player.world.spawnEntity(EntityItem(player.world, player.posX, player.posY, player.posZ, drop))
-                        }
-                    }
-                }
-            }
-        }
     }
 
     fun doTheThing(player: EntityPlayer) {

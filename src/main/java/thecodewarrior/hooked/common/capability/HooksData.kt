@@ -10,11 +10,14 @@ import com.teamwizardry.librarianlib.features.saving.Save
 import com.teamwizardry.librarianlib.features.saving.SaveInPlace
 import net.minecraft.client.Minecraft
 import net.minecraft.entity.Entity
+import net.minecraft.entity.item.EntityItem
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.EnumDyeColor
+import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTBase
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
+import net.minecraft.util.math.AxisAlignedBB
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.Vec3d
@@ -26,8 +29,6 @@ import net.minecraftforge.common.util.INBTSerializable
 import net.minecraftforge.fml.common.network.NetworkRegistry
 import thecodewarrior.hooked.common.HookTickHandler
 import thecodewarrior.hooked.common.HookType
-import thecodewarrior.hooked.common.block.BlockBalloon
-import thecodewarrior.hooked.common.block.ModBlocks
 import thecodewarrior.hooked.common.network.PacketHookCapSync
 import thecodewarrior.hooked.common.network.PacketUpdateWeights
 import thecodewarrior.hooked.common.util.Barycentric
@@ -38,58 +39,7 @@ import java.util.*
  */
 enum class EnumHookStatus(val active: Boolean) { EXTENDING(true), PLANTED(true), TORETRACT(false), RETRACTING(false), DEAD(false); }
 
-@Savable data class HookInfo(var pos: Vec3d, var direction: Vec3d, var status: EnumHookStatus, var block: BlockPos?, var side: EnumFacing?, var balloonColor: EnumDyeColor? = null, var weight: Double = 1.0, var uuid: UUID = UUID.randomUUID()) {
-
-    fun tick(e: EntityPlayer) {
-
-        if (e.world.isRemote) return
-
-        val color = balloonColor
-        if (color != null && status == EnumHookStatus.RETRACTING) {
-            var found = false
-            if (e.world.isAirBlock(block) && e.canPlayerEdit(block, null, null)) {
-                for (i in 0..e.inventory.sizeInventory - 1) {
-                    val stack = e.inventory.getStackInSlot(i)
-                    if (stack != null && stack.item == ModBlocks.balloon.itemForm && stack.metadata == color.metadata) {
-                        if (!e.capabilities.isCreativeMode)
-                            stack.count--
-                        if(stack.count <= 0)
-                            e.inventory.removeStackFromSlot(i)
-                        found = true
-                        break
-                    }
-                }
-                if (found)
-                    e.world.setBlockState(block, ModBlocks.balloon.defaultState.withProperty(BlockBalloon.COLOR, color))
-            }
-            balloonColor = null
-        }
-        /*
-        if (color != null && status == EnumHookStatus.PLANTED) {
-            if (e.world.getBlockState(block).block != ModBlocks.balloon) {
-                val p = block!!.offset(side)
-                if (e.world.isAirBlock(p) && e.canPlayerEdit(p, side, ItemStack(ModBlocks.balloon.itemForm, 1, color.metadata))) {
-                    var found = false
-                    for (i in 0..e.inventory.sizeInventory - 1) {
-                        val stack = e.inventory.getStackInSlot(i)
-                        if (stack != null && stack.item == ModBlocks.balloon.itemForm && stack.metadata == color.metadata) {
-                            if (!e.capabilities.isCreativeMode)
-                                stack.stackSize--
-                            if(stack.stackSize <= 0)
-                                e.inventory.removeStackFromSlot(i)
-                            found = true
-                            break
-                        }
-                    }
-                    if (found)
-                        e.world.setBlockState(p, ModBlocks.balloon.defaultState.withProperty(BlockBalloon.COLOR, color))
-                }
-            }
-            balloonColor = null
-        }
-        */
-    }
-
+@Savable data class HookInfo(var pos: Vec3d, var direction: Vec3d, var status: EnumHookStatus, var block: BlockPos?, var side: EnumFacing?, var weight: Double = 1.0, var uuid: UUID = UUID.randomUUID()) {
     constructor() : this(Vec3d.ZERO, Vec3d.ZERO, EnumHookStatus.PLANTED, null, null)
 }
 

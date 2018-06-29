@@ -7,6 +7,7 @@ import com.teamwizardry.librarianlib.features.network.PacketHandler
 import com.teamwizardry.librarianlib.features.utilities.RaycastUtils
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityLivingBase
+import net.minecraft.entity.item.EntityItem
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.entity.player.EntityPlayerMP
 import net.minecraft.util.EnumParticleTypes
@@ -26,6 +27,7 @@ import thecodewarrior.hooked.common.capability.HooksCap
 import thecodewarrior.hooked.common.capability.HooksCapProvider
 import thecodewarrior.hooked.common.network.PacketHookCapSync
 import java.util.concurrent.ThreadLocalRandom
+import kotlin.math.min
 
 /**
  * Created by TheCodeWarrior
@@ -105,15 +107,17 @@ object HookTickHandler {
             }
 
             if (hook.status == EnumHookStatus.EXTENDING) {
-                val trace = RaycastUtils.raycast(entity.world, hook.pos, hook.pos + hook.direction * (Math.min(type.range - (hook.pos - waist).lengthVector(), type.speed + type.hookLength)))
-                if (trace == null || trace.typeOfHit == RayTraceResult.Type.MISS)
-                    hook.pos += hook.direction * type.speed
-                else {
+                val distanceLeft = type.range - (hook.pos - waist).lengthVector()
+                val speed = type.speed
+                val speedOrRemaining = min(speed, distanceLeft) + type.hookLength
+                val trace = RaycastUtils.raycast(entity.world, hook.pos, hook.pos + hook.direction * speedOrRemaining)
+                if (trace == null || trace.typeOfHit == RayTraceResult.Type.MISS) {
+                    hook.pos += hook.direction * speedOrRemaining
+                } else {
                     hook.pos = trace.hitVec - hook.direction * type.hookLength
                     hook.status = EnumHookStatus.PLANTED
                     hook.block = trace.blockPos
                     hook.side = trace.sideHit
-                    hook.balloonColor = null
                     update = true
                     updatePos = true
 
@@ -140,7 +144,7 @@ object HookTickHandler {
                 }
             }
 
-            if (hook.pos.squareDistanceTo(e.entity.positionVector) > type.rangeSq) {
+            if (hook.pos.squareDistanceTo(waist) > type.rangeSq) {
                 hook.status = EnumHookStatus.TORETRACT
             }
 
@@ -157,8 +161,6 @@ object HookTickHandler {
                 update = true
             }
         }
-
-        cap.hooks.forEach { it.tick(entity) }
 
         if (cap.hooks.removeAll { it.status == EnumHookStatus.DEAD }) {
             update = true
