@@ -107,55 +107,82 @@ class HooksCap {
         }
     }
 
+    fun limitToHookLength(pos: Vec3d, hooks: List<HookInfo>): Vec3d {
+        var pos = pos
+        val clampRange = HookType.RED.range - 1/16.0 // includes one pixel of buffer space
+        hooks.forEach { hook ->
+            val relativePos = pos - hook.pos
+            val length = relativePos.lengthVector()
+            if(length > clampRange) {
+                pos = hook.pos + relativePos * (clampRange/length)
+            }
+        }
+        return pos
+    }
+
     fun correctPos() {
         val center = centerPos ?: return
         val filtered = hooks.filter { it.status == EnumHookStatus.PLANTED }
 
-        if (filtered.size == 1) {
-            val hook0 = filtered[0]
-            verticalHangDistance = hook0.pos.y - Math.min(hook0.pos.y, center.y)
+        when(filtered.size) {
+            1 -> {
+                val hook0 = filtered[0]
+                val clamped = limitToHookLength(center, filtered)
+                verticalHangDistance = hook0.pos.y - Math.min(hook0.pos.y, clamped.y)
+            }
+            2 -> {
+                val hook0 = filtered[0]
+                val hook1 = filtered[1]
+
+                val closest = limitToHookLength(
+                        closestPointOnLine(center, hook0.pos, hook1.pos).second,
+                        filtered
+                )
+
+                hook1.weight = (closest - hook0.pos).lengthVector() / (hook1.pos - hook0.pos).lengthVector()
+                hook0.weight = 1 - hook1.weight
+
+                hook0.weight *= 2
+                hook1.weight *= 2
+            }
+            3 -> {
+                val hook0 = filtered[0]
+                val hook1 = filtered[1]
+                val hook2 = filtered[2]
+
+                val proj = projectToTri(center, hook0.pos, hook1.pos, hook2.pos)
+                val closest = limitToHookLength(
+                        closestPointOnTriangle(proj, hook0.pos, hook1.pos, hook2.pos).second,
+                        filtered
+                )
+
+                val bary = Barycentric.toBarycentric(closest, hook0.pos, hook1.pos, hook2.pos)
+
+                hook0.weight = bary.x * 3
+                hook1.weight = bary.y * 3
+                hook2.weight = bary.z * 3
+            }
+            4 -> {
+                val hook0 = filtered[0]
+                val hook1 = filtered[1]
+                val hook2 = filtered[2]
+                val hook3 = filtered[3]
+
+                val closest = limitToHookLength(
+                        closestPointInTetrahedron(center, hook0.pos, hook1.pos, hook2.pos, hook3.pos).second,
+                        filtered
+                )
+
+                val bary = Barycentric.toBarycentric(closest, hook0.pos, hook1.pos, hook2.pos, hook3.pos)
+
+                hook0.weight = bary.x * 4
+                hook1.weight = bary.y * 4
+                hook2.weight = bary.z * 4
+                hook3.weight = bary.w * 4
+            }
         }
-        if (filtered.size == 2) {
-            val hook0 = filtered[0]
-            val hook1 = filtered[1]
 
-            val closest = closestPointOnLine(center, hook0.pos, hook1.pos).second
 
-            hook1.weight = (closest - hook0.pos).lengthVector() / (hook1.pos - hook0.pos).lengthVector()
-            hook0.weight = 1 - hook1.weight
-
-            hook0.weight *= 2
-            hook1.weight *= 2
-        }
-        if (filtered.size == 3) {
-            val hook0 = filtered[0]
-            val hook1 = filtered[1]
-            val hook2 = filtered[2]
-
-            val proj = projectToTri(center, hook0.pos, hook1.pos, hook2.pos)
-            val closest = closestPointOnTriangle(proj, hook0.pos, hook1.pos, hook2.pos).second
-
-            val bary = Barycentric.toBarycentric(closest, hook0.pos, hook1.pos, hook2.pos)
-
-            hook0.weight = bary.x * 3
-            hook1.weight = bary.y * 3
-            hook2.weight = bary.z * 3
-        }
-        if (filtered.size == 4) {
-            val hook0 = filtered[0]
-            val hook1 = filtered[1]
-            val hook2 = filtered[2]
-            val hook3 = filtered[3]
-
-            val closest = closestPointInTetrahedron(center, hook0.pos, hook1.pos, hook2.pos, hook3.pos).second
-
-            val bary = Barycentric.toBarycentric(closest, hook0.pos, hook1.pos, hook2.pos, hook3.pos)
-
-            hook0.weight = bary.x * 4
-            hook1.weight = bary.y * 4
-            hook2.weight = bary.z * 4
-            hook3.weight = bary.w * 4
-        }
         updatePos()
         updateWeights()
     }
