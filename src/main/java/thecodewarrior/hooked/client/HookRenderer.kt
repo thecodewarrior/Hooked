@@ -121,19 +121,22 @@ class HookRenderer(val type: HookType) {
     }
 
     fun chain(distance: Double, waist: Vec3d, normal: Vec3d, offset: Vec3d, world: World) {
+        val buffer = if(type == HookType.RED) 1.5 else 0.0
+
         val tess = Tessellator.getInstance()
         val vb = tess.buffer
 
         vb.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_LMAP_COLOR)
 
         var len = distance
-        while (len > 0) {
-            if (len > 1) {
+        while (len > buffer) {
+            if (len > buffer+1) {
                 len -= 1.0 // decrement before because we are rendering backward, hook to waist instead of waist to hook
                 val blockPos = BlockPos(waist + normal * (len + 0.5))
                 chainQuad(blockPos, len, offset, 1.0, world, vb)
             } else {
-                chainQuad(BlockPos(waist + normal * (len / 2)), 0.0, offset, len, world, vb)
+                val blockPos = BlockPos(waist + normal * len / 2)
+                chainQuad(blockPos, buffer, offset, len-buffer, world, vb)
 
                 len = 0.0
             }
