@@ -32,6 +32,7 @@ import thecodewarrior.hooked.common.HookType
 import thecodewarrior.hooked.common.network.PacketHookCapSync
 import thecodewarrior.hooked.common.network.PacketUpdateWeights
 import thecodewarrior.hooked.common.util.Barycentric
+import thecodewarrior.hooked.common.util.finiteOrDefault
 import java.util.*
 
 /**
@@ -39,7 +40,16 @@ import java.util.*
  */
 enum class EnumHookStatus(val active: Boolean) { EXTENDING(true), PLANTED(true), TORETRACT(false), RETRACTING(false), DEAD(false); }
 
-@Savable data class HookInfo(var pos: Vec3d, var direction: Vec3d, var status: EnumHookStatus, var block: BlockPos?, var side: EnumFacing?, var weight: Double = 1.0, var uuid: UUID = UUID.randomUUID()) {
+@Savable data class HookInfo(var pos: Vec3d, var direction: Vec3d, var status: EnumHookStatus, var block: BlockPos?, var side: EnumFacing?, private var _weight: Double = 1.0, var uuid: UUID = UUID.randomUUID()) {
+    var weight: Double
+        get() =
+            if(_weight == 0.0 || !_weight.isFinite())
+                1.0
+            else
+                _weight
+        set(value) {
+            _weight = value
+        }
     constructor() : this(Vec3d.ZERO, Vec3d.ZERO, EnumHookStatus.PLANTED, null, null)
 }
 
@@ -54,6 +64,13 @@ class HooksCap {
 
     @Save
     var centerPos: Vec3d? = null
+        set(value) {
+            if(value != null && !(value.x.isFinite() && value.y.isFinite() && value.z.isFinite())) {
+                field = null
+            } else {
+                field = value
+            }
+        }
 
     @Save
     var verticalHangDistance: Double = 0.0

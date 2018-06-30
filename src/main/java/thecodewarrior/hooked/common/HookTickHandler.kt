@@ -175,6 +175,11 @@ object HookTickHandler {
         if(updatePos) cap.updatePos()
         if(update) cap.update(entity)
 
+        if(cap.centerPos == null) {
+            cap.updatePos()
+            cap.update(entity)
+        }
+
         if(cap.hookType == HookType.RED && cap.hooks.count { it.status == EnumHookStatus.PLANTED } > 0)
             cap.updateRedMovement(entity)
 
