@@ -1,14 +1,11 @@
 {
 	"type": "forge:ore_shaped",
 	"pattern": [
-		"DDP",
+		" DD",
 		" HD",
-		"D D"
+		"D  "
 	],
 	"key": {
-		"P": {
-			"item": "minecraft:diamond_pickaxe"
-		},
 		"H": {
 			"item": "hooked:hook",
 			"data": 1
