@@ -1,0 +1,28 @@
+tooltip.hooked.showControls=<Shift を長押し>
+
+tooltip.hooked:hook_wood.info=穴から出たり、木を登ったりする道具
+tooltip.hooked:hook_iron.info=鈎を反対のところに発射すると空中で浮かぶ
+tooltip.hooked:hook_diamond.info=鈎がたっぷり、速度が速い。
+tooltip.hooked:hook_red.info=鈎の境界の中でクリエイティブモードの飛行可能
+tooltip.hooked:hook_ender.info=速い。すごく速い。
+
+tooltip.hooked:hook_wood.controls=%1$s を押すと鈎を発射する。\nジャンプすると全ての鈎を引っ込める。\n鈎を見て、スニークしながら %1$s を押すとその鈎を引っ込める。
+tooltip.hooked:hook_iron.controls=%1$s を押すと鈎を発射する。\nジャンプすると全ての鈎を引っ込める。\n鈎を見て、スニークしながら %1$s を押すとその鈎を引っ込める。
+tooltip.hooked:hook_diamond.controls=%1$s を押すと鈎を発射する。\nジャンプすると全ての鈎を引っ込める。\n鈎を見て、スニークしながら %1$s を押すとその鈎を引っ込める。
+tooltip.hooked:hook_red.controls=%1$s を押すと鈎を発射する。\nジャンプすると全ての鈎を引っ込める。\n鈎を見て、スニークしながら %1$s を押すとその鈎を引っ込める。
+tooltip.hooked:hook_ender.controls=%1$s を押すと鈎を発射する。\nジャンプすると全ての鈎を引っ込める。\n鈎を見て、スニークしながら %1$s を押すとその鈎を引っ込める。
+
+item.hooked:hook_wood.name=木の鈎
+item.hooked:hook_iron.name=鉄の鈎
+item.hooked:hook_diamond.name=ダイヤモンドの鈎
+item.hooked:hook_red.name=赤い鈎
+item.hooked:hook_ender.name=エンダー鈎
+
+item.hooked:plant_fiber.name=植物繊維
+item.hooked:rope.name=ロープ
+item.hooked:iron_chain_link.name=鉄のチェーンリンク
+item.hooked:iron_chain.name=鉄の鎖
+
+key.hooked.fire=鈎を発射する
+
+item_group.hooked=Hooked
