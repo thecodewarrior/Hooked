@@ -6,6 +6,7 @@ import baubles.api.IBauble
 import com.teamwizardry.librarianlib.features.base.item.ItemMod
 import com.teamwizardry.librarianlib.features.kotlin.ifCap
 import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.GuiScreen
 import net.minecraft.client.resources.I18n
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.entity.EntityLivingBase
@@ -33,7 +34,7 @@ class ItemHook : ItemMod("hook", *HookType.values().map { "hook_" + it.toString(
 
         tooltip.add(I18n.format("tooltip.hooked:hook_$hookLangName.info"))
 
-        if(Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
+        if(GuiScreen.isShiftKeyDown()) {
             val controls = I18n.format("tooltip.hooked:hook_$hookLangName.controls", KeyBinds.keyFire.displayName)
             tooltip.addAll(controls.split("\\n").map { "- $it" })
         } else {
