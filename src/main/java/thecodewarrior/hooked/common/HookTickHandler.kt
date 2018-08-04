@@ -1,5 +1,6 @@
 package thecodewarrior.hooked.common
 
+import baubles.api.BaublesApi
 import com.teamwizardry.librarianlib.features.helpers.vec
 import com.teamwizardry.librarianlib.features.kotlin.*
 import com.teamwizardry.librarianlib.features.methodhandles.MethodHandleHelper
@@ -25,6 +26,7 @@ import thecodewarrior.hooked.HookedMod
 import thecodewarrior.hooked.common.capability.EnumHookStatus
 import thecodewarrior.hooked.common.capability.HooksCap
 import thecodewarrior.hooked.common.capability.HooksCapProvider
+import thecodewarrior.hooked.common.items.ModItems
 import thecodewarrior.hooked.common.network.PacketHookCapSync
 import java.util.concurrent.ThreadLocalRandom
 import kotlin.math.min
@@ -41,12 +43,12 @@ object HookTickHandler {
 
     @SubscribeEvent
     fun playerAttach(e: AttachCapabilitiesEvent<Entity>) {
-        if(e.`object` is EntityPlayer) e.addCapability(rl, HooksCapProvider())
+        if (e.`object` is EntityPlayer) e.addCapability(rl, HooksCapProvider())
     }
 
     @SubscribeEvent
     fun track(e: PlayerEvent.StartTracking) {
-        if(e.entityPlayer.world.isRemote)
+        if (e.entityPlayer.world.isRemote)
             return
         val target = e.target
         target.ifCap(HooksCap.CAPABILITY, null) {
@@ -57,7 +59,7 @@ object HookTickHandler {
     @SubscribeEvent
     fun join(e: EntityJoinWorldEvent) {
         val entity = e.entity
-        if(entity is EntityPlayer && !entity.world.isRemote) {
+        if (entity is EntityPlayer && !entity.world.isRemote) {
             PacketHandler.NETWORK.sendTo(PacketHookCapSync(entity), entity as EntityPlayerMP)
         }
     }
@@ -83,14 +85,19 @@ object HookTickHandler {
         }
         val cap = entity.getCapability(HooksCap.CAPABILITY, null)!!
 
-        val type = cap.hookType
-        if (type == null) {
+        val baubles = BaublesApi.getBaublesHandler(entity)
+        val hookItem = (0 until baubles.slots).map { baubles.getStackInSlot(it) }.find { it.item == ModItems.hook }
+        val itemType = hookItem?.let { HookType.values()[it.itemDamage % HookType.values().size] }
+        if (itemType != cap.hookType) {
+            cap.hookType = itemType
             cap.hooks.clear()
             cap.verticalHangDistance = 0.0
             cap.centerPos = null
-            return
+            cap.update(entity)
         }
-        if(type != HookType.RED || cap.hooks.size != 1) {
+        val type = cap.hookType ?: return
+
+        if (type != HookType.RED || cap.hooks.size != 1) {
             cap.verticalHangDistance = 0.0
         }
 
@@ -172,15 +179,15 @@ object HookTickHandler {
             updatePos = true
         }
 
-        if(updatePos) cap.updatePos()
-        if(update) cap.update(entity)
+        if (updatePos) cap.updatePos()
+        if (update) cap.update(entity)
 
-        if(cap.centerPos == null) {
+        if (cap.centerPos == null) {
             cap.updatePos()
             cap.update(entity)
         }
 
-        if(cap.hookType == HookType.RED && cap.hooks.count { it.status == EnumHookStatus.PLANTED } > 0)
+        if (cap.hookType == HookType.RED && cap.hooks.count { it.status == EnumHookStatus.PLANTED } > 0)
             cap.updateRedMovement(entity)
 
         var shouldSet = false
@@ -194,13 +201,13 @@ object HookTickHandler {
             }
         }?.let {
             val forceCoeff = 0.5
-            if(shouldSet) {
+            if (shouldSet) {
                 entity.motionX = it.x
                 entity.motionY = it.y
                 entity.motionZ = it.z
             } else {
                 cap.hooks.forEach {
-                    if(it.status != EnumHookStatus.PLANTED)
+                    if (it.status != EnumHookStatus.PLANTED)
                         return@forEach
 
                     val pullVec = it.pos - waist
@@ -219,7 +226,7 @@ object HookTickHandler {
                     else
                         entity.motionX = adjusted
                 }
-                if (Math.abs(e.entity.motionY) < Math.abs(it.y)){
+                if (Math.abs(e.entity.motionY) < Math.abs(it.y)) {
                     val adjusted = e.entity.motionY + it.y * forceCoeff
                     if (Math.abs(adjusted) > Math.abs(it.y))
                         entity.motionY = it.y
@@ -244,8 +251,6 @@ object HookTickHandler {
             if (!e.entity.world.isRemote)
                 e.entity.world.spawnParticle(EnumParticleTypes.FLAME, it.x, it.y, it.z, 0.0, 0.0, 0.0, 0)
         }
-
-
     }
 
     fun getWaistPos(e: Entity): Vec3d {

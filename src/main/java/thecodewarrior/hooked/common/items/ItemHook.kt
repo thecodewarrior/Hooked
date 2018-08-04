@@ -45,25 +45,11 @@ class ItemHook : ItemMod("hook", *HookType.values().map { "hook_" + it.toString(
         return BaubleType.TRINKET
     }
 
-    override fun onUnequipped(itemstack: ItemStack, player: EntityLivingBase?) {
-        player?.ifCap(HooksCap.CAPABILITY, null) { cap ->
-            cap.hookType = null
-            cap.update(player)
-        }
-    }
-
-    override fun onEquipped(itemstack: ItemStack, player: EntityLivingBase?) {
-        player?.ifCap(HooksCap.CAPABILITY, null) { cap ->
-            cap.hookType = HookType.values()[itemstack.itemDamage % HookType.values().size]
-            cap.update(player)
-        }
-    }
-
     override fun canEquip(itemstack: ItemStack, player: EntityLivingBase): Boolean {
         if(player !is EntityPlayer)
             return false
         val handler = BaublesApi.getBaublesHandler(player)
-        return !(0..handler.slots-1).any { handler.getStackInSlot(it)?.item == ModItems.hook }
+        return !(0 until handler.slots).any { handler.getStackInSlot(it).item == ModItems.hook }
     }
 
     override fun willAutoSync(itemstack: ItemStack?, player: EntityLivingBase?): Boolean {
