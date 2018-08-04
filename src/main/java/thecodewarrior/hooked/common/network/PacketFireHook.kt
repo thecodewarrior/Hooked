@@ -35,6 +35,7 @@ class PacketFireHook : PacketBase() {
             if(spawnDistance > 10) {
                 HookLog.warn("Player ${player.name} spawned a hook too far from their body! Expected point within " +
                         "10 blocks of player. Got a point $spawnDistance blocks away.")
+                cap.update(player)
             }
             val type = cap.hookType ?: return@ifCap
             if(cap.hooks.count { it.status.active } <= type.count + 1) {
