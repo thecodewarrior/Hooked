@@ -1,7 +1,7 @@
 [{
   "modid": "hooked",
   "name": "Hooked",
-  "description": "Grappling hooks designed to be useful tools above all else. Replaces all the unique aspects of creative flight without the unfun bits.",
+  "description": "Grappling hooks designed to be simple, natural, and useful.",
   "version": "1.0.0",
   "mcversion": "1.12.2",
   "logoFile": "assets/hooked/textures/logo.png",
