@@ -26,6 +26,7 @@ import thecodewarrior.hooked.HookedMod
 import thecodewarrior.hooked.common.capability.EnumHookStatus
 import thecodewarrior.hooked.common.capability.HooksCap
 import thecodewarrior.hooked.common.capability.HooksCapProvider
+import thecodewarrior.hooked.common.items.ItemHook
 import thecodewarrior.hooked.common.items.ModItems
 import thecodewarrior.hooked.common.network.PacketHookCapSync
 import java.util.concurrent.ThreadLocalRandom
@@ -96,6 +97,7 @@ object HookTickHandler {
             cap.update(entity)
         }
         val type = cap.hookType ?: return
+        val count = if(hookItem?.let { ItemHook.isInhibited(hookItem) } == true) 1 else type.count
 
         if (type != HookType.RED || cap.hooks.size != 1) {
             cap.verticalHangDistance = 0.0
@@ -173,7 +175,7 @@ object HookTickHandler {
             update = true
             updatePos = true
         }
-        while (cap.hooks.count { it.status == EnumHookStatus.PLANTED } > type.count) {
+        while (cap.hooks.count { it.status == EnumHookStatus.PLANTED } > count) {
             cap.hooks.find { it.status == EnumHookStatus.PLANTED }?.status = EnumHookStatus.TORETRACT
             update = true
             updatePos = true

@@ -5,6 +5,7 @@ import baubles.api.BaublesApi
 import baubles.api.IBauble
 import com.teamwizardry.librarianlib.features.base.item.ItemMod
 import com.teamwizardry.librarianlib.features.kotlin.ifCap
+import com.teamwizardry.librarianlib.features.kotlin.nbt
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiScreen
 import net.minecraft.client.resources.I18n
@@ -12,6 +13,10 @@ import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
+import net.minecraft.nbt.NBTTagByte
+import net.minecraft.util.ActionResult
+import net.minecraft.util.EnumActionResult
+import net.minecraft.util.EnumHand
 import net.minecraft.world.World
 import org.lwjgl.input.Keyboard
 import thecodewarrior.hooked.client.KeyBinds
@@ -32,6 +37,8 @@ class ItemHook : ItemMod("hook", *HookType.values().map { "hook_" + it.toString(
         val hookLangName = HookType.values()[stack.itemDamage % HookType.values().size]
                 .toString().toLowerCase(Locale.ROOT)
 
+        if(isInhibited(stack))
+            tooltip.add(I18n.format("tooltip.hooked:hook.inhibited"))
         tooltip.add(I18n.format("tooltip.hooked:hook_$hookLangName.info"))
 
         if(GuiScreen.isShiftKeyDown()) {
@@ -40,6 +47,19 @@ class ItemHook : ItemMod("hook", *HookType.values().map { "hook_" + it.toString(
         } else {
             tooltip.add(I18n.format("tooltip.hooked.showControls"))
         }
+    }
+
+    override fun onItemRightClick(worldIn: World?, playerIn: EntityPlayer, handIn: EnumHand): ActionResult<ItemStack> {
+        if(playerIn.isSneaking) {
+            val item = playerIn.getHeldItem(handIn).copy()
+            if(isInhibited(item)) {
+                item.nbt["inhibited"] = null
+            } else {
+                item.nbt["inhibited"] = NBTTagByte(1.toByte())
+            }
+            return ActionResult(EnumActionResult.SUCCESS, item)
+        }
+        return super.onItemRightClick(worldIn, playerIn, handIn)
     }
 
     override fun getBaubleType(p0: ItemStack?): BaubleType {
@@ -55,5 +75,12 @@ class ItemHook : ItemMod("hook", *HookType.values().map { "hook_" + it.toString(
 
     override fun willAutoSync(itemstack: ItemStack?, player: EntityLivingBase?): Boolean {
         return true
+    }
+
+    companion object {
+        fun isInhibited(stack: ItemStack): Boolean {
+            return (stack.nbt["inhibited"] as? NBTTagByte)?.byte == 1.toByte()
+        }
+
     }
 }

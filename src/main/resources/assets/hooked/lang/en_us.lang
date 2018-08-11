@@ -1,5 +1,7 @@
 tooltip.hooked.showControls=<Hold Shift>
 
+tooltip.hooked:hook.inhibited=Inhibited (limited to 1 hook)
+
 tooltip.hooked:hook_wood.info=A simple solution to escaping ditches and climbing trees
 tooltip.hooked:hook_iron.info=Allows floating midair by firing two hooks at opposing points
 tooltip.hooked:hook_diamond.info=Plenty of hooks, plenty of speed.
