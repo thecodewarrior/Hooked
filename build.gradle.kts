@@ -101,6 +101,7 @@ extensions.getByType(ForgeExtension::class.java).apply {
     replaceIn("mcmod.info")
 
     replace("%VERSION%", modVersion)
+    replace("required-after:librarianlib", "required-after:librarianlib@[4.12,)")
 }
 
 for (set in java.sourceSets) {
