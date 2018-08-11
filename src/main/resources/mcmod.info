@@ -2,10 +2,14 @@
   "modid": "hooked",
   "name": "Hooked",
   "description": "Grappling hooks designed to be simple, natural, and useful.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "mcversion": "1.12.2",
   "logoFile": "assets/hooked/textures/logo.png",
   "url": "teamwizardry.com/",
-  "authorList": ["TheCodeWarrior"],
-  "credits": "Daniel Astral for the item textures."
+  "authorList": ["thecodewarrior"],
+  "credits": "Daniel Astral for the item textures. Terraria for the hook design",
+  "requiredMods": [
+    "librarianlib",
+    "baubles"
+  ]
 }]
