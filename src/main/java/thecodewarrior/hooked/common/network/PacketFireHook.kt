@@ -42,7 +42,7 @@ class PacketFireHook : PacketBase() {
                 if(cap.hooks.count { it.status == EnumHookStatus.PLANTED } == 1)
                     cap.hooks.find { it.status == EnumHookStatus.PLANTED }?.weight = 1.0
                 val hook = HookInfo(pos, normal.normalize(), EnumHookStatus.EXTENDING, null, null)
-                cap.hooks.addLast(hook)
+                cap.hooks.add(hook)
             }
         }
     }

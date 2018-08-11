@@ -57,7 +57,7 @@ enum class EnumHookStatus(val active: Boolean) { EXTENDING(true), PLANTED(true),
 class HooksCap {
 
     @Save
-    var hooks = LinkedList<HookInfo>()
+    var hooks = ArrayList<HookInfo>()
 
     @Save
     var hookType: HookType? = null
