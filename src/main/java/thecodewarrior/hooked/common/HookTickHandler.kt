@@ -88,7 +88,7 @@ object HookTickHandler {
 
         val baubles = BaublesApi.getBaublesHandler(entity)
         val hookItem = (0 until baubles.slots).map { baubles.getStackInSlot(it) }.find { it.item == ModItems.hook }
-        val itemType = hookItem?.let { HookType.values()[it.itemDamage % HookType.values().size] }
+        val itemType = ItemHook.getType(hookItem)
         if (itemType != cap.hookType) {
             cap.hookType = itemType
             cap.hooks.clear()
@@ -129,7 +129,6 @@ object HookTickHandler {
                     hook.side = trace.sideHit
                     update = true
                     updatePos = true
-
                 }
             }
 

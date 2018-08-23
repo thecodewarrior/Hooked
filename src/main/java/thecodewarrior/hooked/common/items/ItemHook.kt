@@ -34,12 +34,21 @@ class ItemHook : ItemMod("hook", *HookType.values().map { "hook_" + it.toString(
 
     override fun addInformation(stack: ItemStack, worldIn: World?, tooltip: MutableList<String>, flagIn: ITooltipFlag) {
         super.addInformation(stack, worldIn, tooltip, flagIn)
-        val hookLangName = HookType.values()[stack.itemDamage % HookType.values().size]
-                .toString().toLowerCase(Locale.ROOT)
+        val type = getType(stack)!!
+        val hookLangName = type.toString().toLowerCase(Locale.ROOT)
 
-        if(isInhibited(stack))
-            tooltip.add(I18n.format("tooltip.hooked:hook.inhibited"))
         tooltip.add(I18n.format("tooltip.hooked:hook_$hookLangName.info"))
+
+        if(type.count > 1) {
+            if (isInhibited(stack)) {
+                tooltip.add(I18n.format("tooltip.hooked:hook.inhibited"))
+                if (GuiScreen.isShiftKeyDown())
+                    tooltip.add(I18n.format("tooltip.hooked:hook.inhibited.help"))
+            } else {
+                if (GuiScreen.isShiftKeyDown())
+                    tooltip.add(I18n.format("tooltip.hooked:hook.uninhibited.help"))
+            }
+        }
 
         if(GuiScreen.isShiftKeyDown()) {
             val controls = I18n.format("tooltip.hooked:hook_$hookLangName.controls", KeyBinds.keyFire.displayName)
@@ -49,15 +58,18 @@ class ItemHook : ItemMod("hook", *HookType.values().map { "hook_" + it.toString(
         }
     }
 
-    override fun onItemRightClick(worldIn: World?, playerIn: EntityPlayer, handIn: EnumHand): ActionResult<ItemStack> {
+    override fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand): ActionResult<ItemStack> {
         if(playerIn.isSneaking) {
-            val item = playerIn.getHeldItem(handIn).copy()
-            if(isInhibited(item)) {
-                item.nbt["inhibited"] = null
-            } else {
-                item.nbt["inhibited"] = NBTTagByte(1.toByte())
+            val type = getType(playerIn.getHeldItem(handIn))
+            if(type?.count ?: 0 > 1) {
+                val item = playerIn.getHeldItem(handIn).copy()
+                if(isInhibited(item)) {
+                    item.nbt["inhibited"] = null
+                } else {
+                    item.nbt["inhibited"] = NBTTagByte(1.toByte())
+                }
+                return ActionResult(EnumActionResult.SUCCESS, item)
             }
-            return ActionResult(EnumActionResult.SUCCESS, item)
         }
         return super.onItemRightClick(worldIn, playerIn, handIn)
     }
@@ -82,5 +94,9 @@ class ItemHook : ItemMod("hook", *HookType.values().map { "hook_" + it.toString(
             return (stack.nbt["inhibited"] as? NBTTagByte)?.byte == 1.toByte()
         }
 
+        fun getType(stack: ItemStack?): HookType? {
+            if(stack == null || stack.item != ModItems.hook) return null
+            return HookType.values()[stack.itemDamage % HookType.values().size]
+        }
     }
 }
