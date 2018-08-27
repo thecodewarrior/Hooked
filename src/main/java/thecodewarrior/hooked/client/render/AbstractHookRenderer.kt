@@ -11,11 +11,16 @@ import thecodewarrior.hooked.common.hook.HookController
 import thecodewarrior.hooked.common.hook.HookInFlight
 import thecodewarrior.hooked.common.hook.HookType
 
-abstract class AbstractHookRenderer<T: HookType, C: HookController>(val type: T): HookRenderer<C>() {
+abstract class AbstractHookRenderer<T: HookType, C: HookController>(val type: T): HookRenderer() {
     init {
         registryName = type.registryName
     }
-    override fun render(controller: C) {
+    override fun render(controller: HookController) {
+        @Suppress("UNCHECKED_CAST")
+        renderController(controller as C)
+    }
+
+    open fun renderController(controller: C) {
         preRender(controller)
         controller.extendingHooks.forEach {
             renderHookInFlight(it)

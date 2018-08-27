@@ -31,12 +31,12 @@ class HooksCap(val player: EntityPlayer) {
 
     @SideOnly(Side.CLIENT)
     @JvmField
-    var renderer: HookRenderer<*>? = null
+    var renderer: HookRenderer? = null
 
     var controller: HookController? = null
         set(value) {
             field = value
-            ClientRunnable {
+            ClientRunnable.run {
                 if(value == null) {
                     renderer = null
                 } else {
@@ -47,7 +47,7 @@ class HooksCap(val player: EntityPlayer) {
 
     fun updateController() {
         val item = ItemHook.getEquipped(player)
-        if(item == null) {
+        if(item == null && controller != null) {
             controller = null
             return
         }

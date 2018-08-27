@@ -5,6 +5,7 @@ import com.teamwizardry.librarianlib.features.methodhandles.MethodHandleHelper
 import net.minecraft.client.Minecraft
 import net.minecraft.client.entity.EntityPlayerSP
 import net.minecraft.entity.EntityLivingBase
+import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.RegistryEvent
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
@@ -21,6 +22,11 @@ import thecodewarrior.hooked.common.hook.HookTypes
  * Created by TheCodeWarrior
  */
 class ClientProxy : CommonProxy() {
+    init {
+        @Suppress("LeakingThis")
+        MinecraftForge.EVENT_BUS.register(this)
+    }
+
     override fun pre(e: FMLPreInitializationEvent) {
         super.pre(e)
 
@@ -30,7 +36,7 @@ class ClientProxy : CommonProxy() {
     }
 
     @SubscribeEvent
-    fun registerRenderers(e: RegistryEvent.Register<HookRenderer<*>>) {
+    fun registerRenderers(e: RegistryEvent.Register<HookRenderer>) {
         HookRenderer.REGISTRY.registerAll(
                 BasicHookRenderer(HookTypes.missingno, 0.0),
                 BasicHookRenderer(HookTypes.wood, 0.0),
@@ -49,8 +55,7 @@ class ClientProxy : CommonProxy() {
 
     override fun createRegistries(e: RegistryEvent.NewRegistry) {
         super.createRegistries(e)
-        @Suppress("UNCHECKED_CAST")
-        HookRenderer.REGISTRY = RegistryBuilder<HookRenderer<*>>()
+        HookRenderer.REGISTRY = RegistryBuilder<HookRenderer>()
                 .setType(HookRenderer::class.java)
                 .setMaxID(256)
                 .setName("hooked:hook_renderer".toRl())
