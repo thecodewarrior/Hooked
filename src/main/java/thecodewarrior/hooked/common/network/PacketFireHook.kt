@@ -25,9 +25,6 @@ class PacketFireHook : PacketBase() {
 
     override fun handle(ctx: MessageContext) {
         doTheThing(ctx.serverHandler.player)
-        ctx.serverHandler.player.ifCap(HooksCap.CAPABILITY, null) { cap ->
-            cap.update(ctx.serverHandler.player)
-        }
     }
 
     fun doTheThing(player: EntityPlayer) {
@@ -36,10 +33,12 @@ class PacketFireHook : PacketBase() {
             if(spawnDistance > 10) {
                 HookLog.warn("Player ${player.name} spawned a hook too far from their body! Expected point within " +
                         "10 blocks of player. Got $pos, $spawnDistance blocks away.")
-                cap.update(player)
             }
+
             val controller = cap.controller ?: return@ifCap
             controller.fireHook(pos, normal.normalize(), uuid)
+
+            cap.update()
         }
     }
 }

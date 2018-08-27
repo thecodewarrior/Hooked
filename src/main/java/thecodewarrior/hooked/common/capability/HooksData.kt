@@ -57,9 +57,14 @@ class HooksCap(val player: EntityPlayer) {
         }
     }
 
-    fun update(player: Entity) {
+    fun update() {
         if (!player.world.isRemote)
-            PacketHandler.NETWORK.sendToAllAround(PacketHookCapSync(player), NetworkRegistry.TargetPoint(player.world.provider.dimension, player.posX, player.posY, player.posZ, 128.0))
+            PacketHandler.NETWORK.sendToAllAround(
+                    PacketHookCapSync(player),
+                    NetworkRegistry.TargetPoint(player.world.provider.dimension,
+                            player.posX, player.posY, player.posZ, 128.0
+                    )
+            )
     }
 
     fun writeToNBT(compound: NBTTagCompound): NBTTagCompound {

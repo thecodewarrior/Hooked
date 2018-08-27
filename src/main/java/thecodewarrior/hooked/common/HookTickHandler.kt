@@ -75,6 +75,10 @@ object HookTickHandler {
 
         cap.updateController()
         cap.controller?.tick()
+        if(cap.controller?.dirty == true) {
+            cap.controller?.dirty = false
+            cap.update()
+        }
     }
 }
 

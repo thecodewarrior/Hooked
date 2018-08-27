@@ -139,15 +139,36 @@ abstract class HookController(
     open fun playerJump() {
         if(plantedHooks.isNotEmpty()) {
             performSimpleJump()
+            retractingHooks.addAll(plantedHooks.map { hook ->
+                HookInFlight(hook.pos, hook.direction, hook.uuid)
+            })
+            plantedHooks.clear()
+            markDirty()
+        }
+        if(extendingHooks.isNotEmpty()) {
+            retractingHooks.addAll(extendingHooks)
+            extendingHooks.clear()
+            markDirty()
         }
     }
 
     protected fun performSimpleJump() {
+
+        var boost = 0.0
+        targetPoint?.let { targetPoint ->
+            val waist = getWaistPos(player)
+            val deltaPos = targetPoint - waist
+            val deltaLen = deltaPos.lengthVector()
+
+            if (deltaLen < pullStrength) { // close enough that we should be snapped in position
+                boost = 0.05
+            }
+        }
         player.motionX *= 1.25
         player.motionY *= 1.25
         player.motionZ *= 1.25
         player.jump()
-        player.motionY = max(player.motionY, 0.42 + 0.1) // 0.42 == vanilla jump speed
+        player.motionY = max(player.motionY, 0.42 + boost) // 0.42 == vanilla jump speed
     }
 
     open fun tick() {
@@ -245,7 +266,7 @@ abstract class HookController(
         val deltaPos = targetPoint - waist
         val deltaLen = deltaPos.lengthVector()
 
-        if (deltaLen < pullStrength*3) { // close enough that we should set to avoid oscillations
+        if (deltaLen < pullStrength) { // close enough that we should set to avoid oscillations
             player.motionX = deltaPos.x
             player.motionY = deltaPos.y
             player.motionZ = deltaPos.z
