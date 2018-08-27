@@ -9,8 +9,10 @@ import com.teamwizardry.librarianlib.features.saving.Save
 import io.netty.buffer.ByteBuf
 import net.minecraft.client.Minecraft
 import net.minecraft.entity.Entity
+import net.minecraft.nbt.NBTTagCompound
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext
 import net.minecraftforge.fml.relauncher.FMLLaunchHandler
+import net.minecraftforge.fml.relauncher.Side
 import thecodewarrior.hooked.common.capability.HooksCap
 
 /**
@@ -18,44 +20,22 @@ import thecodewarrior.hooked.common.capability.HooksCap
  */
 class PacketHookCapSync(player: Entity? = null) : PacketBase() {
 
-    @Save var eid: Int = 0
-    var cap: HooksCap? = null
+    @Save
+    var eid: Int = 0
+    @Save
+    var nbt = NBTTagCompound()
+
     init {
         player?.let {
             eid = it.entityId
-            cap = it.getCapability(HooksCap.CAPABILITY, null)
+            it.getCapability(HooksCap.CAPABILITY, null)?.writeToNBT(nbt)
         }
     }
-
-    // Buf is always null serverside
-    private var buf: ByteBuf? = null
 
     override fun handle(ctx: MessageContext) {
-        if (FMLLaunchHandler.side().isServer) return
-
-        val b = buf
-
-        val player = Minecraft.getMinecraft().world.getEntityByID(eid)
-        cap = player?.getCapability(HooksCap.CAPABILITY, null)
-        if(b == null || player == null || cap == null) return
-
-        AbstractSaveHandler.readAutoBytes(cap!!, b, true)
-
-        cap = null
-    }
-
-    override fun readCustomBytes(buf: ByteBuf) {
-        if (buf.hasNullSignature()) return
-        this.buf = buf.copy()
-    }
-
-    override fun writeCustomBytes(buf: ByteBuf) {
-        cap?.let {
-            buf.writeNonnullSignature()
-
-            AbstractSaveHandler.writeAutoBytes(it, buf, true)
+        if(ctx.side == Side.CLIENT) {
+            val player = Minecraft.getMinecraft().world.getEntityByID(eid)
+            player?.getCapability(HooksCap.CAPABILITY, null)?.readFromNBT(nbt)
         }
-        if(cap == null)
-            buf.writeNullSignature()
     }
 }

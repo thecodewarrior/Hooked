@@ -1,4 +1,4 @@
-package thecodewarrior.hooked.client
+package thecodewarrior.hooked.client.render
 
 import com.teamwizardry.librarianlib.features.helpers.vec
 import com.teamwizardry.librarianlib.features.kotlin.minus
@@ -14,9 +14,9 @@ import net.minecraftforge.client.model.animation.Animation
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import org.lwjgl.opengl.GL11
-import thecodewarrior.hooked.common.HookTickHandler
-import thecodewarrior.hooked.common.HookType
+import thecodewarrior.hooked.common.HookTypeEnum
 import thecodewarrior.hooked.common.capability.HooksCap
+import thecodewarrior.hooked.common.hook.HookController
 
 /**
  * Created by TheCodeWarrior
@@ -55,12 +55,10 @@ object HookRenderHandler {
 
     @SubscribeEvent
     fun stitch(e: TextureStitchEvent) {
-        renderers.forEach {
-            it.endHandle.getResources().forEach {
-                e.map.registerSprite(it)
-            }
+        HookRenderer.REGISTRY.forEach { renderer ->
+            renderer.reloadResources()
+            renderer.registerSprites(e.map)
         }
-        renderers.forEach { it.endHandle.purge() }
     }
 
     fun render(entity: Entity) {
@@ -68,25 +66,13 @@ object HookRenderHandler {
             return
         val cap = entity.getCapability(HooksCap.CAPABILITY, null)!!
 
-        val type = cap.hookType ?: return
+        val controller = cap.controller ?: return
 
-        GlStateManager.pushAttrib()
         GlStateManager.pushMatrix()
-
-        val lastPos = vec(entity.lastTickPosX, entity.lastTickPosY, entity.lastTickPosZ)
-        val partialOffset = (entity.positionVector-lastPos)*(1-Animation.getPartialTickTime())
-
-//        val globalize = -(entity.positionVector-partialOffset)
-//        GlStateManager.translate(globalize.xCoord, globalize.yCoord, globalize.zCoord)
-
         GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
-        val waist = HookTickHandler.getWaistPos(entity)-partialOffset
-        for(hook in cap.hooks)
-            renderers[type.ordinal].renderHook(waist, hook, entity.world)
+
+        cap.renderer?.render(controller)
 
         GlStateManager.popMatrix()
-        GlStateManager.popAttrib()
     }
-
-    val renderers = HookType.values().map { HookRenderer(it) }.toTypedArray()
 }

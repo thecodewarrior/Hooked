@@ -4,9 +4,8 @@ import baubles.api.BaubleType
 import baubles.api.BaublesApi
 import baubles.api.IBauble
 import com.teamwizardry.librarianlib.features.base.item.ItemMod
-import com.teamwizardry.librarianlib.features.kotlin.ifCap
 import com.teamwizardry.librarianlib.features.kotlin.nbt
-import net.minecraft.client.Minecraft
+import com.teamwizardry.librarianlib.features.kotlin.toRl
 import net.minecraft.client.gui.GuiScreen
 import net.minecraft.client.resources.I18n
 import net.minecraft.client.util.ITooltipFlag
@@ -14,20 +13,20 @@ import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagByte
+import net.minecraft.nbt.NBTTagString
 import net.minecraft.util.ActionResult
 import net.minecraft.util.EnumActionResult
 import net.minecraft.util.EnumHand
 import net.minecraft.world.World
-import org.lwjgl.input.Keyboard
 import thecodewarrior.hooked.client.KeyBinds
-import thecodewarrior.hooked.common.HookType
-import thecodewarrior.hooked.common.capability.HooksCap
+import thecodewarrior.hooked.common.HookTypeEnum
+import thecodewarrior.hooked.common.hook.HookType
 import java.util.*
 
 /**
  * Created by TheCodeWarrior
  */
-class ItemHook : ItemMod("hook", *HookType.values().map { "hook_" + it.toString().toLowerCase(Locale.ROOT) }.toTypedArray()), IBauble {
+class ItemHook : ItemMod("hook", *HookTypeEnum.values().map { "hook_" + it.toString().toLowerCase(Locale.ROOT) }.toTypedArray()), IBauble {
     init {
         maxStackSize = 1
     }
@@ -35,41 +34,21 @@ class ItemHook : ItemMod("hook", *HookType.values().map { "hook_" + it.toString(
     override fun addInformation(stack: ItemStack, worldIn: World?, tooltip: MutableList<String>, flagIn: ITooltipFlag) {
         super.addInformation(stack, worldIn, tooltip, flagIn)
         val type = getType(stack)!!
-        val hookLangName = type.toString().toLowerCase(Locale.ROOT)
-
-        tooltip.add(I18n.format("tooltip.hooked:hook_$hookLangName.info"))
-
-        if(type.count > 1) {
-            if (isInhibited(stack)) {
-                tooltip.add(I18n.format("tooltip.hooked:hook.inhibited"))
-                if (GuiScreen.isShiftKeyDown())
-                    tooltip.add(I18n.format("tooltip.hooked:hook.inhibited.help"))
-            } else {
-                if (GuiScreen.isShiftKeyDown())
-                    tooltip.add(I18n.format("tooltip.hooked:hook.uninhibited.help"))
-            }
-        }
 
         if(GuiScreen.isShiftKeyDown()) {
-            val controls = I18n.format("tooltip.hooked:hook_$hookLangName.controls", KeyBinds.keyFire.displayName)
-            tooltip.addAll(controls.split("\\n").map { "- $it" })
+            type.addFullInformation(stack, tooltip)
         } else {
-            tooltip.add(I18n.format("tooltip.hooked.showControls"))
+            type.addBasicInformation(stack, tooltip)
         }
+        tooltip.add(I18n.format("tooltip.hooked:hook.${type.registryName}.info"))
     }
 
     override fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand): ActionResult<ItemStack> {
         if(playerIn.isSneaking) {
             val type = getType(playerIn.getHeldItem(handIn))
-            if(type?.count ?: 0 > 1) {
-                val item = playerIn.getHeldItem(handIn).copy()
-                if(isInhibited(item)) {
-                    item.nbt["inhibited"] = null
-                } else {
-                    item.nbt["inhibited"] = NBTTagByte(1.toByte())
-                }
-                return ActionResult(EnumActionResult.SUCCESS, item)
-            }
+            val result = type?.adjustStack(playerIn.getHeldItem(handIn))
+            if(result != null)
+                return ActionResult(EnumActionResult.SUCCESS, result)
         }
         return super.onItemRightClick(worldIn, playerIn, handIn)
     }
@@ -90,13 +69,20 @@ class ItemHook : ItemMod("hook", *HookType.values().map { "hook_" + it.toString(
     }
 
     companion object {
-        fun isInhibited(stack: ItemStack): Boolean {
-            return (stack.nbt["inhibited"] as? NBTTagByte)?.byte == 1.toByte()
-        }
-
         fun getType(stack: ItemStack?): HookType? {
             if(stack == null || stack.item != ModItems.hook) return null
-            return HookType.values()[stack.itemDamage % HookType.values().size]
+            val resourceLocation = (stack.nbt["type"] as? NBTTagString)?.string?.toRl() ?: "missingno".toRl()
+            return HookType.REGISTRY.getValue(resourceLocation)
+        }
+
+        fun getEquipped(player: EntityPlayer): ItemStack? {
+            val baubles = BaublesApi.getBaublesHandler(player)
+            for (i in 0 until baubles.slots) {
+                val stack = baubles.getStackInSlot(i)
+                if(stack.item == ModItems.hook)
+                    return stack
+            }
+            return null
         }
     }
 }

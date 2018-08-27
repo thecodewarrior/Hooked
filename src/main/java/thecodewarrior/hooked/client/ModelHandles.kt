@@ -156,6 +156,7 @@ class ModelHandle(val loc: ResourceLocation) {
     }
 
     fun reload(): ModelHandle {
+        purge()
         loadModel(this.loc)
         return this
     }

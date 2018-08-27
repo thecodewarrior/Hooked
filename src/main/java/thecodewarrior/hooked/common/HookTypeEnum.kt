@@ -3,7 +3,7 @@ package thecodewarrior.hooked.common
 /**
  * Created by TheCodeWarrior
  */
-enum class HookType(val count: Int, val range: Int, blocksPerSecond: Int, reelSpeed: Int, val hookLength: Double) {
+enum class HookTypeEnum(val count: Int, val range: Int, blocksPerSecond: Int, reelSpeed: Int, val hookLength: Double) {
     WOOD(
             count = 1, range = 8,
             blocksPerSecond = 8, reelSpeed = 4,

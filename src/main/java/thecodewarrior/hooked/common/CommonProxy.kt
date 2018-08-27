@@ -1,11 +1,17 @@
 package thecodewarrior.hooked.common
 
+import com.teamwizardry.librarianlib.features.kotlin.toRl
 import com.teamwizardry.librarianlib.features.network.PacketHandler
 import net.minecraft.entity.EntityLivingBase
+import net.minecraftforge.common.MinecraftForge
+import net.minecraftforge.event.RegistryEvent
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.registries.RegistryBuilder
+import thecodewarrior.hooked.common.hook.HookType
 import thecodewarrior.hooked.common.items.ModItems
 import thecodewarrior.hooked.common.network.*
 
@@ -13,6 +19,11 @@ import thecodewarrior.hooked.common.network.*
  * Created by TheCodeWarrior
  */
 open class CommonProxy {
+    init {
+        @Suppress("LeakingThis")
+        MinecraftForge.EVENT_BUS.register(this)
+    }
+
     open fun pre(e: FMLPreInitializationEvent) {
         ModItems
         network()
@@ -28,12 +39,21 @@ open class CommonProxy {
     fun network() {
         PacketHandler.register(PacketFireHook::class.java, Side.SERVER)
         PacketHandler.register(PacketRetractHook::class.java, Side.SERVER)
-        PacketHandler.register(PacketRetractHooks::class.java, Side.SERVER)
-        PacketHandler.register(PacketUpdateWeights::class.java, Side.SERVER)
+        PacketHandler.register(PacketHookedJump::class.java, Side.SERVER)
 
         PacketHandler.register(PacketHookCapSync::class.java, Side.CLIENT)
     }
 
     open fun  setAutoJump(entityLiving: EntityLivingBase, value: Boolean) {
+    }
+
+    @SubscribeEvent
+    open fun createRegistries(e: RegistryEvent.NewRegistry) {
+        HookType.REGISTRY = RegistryBuilder<HookType>()
+                .setType(HookType::class.java)
+                .setMaxID(256)
+                .setName("hooked:hook_type".toRl())
+                .setDefaultKey("missingno".toRl())
+                .create()
     }
 }

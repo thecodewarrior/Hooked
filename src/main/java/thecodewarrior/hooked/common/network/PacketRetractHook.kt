@@ -6,7 +6,6 @@ import com.teamwizardry.librarianlib.features.saving.Save
 import net.minecraft.entity.item.EntityItem
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext
-import thecodewarrior.hooked.common.capability.EnumHookStatus
 import thecodewarrior.hooked.common.capability.HooksCap
 import java.util.*
 
@@ -24,12 +23,7 @@ class PacketRetractHook : PacketBase() {
 
     fun doTheThing(player: EntityPlayer) {
         player.ifCap(HooksCap.CAPABILITY, null) { cap ->
-            cap.hooks.forEach {
-                if (it.uuid == uuid) {
-                    it.status = EnumHookStatus.TORETRACT
-                }
-            }
-            cap.updatePos()
+            cap.controller?.releaseSpecificHook(uuid)
         }
     }
 }

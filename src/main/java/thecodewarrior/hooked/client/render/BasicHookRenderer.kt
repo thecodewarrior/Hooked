@@ -1,4 +1,4 @@
-package thecodewarrior.hooked.client
+package thecodewarrior.hooked.client.render
 
 import com.teamwizardry.librarianlib.features.helpers.vec
 import com.teamwizardry.librarianlib.features.kotlin.*
@@ -19,18 +19,44 @@ import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
 import org.lwjgl.opengl.GL11
 import thecodewarrior.hooked.HookedMod
-import thecodewarrior.hooked.common.HookType
-import thecodewarrior.hooked.common.capability.HookInfo
-
+import thecodewarrior.hooked.client.ModelHandle
+import thecodewarrior.hooked.common.hook.BasicHookController
+import thecodewarrior.hooked.common.hook.BasicHookType
+import thecodewarrior.hooked.common.hook.HookController
+import thecodewarrior.hooked.common.hook.HookType
+import thecodewarrior.hooked.common.util.Minecraft
 
 /**
  * Created by TheCodeWarrior
  */
-class HookRenderer(val type: HookType) {
+class BasicHookRenderer(
+        type: BasicHookType,
+        /**
+         * The gap between the player and the start of the chain. Allows
+         */
+        val playerGap: Double
+): AbstractHookRenderer<BasicHookType, BasicHookController>(type) {
+    val endHandle: ModelHandle
+    val ropeTextureVertical: ResourceLocation
+    val ropeTextureHorizontal: ResourceLocation
 
-    val endHandle = ModelHandle(ResourceLocation(HookedMod.MODID + ":hook/${type.name.toLowerCase()}"))
-    val ropeTextureVertical = ResourceLocation(HookedMod.MODID, "textures/hooks/${type.name.toLowerCase()}/chain1.png")
-    val ropeTextureHorizontal = ResourceLocation(HookedMod.MODID, "textures/hooks/${type.name.toLowerCase()}/chain2.png")
+    init {
+        val name = registryName ?: ResourceLocation("missingno")
+        endHandle = ModelHandle(ResourceLocation(name.resourceDomain, "hook/${name.resourcePath}"))
+        ropeTextureVertical = ResourceLocation(name.resourceDomain, "textures/hooks/${name.resourcePath}/chain1.png")
+        ropeTextureHorizontal = ResourceLocation(name.resourceDomain, "textures/hooks/${name.resourcePath}/chain2.png")
+    }
+
+
+    override fun reloadResources() {
+        endHandle.reload()
+    }
+
+    override fun registerSprites(map: TextureMap) {
+        endHandle.getResources().forEach {
+            map.registerSprite(it)
+        }
+    }
 
     private var lastModel: IBakedModel? = null
     private var lastQuads: List<BakedQuad>? = null
@@ -49,41 +75,13 @@ class HookRenderer(val type: HookType) {
             return quads
         }
 
-    fun signAngle(a: Vec3d, b: Vec3d, n: Vec3d?): Float {
-        val cross = a cross b
-        val s = cross.lengthVector()
-        val c = a dot b
-        var angle = MathHelper.atan2(s, c)
-
-        if (n != null) {
-            if (n dot cross < 0) { // Or > 0
-                angle = -angle
-            }
-        }
-
-        return Math.toDegrees(angle).toFloat()
-    }
-
-    fun renderHook(waist: Vec3d, hook: HookInfo, world: World) {
-
-        Minecraft.getMinecraft().entityRenderer.enableLightmap()
-
-        GlStateManager.pushMatrix()
-
-        var rY = signAngle(vec(0, 0, 1), (hook.direction * vec(1, 0, 1)).normalize(), vec(0, 1, 0))
-        var rX = signAngle(vec(0, 1, 0), hook.direction, null)
-
-        GlStateManager.translate(hook.pos.x, hook.pos.y, hook.pos.z)
-        GlStateManager.rotate(rY, 0f, 1f, 0f)
-        GlStateManager.rotate(rX, 1f, 0f, 0f)
-        GlStateManager.translate(-0.5, 0.0, -0.5)
-
-        val hookLightPos = BlockPos(hook.pos + hook.direction * (type.hookLength / 2))
-        Minecraft.getMinecraft().renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE)
+    override fun renderHookTip(pos: Vec3d, direction: Vec3d) {
+        val world = Minecraft().world
+        val hookLightPos = BlockPos(pos + direction * (type.hookLength / 2))
+        Minecraft().renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE)
 
         val state = world.getBlockState(hookLightPos)
         val lightmap = state.getPackedLightmapCoords(world, hookLightPos)
-        val quads = endHandle.get().getQuads(null, null, 0)
 
         val vb = Tessellator.getInstance().buffer
         vb.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK)
@@ -92,51 +90,40 @@ class HookRenderer(val type: HookType) {
             vb.putBrightness4(lightmap, lightmap, lightmap, lightmap)
         }
         Tessellator.getInstance().draw()
+    }
 
-        GlStateManager.popMatrix()
+    override fun renderChain(distance: Double, direction: Vec3d) {
+        val world = Minecraft.getMinecraft().world
+        val player = Minecraft.getMinecraft().player
+        val waist = HookController.getWaistPos(player)
 
-        GlStateManager.pushMatrix()
-
-        val distance = (hook.pos - waist).lengthVector()
-        val normal = (hook.pos - waist) / distance
-
-        rY = signAngle(vec(0, 0, 1), (normal * vec(1, 0, 1)).normalize(), vec(0, 1, 0))
-        rX = signAngle(vec(0, 1, 0), normal, null)
-
-        GlStateManager.translate(waist.x, waist.y, waist.z)
-        GlStateManager.rotate(rY, 0f, 1f, 0f)
-        GlStateManager.rotate(rX, 1f, 0f, 0f)
-        GlStateManager.rotate(45f, 0f, 1f, 0f)
+        Minecraft.getMinecraft().entityRenderer.enableLightmap()
 
         val radius = 0.5
 
         Minecraft.getMinecraft().renderEngine.bindTexture(ropeTextureVertical)
-        chain(distance, waist, normal, vec(radius, 0, 0), world)
+        chain(distance, waist, direction, vec(radius, 0, 0), world)
         Minecraft.getMinecraft().renderEngine.bindTexture(ropeTextureHorizontal)
-        chain(distance, waist, normal, vec(0, 0, radius), world)
-
-        GlStateManager.popMatrix()
+        chain(distance, waist, direction, vec(0, 0, radius), world)
 
         Minecraft.getMinecraft().entityRenderer.disableLightmap()
     }
 
-    fun chain(distance: Double, waist: Vec3d, normal: Vec3d, offset: Vec3d, world: World) {
-        val buffer = if(type == HookType.RED) 1.5 else 0.0
-
+    private fun chain(distance: Double, waist: Vec3d, normal: Vec3d, offset: Vec3d, world: World) {
         val tess = Tessellator.getInstance()
         val vb = tess.buffer
 
         vb.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_LMAP_COLOR)
 
         var len = distance
-        while (len > buffer) {
-            if (len > buffer+1) {
+        while (len > playerGap) {
+            if (len > playerGap+1) {
                 len -= 1.0 // decrement before because we are rendering backward, hook to waist instead of waist to hook
                 val blockPos = BlockPos(waist + normal * (len + 0.5))
                 chainQuad(blockPos, len, offset, 1.0, world, vb)
             } else {
                 val blockPos = BlockPos(waist + normal * len / 2)
-                chainQuad(blockPos, buffer, offset, len-buffer, world, vb)
+                chainQuad(blockPos, playerGap, offset, len-playerGap, world, vb)
 
                 len = 0.0
             }
@@ -144,7 +131,7 @@ class HookRenderer(val type: HookType) {
         tess.draw()
     }
 
-    fun chainQuad(blockpos: BlockPos, distance: Double, offset: Vec3d, length: Double, world: World, vb: BufferBuilder) {
+    private fun chainQuad(blockpos: BlockPos, distance: Double, offset: Vec3d, length: Double, world: World, vb: BufferBuilder) {
         val state = world.getBlockState(blockpos)
         val lightmap = state.getPackedLightmapCoords(world, blockpos)
         val skylight = (lightmap shr 16) and 0xFFFF
@@ -165,22 +152,6 @@ class HookRenderer(val type: HookType) {
         vb.pos(-offset.x, beg, -offset.z).tex(1.0, length).lightmap(skylight, blocklight).color(b, b, b, 1f).endVertex()
         vb.pos( offset.x, beg,  offset.z).tex(0.0, length).lightmap(skylight, blocklight).color(b, b, b, 1f).endVertex()
         // @formatter:on
-    }
-
-    fun renderModel(quads: List<BakedQuad>, pos: Vec3d, world: World) {
-        val b = world.getBlockState(BlockPos(pos)).getPackedLightmapCoords(world, BlockPos(pos))
-
-        val tess = Tessellator.getInstance()
-        val vb = tess.buffer
-
-        vb.begin(GL11.GL_QUADS, DefaultVertexFormats.ITEM)
-        quads.forEach {
-            vb.addVertexData(it.vertexData)
-            val normal = it.face.directionVec
-            vb.putNormal(normal.x.toFloat(), normal.y.toFloat(), normal.z.toFloat())
-            vb.putBrightness4(b, b, b, b)
-        }
-        tess.draw()
     }
 
 }
