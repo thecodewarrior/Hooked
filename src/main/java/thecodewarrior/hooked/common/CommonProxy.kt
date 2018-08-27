@@ -12,6 +12,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.registries.RegistryBuilder
 import thecodewarrior.hooked.common.hook.HookType
+import thecodewarrior.hooked.common.hook.HookTypes
 import thecodewarrior.hooked.common.items.ModItems
 import thecodewarrior.hooked.common.network.*
 
@@ -45,6 +46,13 @@ open class CommonProxy {
     }
 
     open fun  setAutoJump(entityLiving: EntityLivingBase, value: Boolean) {
+    }
+
+    @SubscribeEvent
+    fun registerHooks(e: RegistryEvent.Register<HookType>) {
+        HookType.REGISTRY.registerAll(
+                HookTypes.missingno, HookTypes.wood, HookTypes.iron, HookTypes.diamond, HookTypes.red, HookTypes.ender
+        )
     }
 
     @SubscribeEvent

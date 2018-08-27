@@ -7,12 +7,15 @@ import net.minecraft.client.entity.EntityPlayerSP
 import net.minecraft.entity.EntityLivingBase
 import net.minecraftforge.event.RegistryEvent
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.registries.IForgeRegistry
 import net.minecraftforge.registries.RegistryBuilder
+import thecodewarrior.hooked.client.render.BasicHookRenderer
 import thecodewarrior.hooked.client.render.HookRenderHandler
 import thecodewarrior.hooked.client.render.HookRenderer
 import thecodewarrior.hooked.common.CommonProxy
 import thecodewarrior.hooked.common.hook.HookController
+import thecodewarrior.hooked.common.hook.HookTypes
 
 /**
  * Created by TheCodeWarrior
@@ -26,6 +29,18 @@ class ClientProxy : CommonProxy() {
 
     }
 
+    @SubscribeEvent
+    fun registerRenderers(e: RegistryEvent.Register<HookRenderer<*>>) {
+        HookRenderer.REGISTRY.registerAll(
+                BasicHookRenderer(HookTypes.missingno, 0.0),
+                BasicHookRenderer(HookTypes.wood, 0.0),
+                BasicHookRenderer(HookTypes.iron, 0.0),
+                BasicHookRenderer(HookTypes.diamond, 0.0),
+                BasicHookRenderer(HookTypes.red, 0.0),
+                BasicHookRenderer(HookTypes.ender, 0.0)
+        )
+    }
+
     override fun setAutoJump(entityLiving: EntityLivingBase, value: Boolean) {
         if(entityLiving is EntityPlayerSP) {
             entityLiving.autoJumpEnabled = value && Minecraft.getMinecraft().gameSettings.autoJump
@@ -35,8 +50,8 @@ class ClientProxy : CommonProxy() {
     override fun createRegistries(e: RegistryEvent.NewRegistry) {
         super.createRegistries(e)
         @Suppress("UNCHECKED_CAST")
-        HookRenderer.REGISTRY = RegistryBuilder<HookRenderer<HookController>>()
-                .setType(HookRenderer::class.java as Class<HookRenderer<HookController>>)
+        HookRenderer.REGISTRY = RegistryBuilder<HookRenderer<*>>()
+                .setType(HookRenderer::class.java)
                 .setMaxID(256)
                 .setName("hooked:hook_renderer".toRl())
                 .setDefaultKey("missingno".toRl())

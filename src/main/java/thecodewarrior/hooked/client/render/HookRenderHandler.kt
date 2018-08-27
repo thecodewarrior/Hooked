@@ -71,7 +71,8 @@ object HookRenderHandler {
         GlStateManager.pushMatrix()
         GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
 
-        cap.renderer?.render(controller)
+        @Suppress("UNCHECKED_CAST")
+        (cap.renderer as? HookRenderer<HookController>)?.render(controller)
 
         GlStateManager.popMatrix()
     }

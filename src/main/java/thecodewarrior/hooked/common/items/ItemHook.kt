@@ -9,6 +9,7 @@ import com.teamwizardry.librarianlib.features.kotlin.toRl
 import net.minecraft.client.gui.GuiScreen
 import net.minecraft.client.resources.I18n
 import net.minecraft.client.util.ITooltipFlag
+import net.minecraft.creativetab.CreativeTabs
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
@@ -17,6 +18,7 @@ import net.minecraft.nbt.NBTTagString
 import net.minecraft.util.ActionResult
 import net.minecraft.util.EnumActionResult
 import net.minecraft.util.EnumHand
+import net.minecraft.util.NonNullList
 import net.minecraft.world.World
 import thecodewarrior.hooked.client.KeyBinds
 import thecodewarrior.hooked.common.HookTypeEnum
@@ -26,9 +28,18 @@ import java.util.*
 /**
  * Created by TheCodeWarrior
  */
-class ItemHook : ItemMod("hook", *HookTypeEnum.values().map { "hook_" + it.toString().toLowerCase(Locale.ROOT) }.toTypedArray()), IBauble {
+class ItemHook : ItemMod("hook"), IBauble {
     init {
         maxStackSize = 1
+    }
+
+    override fun getSubItems(tab: CreativeTabs, subItems: NonNullList<ItemStack>) {
+        if (!isInCreativeTab(tab)) return
+        subItems.addAll(HookType.REGISTRY.map {
+            val stack = ItemStack(this, 1)
+            stack.nbt["type"] = NBTTagString(it.registryName.toString())
+            stack
+        })
     }
 
     override fun addInformation(stack: ItemStack, worldIn: World?, tooltip: MutableList<String>, flagIn: ITooltipFlag) {

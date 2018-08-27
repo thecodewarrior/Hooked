@@ -31,7 +31,7 @@ class HooksCap(val player: EntityPlayer) {
 
     @SideOnly(Side.CLIENT)
     @JvmField
-    var renderer: HookRenderer<HookController>? = null
+    var renderer: HookRenderer<*>? = null
 
     var controller: HookController? = null
         set(value) {
