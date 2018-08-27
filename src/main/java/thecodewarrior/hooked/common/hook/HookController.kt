@@ -14,6 +14,7 @@ import net.minecraft.util.math.Vec3d
 import thecodewarrior.hooked.HookedMod
 import java.util.*
 import kotlin.math.abs
+import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
 
@@ -146,7 +147,7 @@ abstract class HookController(
         player.motionY *= 1.25
         player.motionZ *= 1.25
         player.jump()
-        player.motionY = min(player.motionY, 0.42 + 0.1) // 0.42 == vanilla jump speed
+        player.motionY = max(player.motionY, 0.42 + 0.1) // 0.42 == vanilla jump speed
     }
 
     open fun tick() {
@@ -242,12 +243,12 @@ abstract class HookController(
         HookedMod.PROXY.setAutoJump(player, false)
         val waist = getWaistPos(player)
         val deltaPos = targetPoint - waist
-
         val deltaLen = deltaPos.lengthVector()
-        if (deltaLen < pullStrength) { // close enough that we should set to avoid oscillations
-            player.motionX = targetPoint.x
-            player.motionY = targetPoint.y
-            player.motionZ = targetPoint.z
+
+        if (deltaLen < pullStrength*3) { // close enough that we should set to avoid oscillations
+            player.motionX = deltaPos.x
+            player.motionY = deltaPos.y
+            player.motionZ = deltaPos.z
         } else {
             val pull = deltaPos * pullStrength / deltaLen
 
