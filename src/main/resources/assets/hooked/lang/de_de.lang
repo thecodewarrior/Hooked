@@ -1,0 +1,32 @@
+tooltip.hooked.showControls=<Halte Shift>
+
+tooltip.hooked:hook.inhibited=Inhibited
+tooltip.hooked:hook.inhibited.help=- Limitiert auf einen Haken. Schleichen + Benutzen um die Beschränkung zu entfernen.
+tooltip.hooked:hook.uninhibited.help=- Schleichen + Benutzen um auf einen Haken zu limitieren
+
+tooltip.hooked:hook_wood.info=Eine einfache Lösung um Gräben zu entkommen und Bäume zu erklimmen
+tooltip.hooked:hook_iron.info=Erlaubt das Schweben in der Luft indem man zwei Haken in entgegen gesetzte Richtungen schießt
+tooltip.hooked:hook_diamond.info=Viele Haken, viel Geschwindigkeit.
+tooltip.hooked:hook_red.info=Kreativmodus Fliegen in den vom Haken definierten Grenzen
+tooltip.hooked:hook_ender.info=Sehr, sehr schnell.
+
+tooltip.hooked:hook_wood.controls=Drücke %1$s um den Haken zu abzuschießen.\nSpringe um alle Haken zurückzuziehen.\nSchleiche + drücke %1$s während du auf einen Haken schaust, um ihn zurückzuziehen.
+tooltip.hooked:hook_iron.controls=Drücke %1$s um den Haken zu abzuschießen.\nSpringe um alle Haken zurückzuziehen.\nSchleiche + drücke %1$s während du auf einen Haken schaust, um ihn zurückzuziehen.
+tooltip.hooked:hook_diamond.controls=Drücke %1$s um den Haken zu abzuschießen.\nSpringe um alle Haken zurückzuziehen.\nSchleiche + drücke %1$s während du auf einen Haken schaust, um ihn zurückzuziehen.
+tooltip.hooked:hook_red.controls=Drücke %1$s um den Haken zu abzuschießen.\nSpringe doppelt um alle Haken zurückzuziehen.\nSchleiche + drücke %1$s während du auf einen Haken schaust, um ihn zurückzuziehen.
+tooltip.hooked:hook_ender.controls=Drücke %1$s um den Haken zu abzuschießen.\nSpringe um alle Haken zurückzuziehen.\nSchleiche + drücke %1$s während du auf einen Haken schaust, um ihn zurückzuziehen.
+
+item.hooked:hook_wood.name=Holz-Haken
+item.hooked:hook_iron.name=Eisenhaken
+item.hooked:hook_diamond.name=Diamant-Haken
+item.hooked:hook_red.name=Roter-Haken
+item.hooked:hook_ender.name=End-Haken
+
+item.hooked:plant_fiber.name=Pflanzen Faser
+item.hooked:rope.name=Seil
+item.hooked:iron_chain_link.name=Eisenkettenglied
+item.hooked:iron_chain.name=Eisenkette
+
+key.hooked.fire=Haken abschießen
+
+item_group.hooked=Hooked
