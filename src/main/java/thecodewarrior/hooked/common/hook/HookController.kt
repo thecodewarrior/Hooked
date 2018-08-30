@@ -1,5 +1,6 @@
 package thecodewarrior.hooked.common.hook
 
+import com.google.common.collect.Iterables
 import com.teamwizardry.librarianlib.core.client.ClientTickHandler
 import com.teamwizardry.librarianlib.features.helpers.vec
 import com.teamwizardry.librarianlib.features.kotlin.*
@@ -11,12 +12,10 @@ import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.util.math.RayTraceResult
 import net.minecraft.util.math.Vec3d
+import thecodewarrior.hooked.HookLog
 import thecodewarrior.hooked.HookedMod
 import java.util.*
-import kotlin.math.abs
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.pow
+import kotlin.math.*
 
 /**
  * A type of hook
@@ -78,6 +77,11 @@ abstract class HookController(
      */
     @Save
     val plantedHooks: LinkedList<Hook> = LinkedList()
+
+    /**
+     * A view of [extendingHooks], [plantedHooks], and [retractingHooks], in order
+     */
+    val allHooks: MutableIterable<IHook> = Iterables.concat(extendingHooks, plantedHooks, retractingHooks)
 
     /**
      * The point the player will move toward or null if the player's motion should be unaffected
@@ -153,25 +157,24 @@ abstract class HookController(
     }
 
     protected fun performSimpleJump() {
-
-        var boost = 0.0
         targetPoint?.let { targetPoint ->
+            val boost = 0.05
             val waist = getWaistPos(player)
             val deltaPos = targetPoint - waist
             val deltaLen = deltaPos.lengthVector()
 
             if (deltaLen < pullStrength) { // close enough that we should be snapped in position
-                boost = 0.05
+                player.motionX *= 1.25
+                player.motionY *= 1.25
+                player.motionZ *= 1.25
+                player.jump()
+                player.motionY = max(player.motionY, 0.42 + boost) // 0.42 == vanilla jump speed
             }
         }
-        player.motionX *= 1.25
-        player.motionY *= 1.25
-        player.motionZ *= 1.25
-        player.jump()
-        player.motionY = max(player.motionY, 0.42 + boost) // 0.42 == vanilla jump speed
     }
 
     open fun tick() {
+        removeNaN()
         preTick()
 
         updateInFlight()
@@ -181,7 +184,22 @@ abstract class HookController(
         updateTargetPoint()
         updatePlayer()
 
+        removeAbsurdLength()
         postTick()
+    }
+
+    fun removeNaN() {
+        val iter = allHooks.iterator()
+        for(hook in iter) {
+            try {
+                hook.verify()
+            } catch(e: IllegalStateException) {
+                iter.remove()
+                HookLog.error("Hook on player ${player.uniqueID} had nonfinite value between ticks: $hook" +
+                        " (removing)")
+                markDirty()
+            }
+        }
     }
 
     private fun updateInFlight() {
@@ -191,6 +209,7 @@ abstract class HookController(
             val distanceLeft = range - (hook.pos - getWaistPos(player)).lengthVector()
             if(distanceLeft < 1/16.0) {
                 iterator.remove()
+                retractingHooks.add(hook)
                 markDirty()
                 continue
             }
@@ -202,6 +221,7 @@ abstract class HookController(
             )
             if (trace == null || trace.typeOfHit == RayTraceResult.Type.MISS) {
                 hook.pos += hook.direction * min(speed, distanceLeft)
+                hook.verify()
             } else {
                 iterator.remove()
                 val planted = Hook(
@@ -209,6 +229,7 @@ abstract class HookController(
                         hook.direction, trace.blockPos, trace.sideHit,
                         hook.uuid
                 )
+                planted.verify()
                 plantedHooks.addFirst(planted)
                 markDirty()
             }
@@ -250,16 +271,29 @@ abstract class HookController(
                 continue
             }
 
-            hook.pos -= direction * min(speed, distance)
+            hook.pos -= direction * min(speed, distance)/distance
+            hook.verify()
+        }
+    }
+
+    private fun removeAbsurdLength() {
+        val threshold = 1024
+        val waist = getWaistPos(player)
+        val iter = allHooks.iterator()
+        for(hook in iter) {
+            val distance = waist.distanceTo(hook.pos)
+            if(distance > threshold) {
+                HookLog.error("Hook was an absurd distance ($distance) from player. Removing $hook from $player")
+                iter.remove()
+            }
         }
     }
 
     private fun updatePlayer() {
-        HookedMod.PROXY.setAutoJump(player, true) //TODO put in cap
+        HookedMod.PROXY.setAutoJump(player, true)
         val targetPoint = targetPoint ?: return
 
         player.fallDistance = 0f
-//            entity.onGround = true
         player.jumpTicks = 10
         HookedMod.PROXY.setAutoJump(player, false)
         val waist = getWaistPos(player)
@@ -282,9 +316,9 @@ abstract class HookController(
     private fun applyPull(entityMotion: Double, pull: Double): Double {
         val forceMultiplier = 0.5
 
-        if (abs(entityMotion) < abs(pull)) {
+        if (abs(entityMotion) < abs(pull) || sign(entityMotion) != sign(pull)) {
             val adjusted = entityMotion + pull * forceMultiplier
-            if (abs(adjusted) > abs(pull))
+            if (abs(adjusted) > abs(pull) && sign(adjusted) == sign(pull))
                 return pull
             else
                 return adjusted

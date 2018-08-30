@@ -39,7 +39,4 @@ object HookTypes {
             speed = 64.0, pullStrength = 45/20.0,
             hookLength = 0.5
     )
-
-    init {
-    }
 }

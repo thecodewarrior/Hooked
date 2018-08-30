@@ -9,13 +9,13 @@ data class HookInFlight(
         /**
          * The position of the back of the hook
          */
-        var pos: Vec3d,
+        override var pos: Vec3d,
         /**
          * The direction the hook is facing
          */
-        var direction: Vec3d,
+        override var direction: Vec3d,
         /**
          * The UUID of the hook
          */
-        val uuid: UUID
-)
+        override val uuid: UUID
+): IHook

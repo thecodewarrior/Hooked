@@ -14,11 +14,11 @@ data class Hook(
         /**
          * The position of the _back_ of the hook. (add direction*hookLength to get the tip)
          */
-        var pos: Vec3d,
+        override var pos: Vec3d,
         /**
          * The direction the hook is facing
          */
-        var direction: Vec3d,
+        override var direction: Vec3d,
         /**
          * The block the hook is attached to
          */
@@ -30,5 +30,5 @@ data class Hook(
         /**
          * The UUID of the hook
          */
-        val uuid: UUID
-)
+        override val uuid: UUID
+): IHook

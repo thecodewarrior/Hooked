@@ -6,10 +6,12 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.Vec3d
+import thecodewarrior.hooked.HookLog
 import thecodewarrior.hooked.common.hook.Hook
 import thecodewarrior.hooked.common.hook.HookController
 import thecodewarrior.hooked.common.hook.HookInFlight
 import thecodewarrior.hooked.common.hook.HookType
+import kotlin.math.min
 
 abstract class AbstractHookRenderer<T: HookType, C: HookController>(val type: T): HookRenderer() {
     init {
@@ -57,6 +59,13 @@ abstract class AbstractHookRenderer<T: HookType, C: HookController>(val type: T)
     open fun renderHook(pos: Vec3d, direction: Vec3d) {
         val player = Minecraft.getMinecraft().player
         val waist = HookController.getWaistPos(player)
+        val distance = (pos - waist).lengthVector()
+        val normal = (pos - waist) / distance
+        if(distance > 1024) {
+            HookLog.warn("Absurd hook distance: $distance for hook at $pos going in direction $direction. Skipping")
+            return
+        }
+
 
         GlStateManager.pushMatrix()
 
@@ -73,9 +82,6 @@ abstract class AbstractHookRenderer<T: HookType, C: HookController>(val type: T)
         GlStateManager.popMatrix()
 
         GlStateManager.pushMatrix()
-
-        val distance = (pos - waist).lengthVector()
-        val normal = (pos - waist) / distance
 
         rY = billboardAngle(vec(0, 0, 1), (normal * vec(1, 0, 1)).normalize(), vec(0, 1, 0))
         rX = billboardAngle(vec(0, 1, 0), normal, null)
