@@ -42,26 +42,24 @@ object KeyBinds {
     fun onKeyInput(e: InputEvent.KeyInputEvent) {
         val player = Minecraft().player
 
-        if (keyFire.isPressed) {
-            if (player.isSneaking) {
-                player.ifCap(HooksCap.CAPABILITY, null) { cap ->
+        player.ifCap(HooksCap.CAPABILITY, null) { cap ->
+            if (keyFire.isPressed) {
+                if (player.isSneaking) {
                     val controller = cap.controller
-                    if(controller != null)
+                    if (controller != null)
                         retractLookingHook(controller)
+                } else {
+                    PacketHandler.NETWORK.sendToServer(PacketFireHook().apply {
+                        pos = player.getPositionEyes(1f)
+                        normal = player.lookVec
+                        doTheThing(player)
+                    })
                 }
-            } else {
-                PacketHandler.NETWORK.sendToServer(PacketFireHook().apply {
-                    pos = player.getPositionEyes(1f)
-                    normal = player.lookVec
-                    doTheThing(player)
-                })
             }
-        }
 
-        val wasDown = jumpDown
-        jumpDown = Minecraft.getMinecraft().gameSettings.keyBindJump.isKeyDown
-        if(!wasDown && jumpDown) {
-            player.ifCap(HooksCap.CAPABILITY, null) { cap ->
+            val wasDown = jumpDown
+            jumpDown = Minecraft.getMinecraft().gameSettings.keyBindJump.isKeyDown
+            if (!wasDown && jumpDown) {
                 PacketHandler.NETWORK.sendToServer(PacketHookedJump().apply {
                     doTheThing(player)
                 })

@@ -161,9 +161,10 @@ abstract class HookController(
             val boost = 0.05
             val waist = getWaistPos(player)
             val deltaPos = targetPoint - waist
-            val deltaLen = deltaPos.lengthVector()
+            val movementTowardPos = player.motionVec dot deltaPos.normalize()
 
-            if (deltaLen < pullStrength) { // close enough that we should be snapped in position
+            // slow enough that we are likely be snapped in position or stuck
+            if (movementTowardPos < 2/20.0) {
                 player.motionX *= 1.25
                 player.motionY *= 1.25
                 player.motionZ *= 1.25
