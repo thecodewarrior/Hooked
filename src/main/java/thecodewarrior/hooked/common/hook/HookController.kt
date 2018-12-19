@@ -207,7 +207,7 @@ abstract class HookController(
         val iterator = extendingHooks.iterator()
         for (hook in iterator) {
             val tip = hook.pos + hook.direction*hookLength
-            val distanceLeft = range - (hook.pos - getWaistPos(player)).lengthVector()
+            val distanceLeft = range - (hook.pos - getWaistPos(player)).length()
             if(distanceLeft < 1/16.0) {
                 iterator.remove()
                 retractingHooks.add(hook)
@@ -264,7 +264,7 @@ abstract class HookController(
         for (hook in iterator) {
             val hookBack = hook.pos - hook.direction * hookLength
             val direction = hookBack - getWaistPos(player)
-            val distance = direction.lengthVector()
+            val distance = direction.length()
 
             if(distance < 1) {
                 iterator.remove()
@@ -299,7 +299,7 @@ abstract class HookController(
         HookedMod.PROXY.setAutoJump(player, false)
         val waist = getWaistPos(player)
         val deltaPos = targetPoint - waist
-        val deltaLen = deltaPos.lengthVector()
+        val deltaLen = deltaPos.length()
 
         if (deltaLen < pullStrength) { // close enough that we should set to avoid oscillations
             player.motionX = deltaPos.x

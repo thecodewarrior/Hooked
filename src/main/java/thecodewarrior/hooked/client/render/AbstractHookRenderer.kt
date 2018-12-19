@@ -59,7 +59,7 @@ abstract class AbstractHookRenderer<T: HookType, C: HookController>(val type: T)
     open fun renderHook(pos: Vec3d, direction: Vec3d) {
         val player = Minecraft.getMinecraft().player
         val waist = HookController.getWaistPos(player)
-        val distance = (pos - waist).lengthVector()
+        val distance = (pos - waist).length()
         val normal = (pos - waist) / distance
         if(distance > 1024) {
             HookLog.warn("Absurd hook distance: $distance for hook at $pos going in direction $direction. Skipping")
@@ -128,7 +128,7 @@ abstract class AbstractHookRenderer<T: HookType, C: HookController>(val type: T)
 
     private fun billboardAngle(a: Vec3d, b: Vec3d, n: Vec3d?): Float {
         val cross = a cross b
-        val s = cross.lengthVector()
+        val s = cross.length()
         val c = a dot b
         var angle = MathHelper.atan2(s, c)
 

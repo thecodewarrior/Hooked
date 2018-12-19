@@ -1,0 +1,92 @@
+buildscript {
+    repositories {
+        jcenter()
+        maven {
+            name = 'forge'
+            url = 'https://files.minecraftforge.net/maven'
+        }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+apply plugin: 'kotlin'
+apply plugin: 'net.minecraftforge.gradle.forge'
+
+version = modVersion
+group = modGroup
+archivesBaseName = modBaseName + mcVersion
+
+minecraft {
+    version = project.forgeVersion
+    runDir = 'run'
+    mappings = project.mcpVersion
+
+    clientJvmArgs = ["-Dfml.coreMods.load=" + corePlugin]
+    serverJvmArgs = ["-Dfml.coreMods.load=" + corePlugin]
+}
+
+reobf {
+    jar {
+        extraLines += []
+    }
+}
+
+repositories {
+    jcenter()
+    mavenCentral()
+    maven {
+        url = 'https://maven.bluexin.be/repository/snapshots/'
+    }
+    maven {
+        url = 'https://maven.bluexin.be/repository/releases/'
+    }
+    maven {
+        url = 'http://maven.shadowfacts.net/'
+    }
+}
+
+dependencies {
+    compile "net.shadowfacts:Forgelin:1.8.0"
+    compile 'com.teamwizardry.librarianlib:librarianlib-1.12.2:4.16-SNAPSHOT:deobf'
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+}
+
+processResources {
+    inputs.property 'version', project.version
+    inputs.property 'mcversion', project.minecraft.version
+
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+        expand 'version': project.version, 'mcversion': project.minecraft.version
+    }
+
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+}
+
+idea {
+    module {
+        inheritOutputDirs = true 
+    }
+}
+
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 10, 'minutes'
+}
+
+kotlin {
+    experimental {
+        coroutines "enable"
+    }
+}
+
+compileKotlin {
+    kotlinOptions {
+        javaParameters = true
+        jvmTarget = 1.8
+    }
+}

@@ -42,9 +42,9 @@ class BasicHookRenderer(
 
     init {
         val name = type.registryName ?: ResourceLocation("missingno")
-        endHandle = ModelHandle(ResourceLocation(name.resourceDomain, "hook/${name.resourcePath}"))
-        ropeTextureVertical = ResourceLocation(name.resourceDomain, "textures/hooks/${name.resourcePath}/chain1.png")
-        ropeTextureHorizontal = ResourceLocation(name.resourceDomain, "textures/hooks/${name.resourcePath}/chain2.png")
+        endHandle = ModelHandle(ResourceLocation(name.namespace, "hook/${name.path}"))
+        ropeTextureVertical = ResourceLocation(name.namespace, "textures/hooks/${name.path}/chain1.png")
+        ropeTextureHorizontal = ResourceLocation(name.namespace, "textures/hooks/${name.path}/chain2.png")
     }
 
 
