@@ -86,8 +86,7 @@ object HookTickHandler {
         }
         val cap = entity.getCapability(HooksCap.CAPABILITY, null)!!
 
-        val baubles = BaublesApi.getBaublesHandler(entity)
-        val hookItem = (0 until baubles.slots).map { baubles.getStackInSlot(it) }.find { it.item == ModItems.hook }
+        val hookItem = ItemHook.getItem(entity)
         val itemType = ItemHook.getType(hookItem)
         if (itemType != cap.hookType) {
             cap.hookType = itemType

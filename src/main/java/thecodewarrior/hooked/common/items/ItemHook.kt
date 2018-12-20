@@ -4,9 +4,7 @@ import baubles.api.BaubleType
 import baubles.api.BaublesApi
 import baubles.api.IBauble
 import com.teamwizardry.librarianlib.features.base.item.ItemMod
-import com.teamwizardry.librarianlib.features.kotlin.ifCap
 import com.teamwizardry.librarianlib.features.kotlin.nbt
-import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiScreen
 import net.minecraft.client.resources.I18n
 import net.minecraft.client.util.ITooltipFlag
@@ -18,15 +16,17 @@ import net.minecraft.util.ActionResult
 import net.minecraft.util.EnumActionResult
 import net.minecraft.util.EnumHand
 import net.minecraft.world.World
-import org.lwjgl.input.Keyboard
 import thecodewarrior.hooked.client.KeyBinds
 import thecodewarrior.hooked.common.HookType
-import thecodewarrior.hooked.common.capability.HooksCap
+import net.minecraftforge.fml.common.Optional
+import thecodewarrior.hooked.HookLog
+import thecodewarrior.hooked.HookedConfig
 import java.util.*
 
 /**
  * Created by TheCodeWarrior
  */
+@Optional.Interface(iface = "baubles.api.IBauble", modid = "baubles")
 class ItemHook : ItemMod("hook", *HookType.values().map { "hook_" + it.toString().toLowerCase(Locale.ROOT) }.toTypedArray()), IBauble {
     init {
         maxStackSize = 1
@@ -97,6 +97,40 @@ class ItemHook : ItemMod("hook", *HookType.values().map { "hook_" + it.toString(
         fun getType(stack: ItemStack?): HookType? {
             if(stack == null || stack.item != ModItems.hook) return null
             return HookType.values()[stack.itemDamage % HookType.values().size]
+        }
+
+        fun getItem(player: EntityPlayer): ItemStack? {
+            val stacks = mutableListOf<ItemStack>()
+            if(HookedConfig.searchLocations and HookedConfig.SEARCH_BAUBLES != 0) {
+                stacks.addAll(baubles(player))
+            }
+            if(HookedConfig.searchLocations and HookedConfig.SEARCH_HANDS != 0) {
+                stacks.add(player.heldItemMainhand)
+                stacks.add(player.heldItemOffhand)
+            }
+            if(HookedConfig.searchLocations and HookedConfig.SEARCH_HOTBAR != 0) {
+                stacks.addAll(hotbar.map { player.inventory.getStackInSlot(it) })
+            }
+            if(HookedConfig.searchLocations and HookedConfig.SEARCH_INVENTORY != 0) {
+                stacks.addAll(main.map { player.inventory.getStackInSlot(it) })
+            }
+            return stacks.find { it.item == ModItems.hook }
+        }
+
+        private val armor = 36..39
+        private val hotbar = 0..8
+        private val main = 9..35
+
+        private val baubles: (EntityPlayer) -> List<ItemStack> by lazy {
+            return@lazy find@{ player: EntityPlayer ->
+                try {
+                    val baubles = BaublesApi.getBaublesHandler(player)
+                    return@find (0 until baubles.slots).map { baubles.getStackInSlot(it) }
+                } catch(e: NoClassDefFoundError) {
+                    HookLog.error("Baubles not found! Change Hooked's search_location config property!")
+                    throw e
+                }
+            }
         }
     }
 }
