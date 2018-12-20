@@ -51,7 +51,7 @@ class HookRenderer(val type: HookType) {
 
     fun signAngle(a: Vec3d, b: Vec3d, n: Vec3d?): Float {
         val cross = a cross b
-        val s = cross.lengthVector()
+        val s = cross.length()
         val c = a dot b
         var angle = MathHelper.atan2(s, c)
 
@@ -97,7 +97,7 @@ class HookRenderer(val type: HookType) {
 
         GlStateManager.pushMatrix()
 
-        val distance = (hook.pos - waist).lengthVector()
+        val distance = (hook.pos - waist).length()
         val normal = (hook.pos - waist) / distance
 
         rY = signAngle(vec(0, 0, 1), (normal * vec(1, 0, 1)).normalize(), vec(0, 1, 0))

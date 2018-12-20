@@ -129,7 +129,7 @@ class HooksCap {
         val clampRange = HookType.RED.range - 1/16.0 // includes one pixel of buffer space
         hooks.forEach { hook ->
             val relativePos = pos - hook.pos
-            val length = relativePos.lengthVector()
+            val length = relativePos.length()
             if(length > clampRange) {
                 pos = hook.pos + relativePos * (clampRange/length)
             }
@@ -156,7 +156,7 @@ class HooksCap {
                         filtered
                 )
 
-                hook1.weight = (closest - hook0.pos).lengthVector() / (hook1.pos - hook0.pos).lengthVector()
+                hook1.weight = (closest - hook0.pos).length() / (hook1.pos - hook0.pos).length()
                 hook0.weight = 1 - hook1.weight
 
                 hook0.weight *= 2
@@ -255,7 +255,7 @@ class HooksCap {
 
     fun closestPointOnLineRay(p: Vec3d, a: Vec3d, b: Vec3d): Pair<Double, Vec3d> {
         var line = (b - a)
-        val len = line.lengthVector()
+        val len = line.length()
         line /= len
 
         val v = p - a

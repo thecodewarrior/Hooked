@@ -48,7 +48,11 @@ class HookedMod {
         val DEV_ENVIRONMENT = Launch.blackboard["fml.deobfuscatedEnvironment"] as Boolean
 
         val creativeTab = object : ModCreativeTab() {
-            override val iconStack = ItemStack(ModItems.hook)
+            override fun createIcon(): ItemStack {
+                return ItemStack(ModItems.hook)
+            }
+
+            override val iconStack = createIcon()
 
             init {
                 this.registerDefaultTab()

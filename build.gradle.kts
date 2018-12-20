@@ -35,7 +35,7 @@ inline fun <reified T : Task> TaskContainer.withTypeIfPresent(name: String, cfg:
 buildscript {
     repositories {
         jcenter()
-        maven(url = "https://files.minecraftforge.net/maven")
+        maven(url = "https://files.minecraftforge.net/maven/")
         maven(url = "https://plugins.gradle.org/m2/" )
     }
 
@@ -104,7 +104,7 @@ extensions.getByType(ForgeExtension::class.java).apply {
     replace("required-after:librarianlib", "required-after:librarianlib@[4.12,)")
 }
 
-for (set in java.sourceSets) {
+for (set in sourceSets) {
     if (set != null && set.name == "test") continue
     val taskName = "source${set.name.capitalize()}Kotlin"
     val dir = File(project.buildDir, "sources/${set.name}/kotlin")
@@ -160,7 +160,7 @@ task("sourceJar", Jar::class, "overwrite" to true, "dependsOn" to "sourceMainJav
 }
 
 task("deobfJar", Jar::class) {
-    from(java.sourceSets["main"].output)
+    from(sourceSets["main"].output)
     classifier = "deobf"
 }
 
@@ -249,12 +249,12 @@ tasks.withType<ProcessResources> {
 
     inputs.properties(props)
 
-    from(java.sourceSets["main"].resources.srcDirs) {
+    from(sourceSets["main"].resources.srcDirs) {
         include("mcmod.info", "pack.mcmeta")
         expand(props)
     }
 
-    from(java.sourceSets["main"].resources.srcDirs) {
+    from(sourceSets["main"].resources.srcDirs) {
         exclude("mcmod.info", "pack.mcmeta")
     }
 

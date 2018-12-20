@@ -116,7 +116,7 @@ object HookTickHandler {
             }
 
             if (hook.status == EnumHookStatus.EXTENDING) {
-                val distanceLeft = type.range - (hook.pos - waist).lengthVector()
+                val distanceLeft = type.range - (hook.pos - waist).length()
                 val speed = type.speed
                 val speedOrRemaining = min(speed, distanceLeft) + type.hookLength
                 val trace = RaycastUtils.raycast(entity.world, hook.pos, hook.pos + hook.direction * speedOrRemaining)
@@ -133,7 +133,7 @@ object HookTickHandler {
             }
 
             if (entity.world.isRemote && type == HookType.ENDER) {
-                val len = (hook.pos - waist).lengthVector()
+                val len = (hook.pos - waist).length()
                 val normal = (hook.pos - waist) / len
                 val negNormal = -normal
 
@@ -193,7 +193,7 @@ object HookTickHandler {
 
         var shouldSet = false
         cap.centerPos?.subtract(waist)?.let {
-            val len = it.lengthVector()
+            val len = it.length()
             if (len > type.pullStrength) {
                 it.scale(type.pullStrength / len)
             } else {
@@ -212,9 +212,9 @@ object HookTickHandler {
                         return@forEach
 
                     val pullVec = it.pos - waist
-                    val projection = (vec(e.entity.motionX, e.entity.motionY, e.entity.motionZ) dot pullVec) / pullVec.lengthVector()
+                    val projection = (vec(e.entity.motionX, e.entity.motionY, e.entity.motionZ) dot pullVec) / pullVec.length()
                     if (projection < 0) {
-                        val add = pullVec * (projection / pullVec.lengthVector())
+                        val add = pullVec * (projection / pullVec.length())
                         entity.motionX -= add.x
                         entity.motionY -= add.y
                         entity.motionZ -= add.z
