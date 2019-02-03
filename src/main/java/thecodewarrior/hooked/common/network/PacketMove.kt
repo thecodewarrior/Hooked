@@ -8,19 +8,14 @@ import net.minecraft.util.math.Vec3d
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext
 import thecodewarrior.hooked.HookLog
 import thecodewarrior.hooked.common.capability.HooksCap
-import java.util.*
 
 /**
  * Created by TheCodeWarrior
  */
-class PacketFireHook : PacketBase() {
+class PacketMove : PacketBase() {
 
     @Save
-    var pos: Vec3d = Vec3d.ZERO
-    @Save
-    var normal: Vec3d = Vec3d.ZERO
-    @Save
-    var uuid: UUID = UUID.randomUUID()
+    var offset: Vec3d = Vec3d.ZERO
 
     override fun handle(ctx: MessageContext) {
         handle(ctx.serverHandler.player)
@@ -28,10 +23,10 @@ class PacketFireHook : PacketBase() {
 
     fun handle(player: EntityPlayer) {
         player.ifCap(HooksCap.CAPABILITY, null) { cap ->
-            val spawnDistance = player.positionVector.distanceTo(pos)
-            if(spawnDistance > 10) {
-                HookLog.warn("Player ${player.name} spawned a hook too far from their body! Expected point within " +
-                        "10 blocks of player. Got $pos, $spawnDistance blocks away.")
+            val distance = offset.length()
+            if(distance > 3) {
+                HookLog.warn("Player ${player.name} moved too fast! Expected less than 3 blocks. " +
+                    "Got $offset, a distance of $distance blocks.")
             }
 
             val controller = cap.controller
@@ -39,8 +34,7 @@ class PacketFireHook : PacketBase() {
                 cap.update()
                 return@ifCap
             }
-            controller.fireHook(pos, normal.normalize(), uuid)
-
+            controller.moveBy(offset)
             cap.update()
         }
     }

@@ -68,4 +68,7 @@ open class BasicHookController(
         }
     }
 
+    override fun moveBy(offset: Vec3d) {
+        // nop
+    }
 }

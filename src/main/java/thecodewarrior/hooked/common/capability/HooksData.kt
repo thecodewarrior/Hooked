@@ -98,24 +98,6 @@ class HooksCap(val player: EntityPlayer) {
 
         @CapabilityInject(HooksCap::class)
         lateinit var CAPABILITY: Capability<HooksCap>
-
-        fun moveRelative(entity: Entity, strafe: Float, forward: Float, friction: Float): Vec2d {
-            var f = strafe * strafe + forward * forward
-
-            if (f >= 1.0E-4f) {
-                f = MathHelper.sqrt(f)
-
-                if (f < 1.0f) {
-                    f = 1.0f
-                }
-
-                f = friction / f
-                val f1 = MathHelper.sin(entity.rotationYaw * 0.017453292f) * f
-                val f2 = MathHelper.cos(entity.rotationYaw * 0.017453292f) * f
-                return vec(strafe * f2 - forward * f1, forward * f2 + strafe * f1)
-            }
-            return Vec2d.ZERO
-        }
     }
 }
 

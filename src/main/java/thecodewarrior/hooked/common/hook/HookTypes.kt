@@ -27,10 +27,10 @@ object HookTypes {
             speed = 24/20.0, pullStrength = 20/20.0,
             hookLength = 0.5
     )
-    val red = BasicHookType(
+    val red = FlightHookType(
             name = "hooked:red".toRl(),
             count = 4, range = 24.0,
-            speed = 24/20.0, pullStrength = 20/20.0,
+            speed = 24/20.0,
             hookLength = 0.5
     )
     val ender = BasicHookType(

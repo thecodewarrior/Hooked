@@ -88,6 +88,8 @@ abstract class HookController(
      */
     var targetPoint: Vec3d? = null
 
+    abstract fun moveBy(offset: Vec3d)
+
     /**
      * Updates [targetPoint] based on the current state
      */

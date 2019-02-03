@@ -8,7 +8,7 @@ import net.minecraft.nbt.NBTTagByte
 import net.minecraft.util.ResourceLocation
 import thecodewarrior.hooked.client.KeyBinds
 
-class BasicHookType(
+open class BasicHookType(
         name: ResourceLocation,
         /**
          * The number of simultaneous hooks allowed
@@ -32,7 +32,7 @@ class BasicHookType(
         val hookLength: Double
 ): HookType() {
     init {
-        setRegistryName(name)
+        registryName = name
     }
 
     override fun create(player: EntityPlayer): HookController {

@@ -1,5 +1,6 @@
 package thecodewarrior.hooked.client.render
 
+import com.teamwizardry.librarianlib.core.client.ClientTickHandler
 import com.teamwizardry.librarianlib.features.helpers.vec
 import com.teamwizardry.librarianlib.features.kotlin.*
 import net.minecraft.client.Minecraft
@@ -58,7 +59,8 @@ abstract class AbstractHookRenderer<T: HookType, C: HookController>(val type: T)
      */
     open fun renderHook(pos: Vec3d, direction: Vec3d) {
         val player = Minecraft.getMinecraft().player
-        val waist = HookController.getWaistPos(player)
+        val waist = HookController.getWaistPos(player) -
+            (player.positionVector - vec(player.lastTickPosX, player.lastTickPosY, player.lastTickPosZ)) * (1-ClientTickHandler.partialTicks)
         val distance = (pos - waist).length()
         val normal = (pos - waist) / distance
         if(distance > 1024) {

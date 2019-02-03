@@ -43,6 +43,7 @@ open class CommonProxy {
         PacketHandler.register(PacketHookedJump::class.java, Side.SERVER)
 
         PacketHandler.register(PacketHookCapSync::class.java, Side.CLIENT)
+        PacketHandler.register(PacketMove::class.java, Side.SERVER)
     }
 
     open fun  setAutoJump(entityLiving: EntityLivingBase, value: Boolean) {
