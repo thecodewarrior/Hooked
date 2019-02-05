@@ -303,7 +303,7 @@ abstract class HookController(
         val deltaPos = targetPoint - waist
         val deltaLen = deltaPos.length()
 
-        if (deltaLen < pullStrength) { // close enough that we should set to avoid oscillations
+        if (deltaLen <= pullStrength) { // close enough that we should set to avoid oscillations
             player.motionX = deltaPos.x
             player.motionY = deltaPos.y
             player.motionZ = deltaPos.z
