@@ -131,6 +131,7 @@ abstract class HookController(
 
     open fun fireHook(startPos: Vec3d, normal: Vec3d, uuid: UUID) {
         extendingHooks.add(HookInFlight(startPos, normal, uuid))
+        markDirty()
     }
 
     open fun releaseSpecificHook(uuid: UUID) {
@@ -140,6 +141,7 @@ abstract class HookController(
             if (hook.uuid == uuid) {
                 extendIterator.remove()
                 retractingHooks.add(hook)
+                markDirty()
             }
         }
 
@@ -148,6 +150,7 @@ abstract class HookController(
             if (hook.uuid == uuid) {
                 plantedIterator.remove()
                 retractingHooks.add(HookInFlight(hook.pos, hook.direction, hook.uuid))
+                markDirty()
             }
         }
     }

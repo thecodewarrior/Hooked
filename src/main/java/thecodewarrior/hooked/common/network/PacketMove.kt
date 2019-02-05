@@ -27,6 +27,7 @@ class PacketMove : PacketBase() {
             if(distance > 3) {
                 HookLog.warn("Player ${player.name} moved too fast! Expected less than 3 blocks. " +
                     "Got $offset, a distance of $distance blocks.")
+                cap.update()
             }
 
             val controller = cap.controller
@@ -35,7 +36,6 @@ class PacketMove : PacketBase() {
                 return@ifCap
             }
             controller.moveBy(offset)
-            cap.update()
         }
     }
 }

@@ -60,10 +60,11 @@ object KeyBinds {
             var motion = moveRelative(player, player.moveStrafing, player.moveForward, speed)
             motion = vec(motion.x, vertical, motion.z)
 
-            PacketHandler.NETWORK.sendToServer(PacketMove().apply {
-                offset = motion
-                handle(player)
-            })
+            if(motion != Vec3d.ZERO)
+                PacketHandler.NETWORK.sendToServer(PacketMove().apply {
+                    offset = motion
+                    handle(player)
+                })
         }
     }
 
