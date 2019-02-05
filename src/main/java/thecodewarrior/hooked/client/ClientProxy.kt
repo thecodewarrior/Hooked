@@ -12,6 +12,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.registries.IForgeRegistry
 import net.minecraftforge.registries.RegistryBuilder
 import thecodewarrior.hooked.client.render.BasicHookRenderer
+import thecodewarrior.hooked.client.render.FlightHookRenderer
 import thecodewarrior.hooked.client.render.HookRenderHandler
 import thecodewarrior.hooked.client.render.HookRenderer
 import thecodewarrior.hooked.common.CommonProxy
@@ -42,7 +43,7 @@ class ClientProxy : CommonProxy() {
                 BasicHookRenderer(HookTypes.wood, 0.0),
                 BasicHookRenderer(HookTypes.iron, 0.0),
                 BasicHookRenderer(HookTypes.diamond, 0.0),
-                BasicHookRenderer(HookTypes.red, 0.0),
+                FlightHookRenderer(HookTypes.red, 0.0),
                 BasicHookRenderer(HookTypes.ender, 0.0)
         )
     }

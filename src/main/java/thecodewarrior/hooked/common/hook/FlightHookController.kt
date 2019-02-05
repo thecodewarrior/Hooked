@@ -43,8 +43,6 @@ class FlightHookController(
 
     val volume = DynamicHull()
 
-    var jumpTimer = 0
-
     override fun moveBy(offset: Vec3d) {
         if(plantedHooks.isEmpty()) return
         if(plantedHooks.size == 1) {
@@ -70,7 +68,6 @@ class FlightHookController(
     }
 
     override fun tick() {
-        jumpTimer++
         super.tick()
         player.setNoGravity(plantedHooks.size > 1)
 
@@ -79,6 +76,8 @@ class FlightHookController(
             player.motionX = offset.x
             player.motionY = offset.y
             player.motionZ = offset.z
+        } else {
+            volume.update(emptyList())
         }
 
         if(plantedHooks.size != 1) {
@@ -88,6 +87,16 @@ class FlightHookController(
         }
         if(tetherLength >= 0)
             tetherPlayer()
+    }
+
+    override fun remove() {
+        super.remove()
+        player.setNoGravity(false)
+    }
+
+    override fun playerJump(count: Int) {
+        if(count > 1)
+            super.playerJump(count - 1)
     }
 
     fun tetherPlayer() {
@@ -114,12 +123,4 @@ class FlightHookController(
         player.motionY = delta.y
         player.motionZ = delta.z
     }
-
-    override fun playerJump() {
-        if(jumpTimer < 7)
-            super.playerJump()
-        else
-            jumpTimer = 0
-    }
-
 }

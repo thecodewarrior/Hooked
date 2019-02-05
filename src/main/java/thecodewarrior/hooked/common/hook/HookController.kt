@@ -100,6 +100,16 @@ abstract class HookController(
      */
     abstract fun modifyBreakSpeed(speed: Float): Float
 
+    /**
+     * performs any cleanup needed before the controller is removed from the player
+     */
+    open fun remove() {}
+
+    /**
+     * performs any setup needed after the controller is added to the player
+     */
+    open fun insert() {}
+
     open fun preTick() {}
     open fun postTick() {}
 
@@ -142,8 +152,8 @@ abstract class HookController(
         }
     }
 
-    open fun playerJump() {
-        if(plantedHooks.isNotEmpty()) {
+    open fun playerJump(count: Int) {
+        if(count == 1 && plantedHooks.isNotEmpty()) {
             performSimpleJump()
             retractingHooks.addAll(plantedHooks.map { hook ->
                 HookInFlight(hook.pos, hook.direction, hook.uuid)
@@ -151,7 +161,7 @@ abstract class HookController(
             plantedHooks.clear()
             markDirty()
         }
-        if(extendingHooks.isNotEmpty()) {
+        if(count == 1 && extendingHooks.isNotEmpty()) {
             retractingHooks.addAll(extendingHooks)
             extendingHooks.clear()
             markDirty()

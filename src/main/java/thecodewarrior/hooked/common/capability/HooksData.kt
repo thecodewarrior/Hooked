@@ -35,12 +35,16 @@ class HooksCap(val player: EntityPlayer) {
 
     var controller: HookController? = null
         set(value) {
-            field = value
-            ClientRunnable.run {
-                if(value == null) {
-                    renderer = null
-                } else {
-                    renderer = HookRenderer.REGISTRY.getValue(value.type.registryName)
+            if(field !== value) {
+                field?.remove()
+                field = value
+                field?.insert()
+                ClientRunnable.run {
+                    if (value == null) {
+                        renderer = null
+                    } else {
+                        renderer = HookRenderer.REGISTRY.getValue(value.type.registryName)
+                    }
                 }
             }
         }

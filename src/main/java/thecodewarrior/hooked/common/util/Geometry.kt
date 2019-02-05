@@ -56,12 +56,12 @@ class DynamicHull: Constraint {
             shape = line
             return
         }
-        val polygon = toPolygon(0.5)
+        val polygon = toPolygon(0.1)
         if(polygon != null) {
             shape = polygon
             return
         }
-        val hull = toHull()
+        val hull = toHull(0.5)
         if(hull != null) {
             shape = hull
             return
@@ -165,12 +165,15 @@ class DynamicHull: Constraint {
         val flatPoints = points.map {
             val distance = (it - centroid) dot normal
             if(distance > threshold) return null
-            it - normal * distance
+            // `- centroid` because QuickHull3D uses absolute coordinates in its distance threshold, so we need to use
+            // small relative coordinates
+            it - normal * distance - centroid
         }
 
 
-        val otherPoint = centroid + normal * (threshold*10)
+        val otherPoint = normal * (threshold*10)
         val hull = QuickHull3D()
+        hull.explicitDistanceTolerance = threshold / 100.0
         hull.build((listOf(otherPoint.toPoint3d()) +
             flatPoints.map {
                 Point3d(it.x, it.y, it.z)
@@ -178,19 +181,21 @@ class DynamicHull: Constraint {
         )
 
         val vertices = hull.vertices
-        val otherIndex = vertices.indexOf(otherPoint.toPoint3d())
+        val otherIndex = vertices.indexOfFirst {
+            it.x == otherPoint.x && it.y == otherPoint.y && it.z == otherPoint.z
+        }
         val faces = hull.faces
 
         val face = faces.first { otherIndex !in it }
 
         return Polygon(face.map {
-            vertices[it].toVec3d()
+            vertices[it].toVec3d() + centroid
         })
     }
 
-    fun toHull(): Hull? {
+    fun toHull(threshold: Double): Hull? {
         try {
-            return Hull(points)
+            return Hull(points, threshold)
         } catch(e: Exception) {
             return null
         }
@@ -315,13 +320,15 @@ data class Polygon(val points: List<Vec3d>): Constraint {
 
 }
 
-data class Hull(val points: List<Vec3d>): Constraint {
-    private val faces: List<Polygon>
+data class Hull(val points: List<Vec3d>, val threshold: Double): Constraint {
+    val faces: List<Polygon>
 
     init {
+        val origin = points[0]
         val quickHull = QuickHull3D()
-        quickHull.build(points.map { it.toPoint3d() }.toTypedArray())
-        val vertices = quickHull.vertices.map { it.toVec3d() }
+        quickHull.explicitDistanceTolerance = threshold / 100.0
+        quickHull.build(points.map { (it - origin).toPoint3d() }.toTypedArray())
+        val vertices = quickHull.vertices.map { it.toVec3d() + origin }
         faces = quickHull.faces.map { indices ->
             Polygon(indices.map { vertices[it] })
         }

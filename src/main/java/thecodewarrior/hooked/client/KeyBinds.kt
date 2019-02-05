@@ -31,7 +31,9 @@ object KeyBinds {
     val keyFire = KeyBinding("key.hooked.fire", KeyConflictContext.IN_GAME, Keyboard.KEY_C, "key.category.movement")
 
     var jumpTimer = 0
+    var jumpCount = 0
     var jumpDown = false
+    var disableMovement = false
 
     init {
         MinecraftForge.EVENT_BUS.register(this)
@@ -40,9 +42,10 @@ object KeyBinds {
 
     @SubscribeEvent
     fun clientTick(e: TickEvent.ClientTickEvent) {
-        if (jumpTimer > 0 && e.phase == TickEvent.Phase.END)
-            jumpTimer--
+        if (e.phase == TickEvent.Phase.END)
+            jumpTimer++
 
+        if(disableMovement) return
         val player = Minecraft().player ?: return
 
         player.ifCap(HooksCap.CAPABILITY, null) { cap ->
@@ -66,6 +69,7 @@ object KeyBinds {
 
     @SubscribeEvent
     fun onKeyInput(e: InputEvent.KeyInputEvent) {
+        if(disableMovement) return
         val player = Minecraft().player
 
         player.ifCap(HooksCap.CAPABILITY, null) { cap ->
@@ -88,7 +92,10 @@ object KeyBinds {
             val wasDown = jumpDown
             jumpDown = Minecraft.getMinecraft().gameSettings.keyBindJump.isKeyDown
             if (!wasDown && jumpDown) {
+                if(jumpTimer > 7) jumpCount = 0
+                jumpTimer = 0
                 PacketHandler.NETWORK.sendToServer(PacketHookedJump().apply {
+                    count = ++jumpCount
                     handle(player)
                 })
             }
