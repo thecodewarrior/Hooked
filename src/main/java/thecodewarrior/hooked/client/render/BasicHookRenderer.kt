@@ -29,7 +29,7 @@ import thecodewarrior.hooked.common.util.Minecraft
 /**
  * Created by TheCodeWarrior
  */
-class BasicHookRenderer(
+open class BasicHookRenderer(
         type: BasicHookType,
         /**
          * The gap between the player and the start of the chain. Allows
