@@ -11,6 +11,7 @@ import net.minecraft.util.math.Vec3d
 import thecodewarrior.hooked.common.util.DynamicHull
 import thecodewarrior.hooked.common.util.clampLength
 import thecodewarrior.hooked.common.util.raySphereIntersection
+import kotlin.math.min
 
 class FlightHookController(
     /**
@@ -104,12 +105,13 @@ class FlightHookController(
         var pos = waist + vec(player.motionX, player.motionY, player.motionZ)
 
         val hook = plantedHooks[0]
-        if((pos-hook.pos).length() < tetherLength)
+        val length = (pos-hook.pos).length()
+        if(length > 1.0 && length < tetherLength)
             return
         if(tetherLength == 0.0) {
             pos = hook.pos
         } else {
-            pos += (hook.pos - waist) * (raySphereIntersection(pos, hook.pos - waist, hook.pos, tetherLength) ?: 0.0)
+            pos = hook.pos + (pos - hook.pos).clampLength(tetherLength)
         }
 
         var delta = (pos - waist).clampLength(1.0)
