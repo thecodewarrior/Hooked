@@ -43,7 +43,7 @@ class ClientProxy : CommonProxy() {
                 BasicHookRenderer(HookTypes.wood, 0.0),
                 BasicHookRenderer(HookTypes.iron, 0.0),
                 BasicHookRenderer(HookTypes.diamond, 0.0),
-                FlightHookRenderer(HookTypes.red, 0.0),
+                FlightHookRenderer(HookTypes.red, 1.0),
                 BasicHookRenderer(HookTypes.ender, 0.0)
         )
     }
