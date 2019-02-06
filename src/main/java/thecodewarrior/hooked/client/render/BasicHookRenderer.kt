@@ -30,21 +30,19 @@ import thecodewarrior.hooked.common.util.Minecraft
  * Created by TheCodeWarrior
  */
 open class BasicHookRenderer(
-        type: BasicHookType,
-        /**
-         * The gap between the player and the start of the chain. Allows
-         */
-        val playerGap: Double
-): AbstractHookRenderer<BasicHookType, BasicHookController>(type) {
-    val endHandle: ModelHandle
-    val ropeTextureVertical: ResourceLocation
+    type: BasicHookType,
+    /**
+     * The gap between the player and the start of the chain. Allows
+     */
+    val playerGap: Double,
+    val hookModel: ResourceLocation,
+    val ropeTextureVertical: ResourceLocation,
     val ropeTextureHorizontal: ResourceLocation
+): AbstractHookRenderer<BasicHookType, BasicHookController>(type) {
+    val endHandle = ModelHandle(hookModel)
 
     init {
-        val name = type.registryName ?: ResourceLocation("missingno")
-        endHandle = ModelHandle(ResourceLocation(name.namespace, "hook/${name.path}"))
-        ropeTextureVertical = ResourceLocation(name.namespace, "textures/hooks/${name.path}/chain1.png")
-        ropeTextureHorizontal = ResourceLocation(name.namespace, "textures/hooks/${name.path}/chain2.png")
+        val name = type.registryName ?: "hooked:missingno".toRl()
     }
 
 

@@ -9,15 +9,16 @@ import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.RegistryEvent
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import net.minecraftforge.registries.IForgeRegistry
 import net.minecraftforge.registries.RegistryBuilder
 import thecodewarrior.hooked.client.render.BasicHookRenderer
 import thecodewarrior.hooked.client.render.FlightHookRenderer
 import thecodewarrior.hooked.client.render.HookRenderHandler
 import thecodewarrior.hooked.client.render.HookRenderer
 import thecodewarrior.hooked.common.CommonProxy
-import thecodewarrior.hooked.common.hook.HookController
-import thecodewarrior.hooked.common.hook.HookTypes
+import thecodewarrior.hooked.common.config.FlightHookAppearance
+import thecodewarrior.hooked.common.config.HookEntry
+import thecodewarrior.hooked.common.config.HookTypesConfig
+import thecodewarrior.hooked.common.hook.HookType
 
 /**
  * Created by TheCodeWarrior
@@ -38,14 +39,10 @@ class ClientProxy : CommonProxy() {
 
     @SubscribeEvent
     fun registerRenderers(e: RegistryEvent.Register<HookRenderer>) {
-        HookRenderer.REGISTRY.registerAll(
-                BasicHookRenderer(HookTypes.missingno, 0.0),
-                BasicHookRenderer(HookTypes.wood, 0.0),
-                BasicHookRenderer(HookTypes.iron, 0.0),
-                BasicHookRenderer(HookTypes.diamond, 0.0),
-                FlightHookRenderer(HookTypes.red, 1.0),
-                BasicHookRenderer(HookTypes.ender, 0.0)
-        )
+        HookRenderer.REGISTRY.register(HookRenderer.missingno)
+        HookRenderer.REGISTRY.registerAll(*HookTypesConfig.entries.map {
+            it.appearance.createRenderer(hookCache[it.name]!!)
+        }.toTypedArray())
     }
 
     override fun setAutoJump(entityLiving: EntityLivingBase, value: Boolean) {

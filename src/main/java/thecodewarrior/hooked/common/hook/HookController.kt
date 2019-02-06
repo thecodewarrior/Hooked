@@ -201,6 +201,7 @@ abstract class HookController(
         updatePlayer()
 
         removeAbsurdLength()
+        removeDuplicates()
         postTick()
     }
 
@@ -303,6 +304,12 @@ abstract class HookController(
                 iter.remove()
             }
         }
+    }
+
+    private fun removeDuplicates() {
+        plantedHooks.removeIf { test -> plantedHooks.count { it == test } > 1 }
+        extendingHooks.removeIf { test -> extendingHooks.count { it == test } > 1 }
+        retractingHooks.removeIf { test -> retractingHooks.count { it == test } > 1 }
     }
 
     private fun updatePlayer() {

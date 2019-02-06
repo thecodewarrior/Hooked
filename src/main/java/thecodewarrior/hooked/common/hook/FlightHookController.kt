@@ -45,11 +45,10 @@ class FlightHookController(
     val volume = DynamicHull()
 
     override fun moveBy(offset: Vec3d) {
-        if(plantedHooks.isEmpty()) return
-        if(plantedHooks.size == 1) {
+        if(plantedHooks.size == 1 && (getWaistPos(player)-plantedHooks[0].pos).length() > tetherLength-0.1) {
             tetherLength = (tetherLength - offset.y).clamp(0.0, range-0.5)
-            return
         }
+        if(plantedHooks.size <= 1) return
         val newOffset = constrainPos(getWaistPos(player), offset)
         player.motionX = newOffset.x
         player.motionY = newOffset.y

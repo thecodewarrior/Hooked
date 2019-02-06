@@ -3,6 +3,7 @@ package thecodewarrior.hooked.common
 import com.teamwizardry.librarianlib.features.kotlin.toRl
 import com.teamwizardry.librarianlib.features.network.PacketHandler
 import net.minecraft.entity.EntityLivingBase
+import net.minecraft.util.ResourceLocation
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.RegistryEvent
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
@@ -11,8 +12,8 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.registries.RegistryBuilder
+import thecodewarrior.hooked.common.config.HookTypesConfig
 import thecodewarrior.hooked.common.hook.HookType
-import thecodewarrior.hooked.common.hook.HookTypes
 import thecodewarrior.hooked.common.items.ModItems
 import thecodewarrior.hooked.common.network.*
 
@@ -25,10 +26,23 @@ open class CommonProxy {
         MinecraftForge.EVENT_BUS.register(this)
     }
 
+    protected var hookCache = mapOf<ResourceLocation, HookType>()
+
     open fun pre(e: FMLPreInitializationEvent) {
         ModItems
         network()
         HookTickHandler
+
+
+        val hooksFile = e.suggestedConfigurationFile.resolveSibling(e.suggestedConfigurationFile.nameWithoutExtension + ".types.json")
+        if(!hooksFile.exists()) {
+            val default = javaClass.getResourceAsStream("/assets/hooked/defaultConfig.json").bufferedReader().readText()
+            hooksFile.writeText(default)
+            HookTypesConfig.read(default)
+        } else {
+            HookTypesConfig.read(hooksFile.readText())
+        }
+        hookCache = HookTypesConfig.entries.associate { it.name to it.behavior.createType(it.name) }
     }
 
     open fun init(e: FMLInitializationEvent) {
@@ -51,18 +65,17 @@ open class CommonProxy {
 
     @SubscribeEvent
     fun registerHooks(e: RegistryEvent.Register<HookType>) {
-        HookType.REGISTRY.registerAll(
-                HookTypes.missingno, HookTypes.wood, HookTypes.iron, HookTypes.diamond, HookTypes.red, HookTypes.ender
-        )
+        HookType.REGISTRY.register(HookType.missingno)
+        HookType.REGISTRY.registerAll(*hookCache.values.toTypedArray())
     }
 
     @SubscribeEvent
     open fun createRegistries(e: RegistryEvent.NewRegistry) {
         HookType.REGISTRY = RegistryBuilder<HookType>()
-                .setType(HookType::class.java)
-                .setMaxID(256)
-                .setName("hooked:hook_type".toRl())
-                .setDefaultKey("missingno".toRl())
-                .create()
+            .setType(HookType::class.java)
+            .setMaxID(256)
+            .setName("hooked:hook_type".toRl())
+            .setDefaultKey("hooked:missingno".toRl())
+            .create()
     }
 }

@@ -1,9 +1,11 @@
 package thecodewarrior.hooked.client.render
 
 import net.minecraft.client.renderer.texture.TextureMap
+import net.minecraft.util.ResourceLocation
 import net.minecraftforge.registries.IForgeRegistry
 import net.minecraftforge.registries.IForgeRegistryEntry
 import thecodewarrior.hooked.common.hook.HookController
+import thecodewarrior.hooked.common.hook.HookType
 
 abstract class HookRenderer: IForgeRegistryEntry.Impl<HookRenderer>() {
     abstract fun render(controller: HookController)
@@ -13,5 +15,10 @@ abstract class HookRenderer: IForgeRegistryEntry.Impl<HookRenderer>() {
     companion object {
         @JvmStatic
         lateinit var REGISTRY: IForgeRegistry<HookRenderer>
+        val missingno = BasicHookRenderer(HookType.missingno, 0.0,
+            ResourceLocation("hooked:missingno"),
+            ResourceLocation("hooked:missingno"),
+            ResourceLocation("hooked:missingno")
+        )
     }
 }

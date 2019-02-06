@@ -40,12 +40,15 @@ import java.awt.Color
  * Created by TheCodeWarrior
  */
 class FlightHookRenderer(
-    type: FlightHookType,
+    type: BasicHookType,
     /**
      * The gap between the player and the start of the chain. Allows
      */
-    playerGap: Double
-): BasicHookRenderer(type, playerGap) {
+    playerGap: Double,
+    hookModel: ResourceLocation,
+    ropeTextureVertical: ResourceLocation,
+    ropeTextureHorizontal: ResourceLocation
+): BasicHookRenderer(type, playerGap, hookModel, ropeTextureVertical, ropeTextureHorizontal) {
     var points = setOf<Vec3d>()
     var lastChange: Int = 0
 

@@ -1,0 +1,118 @@
+{
+    "entries": [
+        {
+            "name": "hooked:wood",
+            "behavior": {
+                "type": "basic",
+                "data": {
+                    "count": 1,
+                    "range": 8.0,
+                    "speed": 0.4,
+                    "pullStrength": 0.2,
+                    "hookLength": 0.5
+                }
+            },
+            "appearance": {
+                "type": "basic",
+                "data": {
+                    "playerGap": 0.0,
+                    "hookModel": "hooked:hook/wood",
+                    "verticalRope": "hooked:textures/hooks/wood/chain1.png",
+                    "horizontalRope": "hooked:textures/hooks/wood/chain2.png"
+                }
+            }
+        },
+
+        {
+            "name": "hooked:iron",
+            "behavior": {
+                "type": "basic",
+                "data": {
+                    "count": 2,
+                    "range": 16.0,
+                    "speed": 0.8,
+                    "pullStrength": 0.4,
+                    "hookLength": 0.5
+                }
+            },
+            "appearance": {
+                "type": "basic",
+                "data": {
+                    "playerGap": 0.0,
+                    "hookModel": "hooked:hook/iron",
+                    "verticalRope": "hooked:textures/hooks/iron/chain1.png",
+                    "horizontalRope": "hooked:textures/hooks/iron/chain2.png"
+                }
+            }
+        },
+
+        {
+            "name": "hooked:diamond",
+            "behavior": {
+                "type": "basic",
+                "data": {
+                    "count": 4,
+                    "range": 24.0,
+                    "speed": 1.2,
+                    "pullStrength": 1.0,
+                    "hookLength": 0.5
+                }
+            },
+            "appearance": {
+                "type": "basic",
+                "data": {
+                    "playerGap": 0.0,
+                    "hookModel": "hooked:hook/diamond",
+                    "verticalRope": "hooked:textures/hooks/diamond/chain1.png",
+                    "horizontalRope": "hooked:textures/hooks/diamond/chain2.png"
+                }
+            }
+        },
+
+        {
+            "name": "hooked:red",
+            "behavior": {
+                "type": "flight",
+                "data": {
+                    "count": 8,
+                    "range": 24.0,
+                    "speed": 1.2,
+                    "pullStrength": 0.0,
+                    "hookLength": 0.5
+                }
+            },
+            "appearance": {
+                "type": "flight",
+                "data": {
+                    "playerGap": 1.0,
+                    "hookModel": "hooked:hook/red",
+                    "verticalRope": "hooked:textures/hooks/red/chain1.png",
+                    "horizontalRope": "hooked:textures/hooks/red/chain2.png"
+                }
+            }
+        },
+
+        {
+            "name": "hooked:ender",
+            "behavior": {
+                "type": "basic",
+                "data": {
+                    "count": 1,
+                    "range": 64.0,
+                    "speed": 64.0,
+                    "pullStrength": 2.25,
+                    "hookLength": 0.5
+                }
+            },
+            "appearance": {
+                "type": "basic",
+                "data": {
+                    "playerGap": 0.0,
+                    "hookModel": "hooked:hook/ender",
+                    "verticalRope": "hooked:textures/hooks/ender/chain1.png",
+                    "horizontalRope": "hooked:textures/hooks/ender/chain2.png"
+                }
+            }
+        }
+    ]
+}
