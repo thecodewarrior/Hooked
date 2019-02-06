@@ -50,7 +50,8 @@ object KeyBinds {
 
         player.ifCap(HooksCap.CAPABILITY, null) { cap ->
             if (cap.controller == null) return@ifCap
-            val speed = 0.15f
+            val speed = if(player.isSprinting) 0.25f else 0.2f
+
             val vertical = when {
                 jumpDown && !player.isSneaking -> 1
                 !jumpDown && player.isSneaking -> -1
@@ -60,11 +61,10 @@ object KeyBinds {
             var motion = moveRelative(player, player.moveStrafing, player.moveForward, speed)
             motion = vec(motion.x, vertical, motion.z)
 
-            if(motion != Vec3d.ZERO)
-                PacketHandler.NETWORK.sendToServer(PacketMove().apply {
-                    offset = motion
-                    handle(player)
-                })
+            PacketHandler.NETWORK.sendToServer(PacketMove().apply {
+                offset = motion
+                handle(player)
+            })
         }
     }
 
