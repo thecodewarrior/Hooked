@@ -41,8 +41,12 @@ class FlightHookController(
 ): BasicHookController(type, player, fullCount, range, speed, 0.0, hookLength) {
     @Save
     var tetherLength = -1.0
+    var tetherHookPos = Vec3d.ZERO
 
     val volume = DynamicHull()
+    override var targetPoint: Vec3d?
+        get() = null
+        set(value) {}
 
     override fun moveBy(offset: Vec3d) {
         if(plantedHooks.size == 1 && (getWaistPos(player)-plantedHooks[0].pos).length() > tetherLength-0.1) {
@@ -50,6 +54,8 @@ class FlightHookController(
         }
         if(plantedHooks.size <= 1) return
         val newOffset = constrainPos(getWaistPos(player), offset)
+        if(player.positionVector + newOffset == Vec3d.ZERO)
+            return
         player.motionX = newOffset.x
         player.motionY = newOffset.y
         player.motionZ = newOffset.z
@@ -82,7 +88,8 @@ class FlightHookController(
 
         if(plantedHooks.size != 1) {
             tetherLength = -1.0
-        } else if(tetherLength < 0) {
+        } else if(tetherLength < 0 || tetherHookPos != plantedHooks[0].pos) {
+            tetherHookPos = plantedHooks[0].pos
             tetherLength = plantedHooks[0].pos.distanceTo(getWaistPos(player))
         }
         if(tetherLength >= 0)
@@ -95,7 +102,9 @@ class FlightHookController(
     }
 
     override fun playerJump(count: Int) {
-        if(count > 1)
+        if(count == 1 && tetherLength >= 0)
+            performSimpleJump()
+        else
             super.playerJump(count - 1)
     }
 

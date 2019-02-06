@@ -86,7 +86,7 @@ abstract class HookController(
     /**
      * The point the player will move toward or null if the player's motion should be unaffected
      */
-    var targetPoint: Vec3d? = null
+    open var targetPoint: Vec3d? = null
 
     abstract fun moveBy(offset: Vec3d)
 
