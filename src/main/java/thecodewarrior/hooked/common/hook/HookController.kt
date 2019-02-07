@@ -237,7 +237,7 @@ abstract class HookController(
 
             val trace = RaycastUtils.raycast(
                 player.world,
-                tip,
+                hook.pos,
                 tip + hook.direction * min(speed, distanceLeft)
             )
             if (trace == null || trace.typeOfHit == RayTraceResult.Type.MISS) {
