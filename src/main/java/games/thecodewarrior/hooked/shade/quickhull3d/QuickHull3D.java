@@ -29,6 +29,9 @@ package games.thecodewarrior.hooked.shade.quickhull3d;
  * #L%
  */
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -37,9 +40,6 @@ import java.io.StreamTokenizer;
 import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.Vector;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Computes the convex hull of a set of three dimensional points.
@@ -137,7 +137,7 @@ public class QuickHull3D {
     /**
      * Logger to log to.
      */
-    private static Logger LOG = LoggerFactory.getLogger(QuickHull3D.class);
+    private static Logger LOG = LogManager.getLogger(QuickHull3D.class);
 
     /**
      * Specifies that (on output) vertex indices for a face should be listed in
