@@ -57,7 +57,6 @@ dependencies {
     compile "net.shadowfacts:Forgelin:1.8.0"
     compile 'com.teamwizardry.librarianlib:librarianlib-1.12.2:4.16-SNAPSHOT:deobf'
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    compile "com.github.quickhull3d:quickhull3d:1.0.0"
 }
 
 processResources {
