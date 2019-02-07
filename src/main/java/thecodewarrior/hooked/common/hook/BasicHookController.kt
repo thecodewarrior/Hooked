@@ -12,35 +12,39 @@ import thecodewarrior.hooked.client.KeyBinds
 import thecodewarrior.hooked.common.items.ItemHook
 
 open class BasicHookController(
-        /**
-         * The type that created this controller
-         */
-        type: HookType,
-        /**
-         * The player this controller is bound to
-         */
-        player: EntityPlayer,
-        /**
-         * The number of simultaneous hooks allowed
-         */
-        val fullCount: Int,
-        /**
-         * The maximum range from impact point to player
-         */
-        range: Double,
-        /**
-         * The speed of the fired hooks in m/t
-         */
-        speed: Double,
-        /**
-         * The speed the player is pulled toward the target point in m/t
-         */
-        pullStrength: Double,
-        /**
-         * The distance from the impact point to where the chain should attach
-         */
-        hookLength: Double
-): HookController(type, player, fullCount, range, speed, pullStrength, hookLength){
+    /**
+     * The type that created this controller
+     */
+    type: HookType,
+    /**
+     * The player this controller is bound to
+     */
+    player: EntityPlayer,
+    /**
+     * The number of simultaneous hooks allowed
+     */
+    val fullCount: Int,
+    /**
+     * The maximum range from impact point to player
+     */
+    range: Double,
+    /**
+     * The speed of the fired hooks in m/t
+     */
+    speed: Double,
+    /**
+     * The speed the player is pulled toward the target point in m/t
+     */
+    pullStrength: Double,
+    /**
+     * The distance from the impact point to where the chain should attach
+     */
+    hookLength: Double,
+    /**
+     * The distance from the impact point to where the chain should attach
+     */
+    jumpBoost: Double
+): HookController(type, player, fullCount, range, speed, pullStrength, hookLength, jumpBoost){
 
     protected val inhibited: Boolean
         get() {

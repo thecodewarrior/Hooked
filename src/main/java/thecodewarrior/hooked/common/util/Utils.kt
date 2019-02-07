@@ -7,6 +7,7 @@ import com.teamwizardry.librarianlib.features.kotlin.dot
 import com.teamwizardry.librarianlib.features.kotlin.minus
 import com.teamwizardry.librarianlib.features.kotlin.plus
 import com.teamwizardry.librarianlib.features.kotlin.times
+import com.teamwizardry.librarianlib.features.math.Vec2d
 import net.minecraft.client.Minecraft
 import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.Vec3d
@@ -37,4 +38,19 @@ fun Vec3d.clampLength(max: Double): Vec3d {
     if(lengthSquared < max * max) return this
     val length = sqrt(lengthSquared)
     return this * (max / length)
+}
+
+inline fun Vec3d.map(fn: (Double) -> Double): Vec3d {
+    return Vec3d(
+        fn(x),
+        fn(y),
+        fn(z)
+    )
+}
+
+inline fun Vec2d.map(fn: (Double) -> Double): Vec2d {
+    return Vec2d(
+        fn(x),
+        fn(y)
+    )
 }

@@ -9,34 +9,38 @@ import net.minecraft.util.ResourceLocation
 import thecodewarrior.hooked.client.KeyBinds
 
 open class BasicHookType(
-        name: ResourceLocation,
-        /**
-         * The number of simultaneous hooks allowed
-         */
-        val count: Int,
-        /**
-         * The maximum range from impact point to player
-         */
-        val range: Double,
-        /**
-         * The speed of the fired hooks in m/t
-         */
-        val speed: Double,
-        /**
-         * The speed the player is pulled toward the target point in m/t
-         */
-        val pullStrength: Double,
-        /**
-         * The distance from the impact point to where the chain should attach
-         */
-        val hookLength: Double
+    name: ResourceLocation,
+    /**
+     * The number of simultaneous hooks allowed
+     */
+    val count: Int,
+    /**
+     * The maximum range from impact point to player
+     */
+    val range: Double,
+    /**
+     * The speed of the fired hooks in m/t
+     */
+    val speed: Double,
+    /**
+     * The speed the player is pulled toward the target point in m/t
+     */
+    val pullStrength: Double,
+    /**
+     * The distance from the impact point to where the chain should attach
+     */
+    val hookLength: Double,
+    /**
+     * The distance from the impact point to where the chain should attach
+     */
+    val jumpBoost: Double
 ): HookType() {
     init {
         registryName = name
     }
 
     override fun create(player: EntityPlayer): HookController {
-        return BasicHookController(this, player, count, range, speed, pullStrength, hookLength)
+        return BasicHookController(this, player, count, range, speed, pullStrength, hookLength, jumpBoost)
     }
 
     private fun inhibited(item: ItemStack): Boolean {

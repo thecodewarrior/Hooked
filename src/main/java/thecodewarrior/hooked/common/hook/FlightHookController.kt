@@ -14,44 +14,25 @@ import thecodewarrior.hooked.common.util.raySphereIntersection
 import kotlin.math.min
 
 class FlightHookController(
-    /**
-     * The type that created this controller
-     */
     type: HookType,
-    /**
-     * The player this controller is bound to
-     */
     player: EntityPlayer,
-    /**
-     * The number of simultaneous hooks allowed
-     */
     fullCount: Int,
-    /**
-     * The maximum range from impact point to player
-     */
     range: Double,
-    /**
-     * The speed of the fired hooks in m/t
-     */
     speed: Double,
-    /**
-     * The distance from the impact point to where the chain should attach
-     */
-    hookLength: Double
-): BasicHookController(type, player, fullCount, range, speed, 0.0, hookLength) {
+    pullStrength: Double,
+    hookLength: Double,
+    jumpBoost: Double
+): HookController(type, player, fullCount, range, speed, pullStrength, hookLength, jumpBoost) {
     @Save
     var tetherLength = -1.0
     var tetherHookPos = Vec3d.ZERO
 
     val volume = DynamicHull()
     override var targetPoint: Vec3d?
-        get() = null
+        get() = if(tetherLength == 0.0) tetherHookPos else null
         set(value) {}
 
     override fun moveBy(offset: Vec3d) {
-        if(plantedHooks.size == 1 && (getWaistPos(player)-plantedHooks[0].pos).length() > tetherLength-0.1) {
-            tetherLength = (tetherLength - offset.y).clamp(0.0, range-0.5)
-        }
         if(plantedHooks.size <= 1) return
         val newOffset = constrainPos(getWaistPos(player), offset)
         if(player.positionVector + newOffset == Vec3d.ZERO)
@@ -70,7 +51,18 @@ class FlightHookController(
             pos = hook.pos + (pos - hook.pos).clampLength(this.range-0.5)
         }
 
-        return (pos - waist).clampLength(1.0)
+        return (pos - waist).clampLength(pullStrength)
+    }
+
+    override fun updateTargetPoint() {
+    }
+
+    override fun modifyBreakSpeed(speed: Float): Float {
+        if (plantedHooks.isEmpty()) {
+            return speed
+        } else {
+            return speed * 5
+        }
     }
 
     override fun tick() {
@@ -92,7 +84,7 @@ class FlightHookController(
             tetherHookPos = plantedHooks[0].pos
             tetherLength = plantedHooks[0].pos.distanceTo(getWaistPos(player))
         }
-        if(tetherLength >= 0)
+        if(tetherLength > 0)
             tetherPlayer()
     }
 
@@ -102,8 +94,10 @@ class FlightHookController(
     }
 
     override fun playerJump(count: Int) {
-        if(count == 1 && tetherLength >= 0)
+        if(count == 1 && tetherLength > 0)
             performSimpleJump()
+        else if(count == 2 && tetherLength > 0)
+            tetherLength = 0.0
         else
             super.playerJump(count - 1)
     }
@@ -122,7 +116,7 @@ class FlightHookController(
             pos = hook.pos + (pos - hook.pos).clampLength(tetherLength)
         }
 
-        var delta = (pos - waist).clampLength(1.0)
+        var delta = (pos - waist).clampLength(pullStrength)
         delta = vec(
             if(!delta.x.isFinite()) 0.0 else delta.x,
             if(!delta.y.isFinite()) 0.0 else delta.y,

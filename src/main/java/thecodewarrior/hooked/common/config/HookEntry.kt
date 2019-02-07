@@ -23,10 +23,11 @@ abstract class HookBehavior {
 
 open class BasicHookBehavior: HookBehavior() {
     var count: Int = 1
-    var range: Double = 1.0
-    var speed: Double = 1.0
-    var pullStrength: Double = 1.0
-    var hookLength: Double = 1.0
+    var range: Double = 16.0
+    var speed: Double = 0.8
+    var pullStrength: Double = 0.5
+    var hookLength: Double = 0.5
+    var jumpBoost: Double = 0.05
 
     override fun createType(name: ResourceLocation): HookType = BasicHookType(
         name,
@@ -34,26 +35,27 @@ open class BasicHookBehavior: HookBehavior() {
         range,
         speed,
         pullStrength,
-        hookLength
+        hookLength,
+        jumpBoost
     )
 }
 
 class FlightHookBehavior: HookBehavior() {
     var count: Int = 1
-    var range: Double = 1.0
-    var speed: Double = 1.0
-    /**
-     * Unused at the moment
-     */
-    var pullStrength: Double = 1.0
-    var hookLength: Double = 1.0
+    var range: Double = 16.0
+    var speed: Double = 0.8
+    var pullStrength: Double = 0.5
+    var hookLength: Double = 0.5
+    var jumpBoost: Double = 0.05
 
     override fun createType(name: ResourceLocation): HookType = FlightHookType(
         name,
         count,
         range,
         speed,
-        hookLength
+        pullStrength,
+        hookLength,
+        jumpBoost
     )
 }
 

@@ -55,7 +55,7 @@ class FlightHookRenderer(
     var tris = listOf<List<Vec3d>>()
     var lines = listOf<Pair<Vec3d, Vec3d>>()
 
-    override fun postRender(controller: BasicHookController) {
+    override fun postRender(controller: HookController) {
         super.postRender(controller)
         val flightController = controller as FlightHookController
         val volume = flightController.volume

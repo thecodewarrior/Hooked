@@ -43,7 +43,7 @@ abstract class HookType: IForgeRegistryEntry.Impl<HookType>() {
             name = "hooked:missingno".toRl(),
             count = 0, range = 0.0,
             speed = 0.0, pullStrength = 0.0,
-            hookLength = 0.0
+            hookLength = 0.0, jumpBoost = 0.0
         )
     }
 }

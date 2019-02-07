@@ -20,7 +20,6 @@ import net.minecraft.world.World
 import org.lwjgl.opengl.GL11
 import thecodewarrior.hooked.HookedMod
 import thecodewarrior.hooked.client.ModelHandle
-import thecodewarrior.hooked.common.hook.BasicHookController
 import thecodewarrior.hooked.common.hook.BasicHookType
 import thecodewarrior.hooked.common.hook.HookController
 import thecodewarrior.hooked.common.hook.HookType
@@ -38,13 +37,8 @@ open class BasicHookRenderer(
     val hookModel: ResourceLocation,
     val ropeTextureVertical: ResourceLocation,
     val ropeTextureHorizontal: ResourceLocation
-): AbstractHookRenderer<BasicHookType, BasicHookController>(type) {
+): AbstractHookRenderer<BasicHookType, HookController>(type) {
     val endHandle = ModelHandle(hookModel)
-
-    init {
-        val name = type.registryName ?: "hooked:missingno".toRl()
-    }
-
 
     override fun reloadResources() {
         endHandle.reload()
@@ -151,5 +145,4 @@ open class BasicHookRenderer(
         vb.pos( offset.x, beg,  offset.z).tex(0.0, length).lightmap(skylight, blocklight).color(b, b, b, 1f).endVertex()
         // @formatter:on
     }
-
 }
