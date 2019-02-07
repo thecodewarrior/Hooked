@@ -66,6 +66,7 @@ class FlightHookController(
     }
 
     override fun tick() {
+        if(plantedHooks.isEmpty()) tetherLength = -1.0
         super.tick()
         player.setNoGravity(plantedHooks.size > 1)
 
@@ -94,12 +95,13 @@ class FlightHookController(
     }
 
     override fun playerJump(count: Int) {
-        if(count == 1 && tetherLength > 0)
+        if(count == 1 && tetherLength > 0) {
             performSimpleJump()
-        else if(count == 2 && tetherLength > 0)
+        } else if(count == 2 && tetherLength > 0) {
             tetherLength = 0.0
-        else
+        } else if(count > 1) {
             super.playerJump(count - 1)
+        }
     }
 
     fun tetherPlayer() {
