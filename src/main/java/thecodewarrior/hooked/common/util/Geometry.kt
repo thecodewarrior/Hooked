@@ -10,7 +10,6 @@ import com.teamwizardry.librarianlib.features.kotlin.dot
 import com.teamwizardry.librarianlib.features.kotlin.minus
 import com.teamwizardry.librarianlib.features.kotlin.plus
 import com.teamwizardry.librarianlib.features.kotlin.times
-import com.teamwizardry.librarianlib.features.math.AffineTransformation
 import com.teamwizardry.librarianlib.features.math.Matrix4
 import com.teamwizardry.librarianlib.features.math.Vec2d
 import net.minecraft.util.math.Vec3d

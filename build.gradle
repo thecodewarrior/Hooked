@@ -48,6 +48,11 @@ repositories {
     }
 }
 
+configurations {
+    required
+    compile.extendsFrom(required)
+}
+
 dependencies {
     compile "net.shadowfacts:Forgelin:1.8.0"
     compile 'com.teamwizardry.librarianlib:librarianlib-1.12.2:4.16-SNAPSHOT:deobf'
@@ -88,5 +93,17 @@ compileKotlin {
     kotlinOptions {
         javaParameters = true
         jvmTarget = 1.8
+    }
+}
+
+jar {
+    from sourceSets.main.output
+
+    archiveName "${archivesBaseName}-${version}.jar"
+    dependsOn(configurations.getByName("compile") as Object)
+    from {
+        configurations.required.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
     }
 }
