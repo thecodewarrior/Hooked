@@ -24,12 +24,11 @@
             "name": "iron",
             "model": "hook_iron",
             "count": 2,
-            "range": 0.5,
+            "range": 16.0,
             "speed": 0.8,
             "pullStrength": 0.4,
             "hookLength": 0.5,
             "jumpBoost": 0.05,
-            "cooldown": 25,
 
             "playerGap": 0.0,
             "hookModel": "hooked:hook/iron",
