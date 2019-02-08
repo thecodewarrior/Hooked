@@ -22,6 +22,7 @@ import net.minecraftforge.fml.common.network.NetworkRegistry
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 import games.thecodewarrior.hooked.client.render.HookRenderer
+import games.thecodewarrior.hooked.common.config.HookTypes
 import games.thecodewarrior.hooked.common.hook.HookController
 import games.thecodewarrior.hooked.common.hook.HookType
 import games.thecodewarrior.hooked.common.items.ItemHook
@@ -29,23 +30,12 @@ import games.thecodewarrior.hooked.common.network.PacketHookCapSync
 
 class HooksCap(val player: EntityPlayer) {
 
-    @SideOnly(Side.CLIENT)
-    @JvmField
-    var renderer: HookRenderer? = null
-
-    var controller: HookController? = null
+    var controller: HookController<*>? = null
         set(value) {
             if(field !== value) {
                 field?.remove()
                 field = value
                 field?.insert()
-                ClientRunnable.run {
-                    if (value == null) {
-                        renderer = null
-                    } else {
-                        renderer = HookRenderer.REGISTRY.getValue(value.type.registryName)
-                    }
-                }
             }
         }
 
@@ -57,7 +47,7 @@ class HooksCap(val player: EntityPlayer) {
         }
         val type = ItemHook.getType(item)
         if(type != null && type != controller?.type) {
-            controller = type.create(player)
+            controller = type.createController(player)
         }
     }
 
@@ -74,7 +64,7 @@ class HooksCap(val player: EntityPlayer) {
     fun writeToNBT(compound: NBTTagCompound): NBTTagCompound {
         val controller = controller
         if(controller != null) {
-            compound.setTag("id", NBTTagString(controller.type.registryName.toString()))
+            compound.setTag("id", NBTTagString(controller.type.name))
             compound.setTag("controller", AbstractSaveHandler.writeAutoNBT(controller, false))
         }
         return compound
@@ -83,10 +73,10 @@ class HooksCap(val player: EntityPlayer) {
     fun readFromNBT(compound: NBTTagCompound) {
         val id = (compound.getTag("id") as? NBTTagString)?.string
         if(id != null) {
-            val type = HookType.REGISTRY.getValue(id.toRl())
+            val type = HookTypes[id]
             if(type != null) {
                 if(controller?.type != type) {
-                    controller = type.create(player)
+                    controller = type.createController(player)
                 }
                 controller?.let {
                     AbstractSaveHandler.readAutoNBT(it, compound.getTag("controller"), false)

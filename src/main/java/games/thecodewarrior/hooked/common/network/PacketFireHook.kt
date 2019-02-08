@@ -30,7 +30,7 @@ class PacketFireHook : PacketBase() {
         player.ifCap(HooksCap.CAPABILITY, null) { cap ->
             val spawnDistance = player.positionVector.distanceTo(pos)
             if(spawnDistance > 10) {
-                games.thecodewarrior.hooked.HookLog.warn("Player ${player.name} spawned a hook too far from their body! Expected point within " +
+                HookLog.warn("Player ${player.name} spawned a hook too far from their body! Expected point within " +
                         "10 blocks of player. Got $pos, $spawnDistance blocks away.")
                 cap.update()
             }

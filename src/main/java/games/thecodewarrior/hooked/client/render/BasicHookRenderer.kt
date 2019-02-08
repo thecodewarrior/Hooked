@@ -28,17 +28,8 @@ import games.thecodewarrior.hooked.common.util.Minecraft
 /**
  * Created by TheCodeWarrior
  */
-open class BasicHookRenderer(
-    type: BasicHookType,
-    /**
-     * The gap between the player and the start of the chain. Allows
-     */
-    val playerGap: Double,
-    val hookModel: ResourceLocation,
-    val ropeTextureVertical: ResourceLocation,
-    val ropeTextureHorizontal: ResourceLocation
-): AbstractHookRenderer<BasicHookType, HookController>(type) {
-    val endHandle = ModelHandle(hookModel)
+open class BasicHookRenderer(type: BasicHookType): AbstractHookRenderer<BasicHookType, HookController<*>>(type) {
+    val endHandle = ModelHandle(type.hookModel)
 
     override fun reloadResources() {
         endHandle.reload()
@@ -93,9 +84,9 @@ open class BasicHookRenderer(
 
         val radius = 0.5
 
-        Minecraft.getMinecraft().renderEngine.bindTexture(ropeTextureVertical)
+        Minecraft.getMinecraft().renderEngine.bindTexture(type.verticalRopeTexture)
         chain(distance, waist, direction, vec(radius, 0, 0), world)
-        Minecraft.getMinecraft().renderEngine.bindTexture(ropeTextureHorizontal)
+        Minecraft.getMinecraft().renderEngine.bindTexture(type.horizontalRopeTexture)
         chain(distance, waist, direction, vec(0, 0, radius), world)
 
         Minecraft.getMinecraft().entityRenderer.disableLightmap()
@@ -108,14 +99,14 @@ open class BasicHookRenderer(
         vb.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_LMAP_COLOR)
 
         var len = distance
-        while (len > playerGap) {
-            if (len > playerGap+1) {
+        while (len > type.playerGap) {
+            if (len > type.playerGap+1) {
                 len -= 1.0 // decrement before because we are rendering backward, hook to waist instead of waist to hook
                 val blockPos = BlockPos(waist + normal * (len + 0.5))
                 chainQuad(blockPos, len, offset, 1.0, world, vb)
             } else {
                 val blockPos = BlockPos(waist + normal * len / 2)
-                chainQuad(blockPos, playerGap, offset, len-playerGap, world, vb)
+                chainQuad(blockPos, type.playerGap, offset, len-type.playerGap, world, vb)
 
                 len = 0.0
             }

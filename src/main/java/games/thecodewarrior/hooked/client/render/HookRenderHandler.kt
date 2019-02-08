@@ -7,6 +7,9 @@ import com.teamwizardry.librarianlib.features.kotlin.toRl
 import com.teamwizardry.librarianlib.features.kotlin.unaryMinus
 import com.teamwizardry.librarianlib.features.sprite.Texture
 import games.thecodewarrior.hooked.common.capability.HooksCap
+import games.thecodewarrior.hooked.common.config.HookTypes
+import games.thecodewarrior.hooked.common.hook.HookController
+import games.thecodewarrior.hooked.common.hook.HookType
 import games.thecodewarrior.hooked.common.hook.ICooldownHookController
 import games.thecodewarrior.hooked.common.util.Minecraft
 import games.thecodewarrior.hooked.common.util.WtfException
@@ -68,9 +71,9 @@ object HookRenderHandler {
 
     @SubscribeEvent
     fun stitch(e: TextureStitchEvent) {
-        HookRenderer.REGISTRY.forEach { renderer ->
-            renderer.reloadResources()
-            renderer.registerSprites(e.map)
+        HookTypes.forEach { _, type ->
+            type.renderer.reloadResources()
+            type.renderer.registerSprites(e.map)
         }
     }
 
@@ -84,7 +87,8 @@ object HookRenderHandler {
         GlStateManager.pushMatrix()
         GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
 
-        cap.renderer?.render(controller)
+        @Suppress("UNCHECKED_CAST")
+        (controller.type.renderer as HookRenderer<HookType, HookController<*>>).render(controller)
 
         GlStateManager.popMatrix()
     }

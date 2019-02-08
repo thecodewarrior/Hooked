@@ -103,7 +103,7 @@ object KeyBinds {
         }
     }
 
-    fun retractLookingHook(controller: HookController) {
+    fun retractLookingHook(controller: HookController<*>) {
         val player = Minecraft().player
         val found = controller.getSpecificHookToRetract()
 

@@ -1,20 +1,16 @@
 package games.thecodewarrior.hooked.common.hook
 
+import games.thecodewarrior.hooked.client.render.FlightHookRenderer
+import games.thecodewarrior.hooked.client.render.HookRenderer
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.util.ResourceLocation
 
-class FlightHookType(
-    name: ResourceLocation,
-    count: Int,
-    range: Double,
-    speed: Double,
-    pullStrength: Double,
-    hookLength: Double,
-    jumpBoost: Double,
-    cooldown: Int
-): BasicHookType(name, count, range, speed, pullStrength, hookLength, jumpBoost, cooldown) {
+class FlightHookType: BasicHookType() {
+    override fun initRenderer(): HookRenderer<*, *> {
+        return FlightHookRenderer(this)
+    }
 
-    override fun create(player: EntityPlayer): HookController {
-        return FlightHookController(this, player, count, range, speed, pullStrength, hookLength, jumpBoost, cooldown)
+    override fun createController(player: EntityPlayer): HookController<out FlightHookType> {
+        return FlightHookController(this, player)
     }
 }

@@ -89,7 +89,7 @@ class StateHandle(val loc: ModelResourceLocation) {
 
         private fun loadModel(loc: ModelResourceLocation) {
             try {
-                val mod = if(games.thecodewarrior.hooked.HookedMod.DEV_ENVIRONMENT) {
+                val mod = if(HookedMod.DEV_ENVIRONMENT) {
                     val baseLoc = ResourceLocation(loc.path, loc.namespace)
                     val m = try {
                         ModelLoaderRegistry.getModel(loc)
@@ -210,7 +210,7 @@ class ModelHandle(val loc: ResourceLocation) {
 
         private fun loadModel(loc: ResourceLocation) {
             try {
-                val mod = if(games.thecodewarrior.hooked.HookedMod.DEV_ENVIRONMENT) {
+                val mod = if(HookedMod.DEV_ENVIRONMENT) {
                     val m = try {
                         ModelLoaderRegistry.getModel(loc)
                     } catch (e: Exception) {

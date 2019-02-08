@@ -3,60 +3,46 @@ package games.thecodewarrior.hooked.common.hook
 import com.google.common.collect.Iterables
 import com.teamwizardry.librarianlib.core.client.ClientTickHandler
 import com.teamwizardry.librarianlib.features.helpers.vec
-import com.teamwizardry.librarianlib.features.kotlin.*
+import com.teamwizardry.librarianlib.features.kotlin.div
+import com.teamwizardry.librarianlib.features.kotlin.dot
+import com.teamwizardry.librarianlib.features.kotlin.minus
+import com.teamwizardry.librarianlib.features.kotlin.motionVec
+import com.teamwizardry.librarianlib.features.kotlin.plus
+import com.teamwizardry.librarianlib.features.kotlin.times
 import com.teamwizardry.librarianlib.features.methodhandles.MethodHandleHelper
-import com.teamwizardry.librarianlib.features.saving.*
+import com.teamwizardry.librarianlib.features.saving.NonPersistent
+import com.teamwizardry.librarianlib.features.saving.Save
+import com.teamwizardry.librarianlib.features.saving.SaveInPlace
 import com.teamwizardry.librarianlib.features.utilities.RaycastUtils
+import games.thecodewarrior.hooked.HookLog
+import games.thecodewarrior.hooked.HookedMod
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.util.math.RayTraceResult
 import net.minecraft.util.math.Vec3d
-import games.thecodewarrior.hooked.HookLog
-import games.thecodewarrior.hooked.HookedMod
-import games.thecodewarrior.hooked.common.util.map
-import java.util.*
-import kotlin.math.*
+import java.util.LinkedList
+import java.util.UUID
+import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.pow
+import kotlin.math.sign
 
 /**
  * A type of hook
  */
 @SaveInPlace
-abstract class HookController(
+abstract class HookController<T: HookType>(
     /**
      * The type that created this controller
      */
-    val type: HookType,
+    val type: T,
     /**
      * The player this controller is bound to
      */
-    val player: EntityPlayer,
-    /**
-     * The number of simultaneous hooks allowed
-     */
-    var count: Int,
-    /**
-     * The maximum range from impact point to player
-     */
-    var range: Double,
-    /**
-     * The speed of the fired hooks in m/t
-     */
-    var speed: Double,
-    /**
-     * The speed the player is pulled toward the target point in m/t
-     */
-    var pullStrength: Double,
-    /**
-     * The distance from the impact point to where the chain should attach
-     */
-    var hookLength: Double,
-    /**
-     * The distance from the impact point to where the chain should attach
-     */
-    var jumpBoost: Double
+    val player: EntityPlayer
 ) {
-    private val retractDistSq = (range+1/16.0).pow(2)
     var dirty: Boolean = true
         internal set
     fun markDirty() {
@@ -93,6 +79,16 @@ abstract class HookController(
      */
     open var targetPoint: Vec3d? = null
 
+    @Save
+    open var cooldownCounter = 0
+
+    open val pullStrength: Double = type.pullStrength
+    open val count: Int = type.count
+    open val jumpBoost: Double = type.jumpBoost
+    open val range: Double = type.range
+    open val speed: Double = type.speed
+    open val cooldown: Int = type.cooldown
+
     abstract fun moveBy(offset: Vec3d)
 
     /**
@@ -103,7 +99,13 @@ abstract class HookController(
     /**
      * Adjusts the break speed of the player
      */
-    abstract fun modifyBreakSpeed(speed: Float): Float
+    open fun modifyBreakSpeed(speed: Float): Float {
+        if (plantedHooks.isEmpty()) {
+            return speed
+        } else {
+            return speed * 5
+        }
+    }
 
     /**
      * performs any cleanup needed before the controller is removed from the player
@@ -127,7 +129,7 @@ abstract class HookController(
         val found = plantedHooks.map {
             it to Math.max(
                 (it.pos - eye).normalize() dot look,
-                ((it.pos + it.direction * hookLength) - eye).normalize() dot look
+                ((it.pos + it.direction * type.hookLength) - eye).normalize() dot look
             )
         }.maxBy { it.second } ?: return null
         if(found.second < Math.cos(Math.toRadians(10.0))) return null
@@ -135,7 +137,10 @@ abstract class HookController(
     }
 
     open fun fireHook(startPos: Vec3d, normal: Vec3d, uuid: UUID) {
-        extendingHooks.add(HookInFlight(startPos, normal, uuid))
+        if(cooldownCounter == 0) {
+            extendingHooks.add(HookInFlight(startPos, normal, uuid))
+            cooldownCounter = cooldown
+        }
         markDirty()
     }
 
@@ -194,6 +199,11 @@ abstract class HookController(
     }
 
     open fun tick() {
+        if(cooldownCounter > 0) {
+            cooldownCounter--
+            if(cooldownCounter == 0) markDirty()
+        }
+
         removeNaN()
         preTick()
 
@@ -216,7 +226,7 @@ abstract class HookController(
                 hook.verify()
             } catch(e: IllegalStateException) {
                 iter.remove()
-                games.thecodewarrior.hooked.HookLog.error("Hook on player ${player.uniqueID} had nonfinite value between ticks: $hook" +
+                HookLog.error("Hook on player ${player.uniqueID} had nonfinite value between ticks: $hook" +
                     " (removing)")
                 markDirty()
             }
@@ -226,7 +236,7 @@ abstract class HookController(
     private fun updateInFlight() {
         val iterator = extendingHooks.iterator()
         for (hook in iterator) {
-            val tip = hook.pos + hook.direction*hookLength
+            val tip = hook.pos + hook.direction*type.hookLength
             val distanceLeft = range - (hook.pos - getWaistPos(player)).length()
             if(distanceLeft < 1/16.0) {
                 iterator.remove()
@@ -246,7 +256,7 @@ abstract class HookController(
             } else {
                 iterator.remove()
                 val planted = Hook(
-                    trace.hitVec - hook.direction * hookLength,
+                    trace.hitVec - hook.direction * type.hookLength,
                     hook.direction, trace.blockPos, trace.sideHit,
                     hook.uuid
                 )
@@ -261,7 +271,7 @@ abstract class HookController(
         val iterator = plantedHooks.iterator()
         for(hook in iterator) {
             if (
-                hook.pos.squareDistanceTo(getWaistPos(player)) > retractDistSq ||
+                hook.pos.squareDistanceTo(getWaistPos(player)) > (range+1/16.0).pow(2) ||
                 player.world.isAirBlock(hook.block)
             ) {
                 iterator.remove()
@@ -282,7 +292,7 @@ abstract class HookController(
     private fun updateRetracting() {
         val iterator = retractingHooks.iterator()
         for (hook in iterator) {
-            val hookBack = hook.pos - hook.direction * hookLength
+            val hookBack = hook.pos - hook.direction * type.hookLength
             val direction = hookBack - getWaistPos(player)
             val distance = direction.length()
 
@@ -304,7 +314,7 @@ abstract class HookController(
         for(hook in iter) {
             val distance = waist.distanceTo(hook.pos)
             if(distance > threshold) {
-                games.thecodewarrior.hooked.HookLog.error("Hook was an absurd distance ($distance) from player. Removing $hook from $player")
+                HookLog.error("Hook was an absurd distance ($distance) from player. Removing $hook from $player")
                 iter.remove()
             }
         }
@@ -317,12 +327,12 @@ abstract class HookController(
     }
 
     private fun updatePlayer() {
-        games.thecodewarrior.hooked.HookedMod.PROXY.setAutoJump(player, true)
+        HookedMod.PROXY.setAutoJump(player, true)
         val targetPoint = targetPoint ?: return
 
         player.fallDistance = 0f
         player.jumpTicks = 10
-        games.thecodewarrior.hooked.HookedMod.PROXY.setAutoJump(player, false)
+        HookedMod.PROXY.setAutoJump(player, false)
         val waist = getWaistPos(player)
         val deltaPos = targetPoint - waist
         val deltaLen = deltaPos.length()

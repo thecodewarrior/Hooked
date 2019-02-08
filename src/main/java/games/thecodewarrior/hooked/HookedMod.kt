@@ -18,17 +18,17 @@ class HookedMod {
 
     @Mod.EventHandler
     fun preInit(e: FMLPreInitializationEvent) {
-        HookedMod.PROXY.pre(e)
+        PROXY.pre(e)
     }
 
     @Mod.EventHandler
     fun init(e: FMLInitializationEvent) {
-        HookedMod.PROXY.init(e)
+        PROXY.init(e)
     }
 
     @Mod.EventHandler
     fun postInit(e: FMLPostInitializationEvent) {
-        HookedMod.PROXY.post(e)
+        PROXY.post(e)
     }
 
     companion object {
@@ -41,7 +41,7 @@ class HookedMod {
         const val SERVER = "games.thecodewarrior.hooked.common.CommonProxy"
 
         @JvmStatic
-        @SidedProxy(clientSide = HookedMod.CLIENT, serverSide = HookedMod.SERVER)
+        @SidedProxy(clientSide = CLIENT, serverSide = SERVER)
         lateinit var PROXY: CommonProxy
 
         @JvmField

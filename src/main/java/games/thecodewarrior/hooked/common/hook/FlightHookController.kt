@@ -1,36 +1,22 @@
 package games.thecodewarrior.hooked.common.hook
 
 import com.teamwizardry.librarianlib.features.helpers.vec
-import com.teamwizardry.librarianlib.features.kotlin.clamp
 import com.teamwizardry.librarianlib.features.kotlin.minus
 import com.teamwizardry.librarianlib.features.kotlin.plus
-import com.teamwizardry.librarianlib.features.kotlin.times
 import com.teamwizardry.librarianlib.features.saving.Save
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.util.math.Vec3d
 import games.thecodewarrior.hooked.common.util.DynamicHull
 import games.thecodewarrior.hooked.common.util.clampLength
-import games.thecodewarrior.hooked.common.util.raySphereIntersection
+import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.util.math.Vec3d
 import java.util.UUID
-import kotlin.math.min
 
 class FlightHookController(
-    type: HookType,
-    player: EntityPlayer,
-    fullCount: Int,
-    range: Double,
-    speed: Double,
-    pullStrength: Double,
-    hookLength: Double,
-    jumpBoost: Double,
-    override val cooldown: Int
-): HookController(type, player, fullCount, range, speed, pullStrength, hookLength, jumpBoost), ICooldownHookController {
+    type: FlightHookType,
+    player: EntityPlayer
+): HookController<FlightHookType>(type, player) {
     @Save
     var tetherLength = -1.0
     var tetherHookPos = Vec3d.ZERO
-
-    @Save
-    override var cooldownCounter = 0
 
     val volume = DynamicHull()
     override var targetPoint: Vec3d?
@@ -53,27 +39,17 @@ class FlightHookController(
         volume.update(plantedHooks.map { it.pos })
         pos = volume.constrain(pos)
         plantedHooks.forEach { hook ->
-            pos = hook.pos + (pos - hook.pos).clampLength(this.range-0.5)
+            pos = hook.pos + (pos - hook.pos).clampLength(type.range-0.5)
         }
 
-        return (pos - waist).clampLength(pullStrength)
+        return (pos - waist).clampLength(type.pullStrength)
     }
 
     override fun updateTargetPoint() {
     }
 
-    override fun modifyBreakSpeed(speed: Float): Float {
-        if (plantedHooks.isEmpty()) {
-            return speed
-        } else {
-            return speed * 5
-        }
-    }
-
     override fun preTick() {
-        if(cooldownCounter > 0) cooldownCounter--
         if(plantedHooks.isEmpty()) tetherLength = -1.0
-        if(cooldownCounter == 0) markDirty()
     }
 
     override fun postTick() {
@@ -97,16 +73,6 @@ class FlightHookController(
         if(tetherLength > 0)
             tetherPlayer()
     }
-
-    override fun fireHook(startPos: Vec3d, normal: Vec3d, uuid: UUID) {
-        if(cooldownCounter == 0) {
-            super.fireHook(startPos, normal, uuid)
-            cooldownCounter = cooldown
-        } else {
-            markDirty()
-        }
-    }
-
 
     override fun remove() {
         super.remove()
@@ -137,7 +103,7 @@ class FlightHookController(
             pos = hook.pos + (pos - hook.pos).clampLength(tetherLength)
         }
 
-        var delta = (pos - waist).clampLength(pullStrength)
+        var delta = (pos - waist).clampLength(type.pullStrength)
         delta = vec(
             if(!delta.x.isFinite()) 0.0 else delta.x,
             if(!delta.y.isFinite()) 0.0 else delta.y,

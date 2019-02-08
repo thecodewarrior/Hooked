@@ -3,6 +3,8 @@ package games.thecodewarrior.hooked.common.items
 import baubles.api.BaubleType
 import baubles.api.BaublesApi
 import baubles.api.IBauble
+import com.teamwizardry.librarianlib.core.client.ModelHandler
+import com.teamwizardry.librarianlib.features.base.IExtraVariantHolder
 import com.teamwizardry.librarianlib.features.base.item.ItemMod
 import com.teamwizardry.librarianlib.features.kotlin.nbt
 import com.teamwizardry.librarianlib.features.kotlin.toRl
@@ -13,56 +15,41 @@ import net.minecraft.creativetab.CreativeTabs
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagByte
 import net.minecraft.nbt.NBTTagString
 import net.minecraft.util.ActionResult
 import net.minecraft.util.EnumActionResult
 import net.minecraft.util.EnumHand
 import net.minecraft.util.NonNullList
 import net.minecraft.world.World
-import games.thecodewarrior.hooked.client.KeyBinds
-import games.thecodewarrior.hooked.common.HookTypeEnum
+import games.thecodewarrior.hooked.common.config.HookTypes
 import games.thecodewarrior.hooked.common.hook.HookType
-import java.util.*
+import net.minecraft.client.renderer.block.model.ModelResourceLocation
+import net.minecraft.util.ResourceLocation
 
 /**
  * Created by TheCodeWarrior
  */
-class ItemHook : ItemMod("hook"), IBauble {
+class ItemHook : ItemMod("hook"), IExtraVariantHolder, IBauble {
     init {
         maxStackSize = 1
     }
 
     override fun getSubItems(tab: CreativeTabs, subItems: NonNullList<ItemStack>) {
         if (!isInCreativeTab(tab)) return
-        subItems.addAll(HookType.REGISTRY.map {
+        subItems.addAll(HookTypes.map {
             val stack = ItemStack(this, 1)
-            stack.nbt["type"] = NBTTagString(it.registryName.toString())
+            stack.nbt["type"] = NBTTagString(it.key)
             stack
         })
     }
 
-    override fun addInformation(stack: ItemStack, worldIn: World?, tooltip: MutableList<String>, flagIn: ITooltipFlag) {
-        super.addInformation(stack, worldIn, tooltip, flagIn)
-        val type = getType(stack)!!
-
-        if(GuiScreen.isShiftKeyDown()) {
-            type.addFullInformation(stack, tooltip)
-        } else {
-            type.addBasicInformation(stack, tooltip)
+    override val extraVariants: Array<out String>
+        get() = (HookTypes.map { it.value.model } + listOf("missingno")).toTypedArray()
+    override val meshDefinition: ((stack: ItemStack) -> ModelResourceLocation)?
+        get() = { stack ->
+            getType(stack)?.model?.let { ModelHandler.getResource("hooked", it) } ?: ModelResourceLocation("missingno")
         }
-        tooltip.add(I18n.format("tooltip.hooked:hook.${type.registryName}.info"))
-    }
 
-    override fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand): ActionResult<ItemStack> {
-        if(playerIn.isSneaking) {
-            val type = getType(playerIn.getHeldItem(handIn))
-            val result = type?.adjustStack(playerIn.getHeldItem(handIn))
-            if(result != null)
-                return ActionResult(EnumActionResult.SUCCESS, result)
-        }
-        return super.onItemRightClick(worldIn, playerIn, handIn)
-    }
 
     override fun getBaubleType(p0: ItemStack?): BaubleType {
         return BaubleType.TRINKET
@@ -82,8 +69,8 @@ class ItemHook : ItemMod("hook"), IBauble {
     companion object {
         fun getType(stack: ItemStack?): HookType? {
             if(stack == null || stack.item != ModItems.hook) return null
-            val resourceLocation = (stack.nbt["type"] as? NBTTagString)?.string?.toRl() ?: "missingno".toRl()
-            return HookType.REGISTRY.getValue(resourceLocation)
+            val name = (stack.nbt["type"] as? NBTTagString)?.string ?: "missingno"
+            return HookTypes[name]
         }
 
         fun getEquipped(player: EntityPlayer): ItemStack? {

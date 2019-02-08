@@ -1,6 +1,16 @@
 package games.thecodewarrior.hooked.common.hook
 
+import com.google.common.collect.BiMap
+import com.google.common.collect.HashBiMap
+import com.google.gson.JsonDeserializationContext
+import com.google.gson.JsonDeserializer
+import com.google.gson.JsonElement
+import com.google.gson.JsonParseException
+import com.google.gson.JsonPrimitive
+import com.google.gson.JsonSerializationContext
+import com.google.gson.JsonSerializer
 import com.teamwizardry.librarianlib.features.kotlin.toRl
+import games.thecodewarrior.hooked.client.render.HookRenderer
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.util.ResourceLocation
@@ -9,42 +19,85 @@ import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 import net.minecraftforge.registries.IForgeRegistry
 import net.minecraftforge.registries.IForgeRegistryEntry
+import java.lang.reflect.Type
 
-abstract class HookType: IForgeRegistryEntry.Impl<HookType>() {
+abstract class HookType {
+    abstract val name: String
+
+    abstract val model: String
+    /**
+     * The number of simultaneous hooks allowed
+     */
+    abstract val count: Int
+
+    /**
+     * The maximum range from impact point to player
+     */
+    abstract val range: Double
+
+    /**
+     * The speed of the fired hooks in m/t
+     */
+    abstract val speed: Double
+
+    /**
+     * The speed the player is pulled toward the target point in m/t
+     */
+    abstract val pullStrength: Double
+
+    /**
+     * The distance from the impact point to where the chain should attach
+     */
+    abstract val hookLength: Double
+
+    /**
+     * The distance from the impact point to where the chain should attach
+     */
+    abstract val jumpBoost: Double
+
+    abstract val cooldown: Int
 
     /**
      * Create a new controller for the specified player
      */
-    abstract fun create(player: EntityPlayer): HookController
+    abstract fun createController(player: EntityPlayer): HookController<*>
 
-    /**
-     * "Adjusts" the passed stack. Called on sneak+use item. Returns a modified _copy_ of the itemstack, or null if no
-     * change occured
-     */
-    abstract fun adjustStack(stack: ItemStack): ItemStack?
+    @get:SideOnly(Side.CLIENT)
+    @delegate:SideOnly(Side.CLIENT)
+    @delegate:Transient
+    val renderer: HookRenderer<*, *> by lazy { initRenderer() }
 
-    /**
-     * Add basic information to the item tooltip. Mutually exclusive with [addFullInformation]
-     */
     @SideOnly(Side.CLIENT)
-    abstract fun addBasicInformation(stack: ItemStack, tooltip: MutableList<String>)
-
-    /**
-     * Add full information to the item tooltip. Mutually exclusive with [addBasicInformation]
-     */
-    @SideOnly(Side.CLIENT)
-    abstract fun addFullInformation(stack: ItemStack, tooltip: MutableList<String>)
+    protected abstract fun initRenderer(): HookRenderer<*, *>
 
     companion object {
-        @JvmStatic
-        lateinit var REGISTRY: IForgeRegistry<HookType>
+        fun register(clazz: Class<out HookType>, name: String) {
+            types[name] = clazz
+        }
+        private val types = HashBiMap.create<String, Class<out HookType>>()
+        private val names = types.inverse()
+    }
 
-        val missingno = BasicHookType(
-            name = "missingno".toRl(),
-            count = 0, range = 0.0,
-            speed = 0.0, pullStrength = 0.0,
-            hookLength = 0.0, jumpBoost = 0.0,
-            cooldown = 0
-        )
+    object Serializer: JsonSerializer<HookType>, JsonDeserializer<HookType> {
+        override fun serialize(src: HookType, typeOfSrc: Type, context: JsonSerializationContext): JsonElement {
+            val name = names[src.javaClass]
+                ?: throw IllegalArgumentException("Unrecognized object type ${src.javaClass.simpleName}. " +
+                    "Recognized types: [${names.keys.map { it.simpleName }.sorted().joinToString { ", " }}]")
+            val elem = context.serialize(src).asJsonObject
+            elem.addProperty("type", name)
+            return elem
+        }
+
+        @Throws(JsonParseException::class)
+        override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): HookType {
+            val jsonObject = json.asJsonObject
+            val name = jsonObject["type"].asString
+            val klass = types[name]
+                ?: throw JsonParseException("Unknown type discriminator `$name`. " +
+                    "Known types are [${types.keys.sorted().joinToString(", ")}]")
+
+            @Suppress("UNCHECKED_CAST")
+            return context.deserialize<Any>(jsonObject, klass) as HookType
+        }
     }
 }

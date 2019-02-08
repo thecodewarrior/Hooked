@@ -25,7 +25,7 @@ class PacketMove : PacketBase() {
         player.ifCap(HooksCap.CAPABILITY, null) { cap ->
             val distance = offset.length()
             if(distance > 3) {
-                games.thecodewarrior.hooked.HookLog.warn("Player ${player.name} moved too fast! Expected less than 3 blocks. " +
+                HookLog.warn("Player ${player.name} moved too fast! Expected less than 3 blocks. " +
                     "Got $offset, a distance of $distance blocks.")
                 cap.update()
             }

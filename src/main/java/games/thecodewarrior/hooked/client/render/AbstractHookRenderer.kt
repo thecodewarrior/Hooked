@@ -14,16 +14,8 @@ import games.thecodewarrior.hooked.common.hook.HookInFlight
 import games.thecodewarrior.hooked.common.hook.HookType
 import kotlin.math.min
 
-abstract class AbstractHookRenderer<T: HookType, C: HookController>(val type: T): HookRenderer() {
-    init {
-        registryName = type.registryName
-    }
-    override fun render(controller: HookController) {
-        @Suppress("UNCHECKED_CAST")
-        renderController(controller as C)
-    }
-
-    open fun renderController(controller: C) {
+abstract class AbstractHookRenderer<T: HookType, C: HookController<*>>(type: T): HookRenderer<T, C>(type) {
+    override fun render(controller: C) {
         preRender(controller)
         controller.extendingHooks.forEach {
             renderHookInFlight(it)
@@ -64,7 +56,7 @@ abstract class AbstractHookRenderer<T: HookType, C: HookController>(val type: T)
         val distance = (pos - waist).length()
         val normal = (pos - waist) / distance
         if(distance > 1024) {
-            games.thecodewarrior.hooked.HookLog.warn("Absurd hook distance: $distance for hook at $pos going in direction $direction. Skipping")
+            HookLog.warn("Absurd hook distance: $distance for hook at $pos going in direction $direction. Skipping")
             return
         }
 

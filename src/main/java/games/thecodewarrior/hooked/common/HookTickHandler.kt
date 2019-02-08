@@ -29,7 +29,7 @@ object HookTickHandler {
         MinecraftForge.EVENT_BUS.register(this)
     }
 
-    val rl = ResourceLocation(games.thecodewarrior.hooked.HookedMod.MODID, "playerHookWielder")
+    val rl = ResourceLocation(HookedMod.MODID, "playerHookWielder")
 
     @SubscribeEvent
     fun playerAttach(e: AttachCapabilitiesEvent<Entity>) {
@@ -69,7 +69,7 @@ object HookTickHandler {
     fun entityTick(e: LivingEvent.LivingUpdateEvent) {
         val entity = e.entity as? EntityPlayer ?: return
 
-        games.thecodewarrior.hooked.HookedMod.PROXY.setAutoJump(e.entityLiving, true)
+        HookedMod.PROXY.setAutoJump(e.entityLiving, true)
         if (!entity.hasCapability(HooksCap.CAPABILITY, null)) {
             return
         }
