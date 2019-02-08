@@ -11,6 +11,7 @@ import net.minecraft.util.math.Vec3d
 import games.thecodewarrior.hooked.common.util.DynamicHull
 import games.thecodewarrior.hooked.common.util.clampLength
 import games.thecodewarrior.hooked.common.util.raySphereIntersection
+import java.util.UUID
 import kotlin.math.min
 
 class FlightHookController(
@@ -21,11 +22,15 @@ class FlightHookController(
     speed: Double,
     pullStrength: Double,
     hookLength: Double,
-    jumpBoost: Double
-): HookController(type, player, fullCount, range, speed, pullStrength, hookLength, jumpBoost) {
+    jumpBoost: Double,
+    override val cooldown: Int
+): HookController(type, player, fullCount, range, speed, pullStrength, hookLength, jumpBoost), ICooldownHookController {
     @Save
     var tetherLength = -1.0
     var tetherHookPos = Vec3d.ZERO
+
+    @Save
+    override var cooldownCounter = 0
 
     val volume = DynamicHull()
     override var targetPoint: Vec3d?
@@ -65,9 +70,13 @@ class FlightHookController(
         }
     }
 
-    override fun tick() {
+    override fun preTick() {
+        if(cooldownCounter > 0) cooldownCounter--
         if(plantedHooks.isEmpty()) tetherLength = -1.0
-        super.tick()
+        if(cooldownCounter == 0) markDirty()
+    }
+
+    override fun postTick() {
         player.setNoGravity(plantedHooks.size > 1)
 
         if(plantedHooks.size > 1) {
@@ -88,6 +97,16 @@ class FlightHookController(
         if(tetherLength > 0)
             tetherPlayer()
     }
+
+    override fun fireHook(startPos: Vec3d, normal: Vec3d, uuid: UUID) {
+        if(cooldownCounter == 0) {
+            super.fireHook(startPos, normal, uuid)
+            cooldownCounter = cooldown
+        } else {
+            markDirty()
+        }
+    }
+
 
     override fun remove() {
         super.remove()

@@ -1,0 +1,20 @@
+{
+    "spritesheet": {
+        "textureWidth": 288,
+        "textureHeight": 27,
+        "sprites": {
+            "hotbar_frame": [0, 0, 13, 18],
+            "hotbar_fill": {
+                "pos": [13, 1, 11, 16],
+                "frames": 25,
+                "offset": [11, 0]
+            },
+            "cursor_background": [0, 18, 13, 9],
+            "cursor_fill": {
+                "pos": [13, 18, 13, 9],
+                "frames": 21,
+                "offset": [13, 0]
+            }
+        }
+    }
+}

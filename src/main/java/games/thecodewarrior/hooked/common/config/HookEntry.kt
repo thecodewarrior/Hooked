@@ -28,6 +28,7 @@ open class BasicHookBehavior: HookBehavior() {
     var pullStrength: Double = 0.5
     var hookLength: Double = 0.5
     var jumpBoost: Double = 0.05
+    var cooldown: Int = 0
 
     override fun createType(name: ResourceLocation): HookType = BasicHookType(
         name,
@@ -36,7 +37,8 @@ open class BasicHookBehavior: HookBehavior() {
         speed,
         pullStrength,
         hookLength,
-        jumpBoost
+        jumpBoost,
+        cooldown
     )
 }
 
@@ -47,6 +49,7 @@ class FlightHookBehavior: HookBehavior() {
     var pullStrength: Double = 0.5
     var hookLength: Double = 0.5
     var jumpBoost: Double = 0.05
+    var cooldown: Int = 0
 
     override fun createType(name: ResourceLocation): HookType = FlightHookType(
         name,
@@ -55,7 +58,8 @@ class FlightHookBehavior: HookBehavior() {
         speed,
         pullStrength,
         hookLength,
-        jumpBoost
+        jumpBoost,
+        cooldown
     )
 }
 

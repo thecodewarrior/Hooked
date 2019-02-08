@@ -33,14 +33,18 @@ open class BasicHookType(
     /**
      * The distance from the impact point to where the chain should attach
      */
-    val jumpBoost: Double
+    val jumpBoost: Double,
+    /**
+     * The cooldown, in ticks
+     */
+    val cooldown: Int
 ): HookType() {
     init {
         registryName = name
     }
 
     override fun create(player: EntityPlayer): HookController {
-        return BasicHookController(this, player, count, range, speed, pullStrength, hookLength, jumpBoost)
+        return BasicHookController(this, player, count, range, speed, pullStrength, hookLength, jumpBoost, cooldown)
     }
 
     private fun inhibited(item: ItemStack): Boolean {

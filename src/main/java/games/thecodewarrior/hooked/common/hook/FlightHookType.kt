@@ -10,10 +10,11 @@ class FlightHookType(
     speed: Double,
     pullStrength: Double,
     hookLength: Double,
-    jumpBoost: Double
-): BasicHookType(name, count, range, speed, pullStrength, hookLength, jumpBoost) {
+    jumpBoost: Double,
+    cooldown: Int
+): BasicHookType(name, count, range, speed, pullStrength, hookLength, jumpBoost, cooldown) {
 
     override fun create(player: EntityPlayer): HookController {
-        return FlightHookController(this, player, count, range, speed, pullStrength, hookLength, jumpBoost)
+        return FlightHookController(this, player, count, range, speed, pullStrength, hookLength, jumpBoost, cooldown)
     }
 }

@@ -45,3 +45,5 @@ inline fun Vec2d.map(fn: (Double) -> Double): Vec2d {
         fn(y)
     )
 }
+
+class WtfException: RuntimeException()
