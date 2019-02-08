@@ -16,9 +16,9 @@ abstract class HookRenderer: IForgeRegistryEntry.Impl<HookRenderer>() {
         @JvmStatic
         lateinit var REGISTRY: IForgeRegistry<HookRenderer>
         val missingno = BasicHookRenderer(HookType.missingno, 0.0,
-            ResourceLocation("hooked:missingno"),
-            ResourceLocation("hooked:missingno"),
-            ResourceLocation("hooked:missingno")
+            ResourceLocation("missingno"),
+            ResourceLocation("missingno"),
+            ResourceLocation("missingno")
         )
     }
 }

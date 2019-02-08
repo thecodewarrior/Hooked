@@ -75,7 +75,7 @@ open class CommonProxy {
             .setType(HookType::class.java)
             .setMaxID(256)
             .setName("hooked:hook_type".toRl())
-            .setDefaultKey("hooked:missingno".toRl())
+            .setDefaultKey("missingno".toRl())
             .create()
     }
 }

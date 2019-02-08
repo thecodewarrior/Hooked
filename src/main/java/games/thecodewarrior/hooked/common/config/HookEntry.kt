@@ -12,7 +12,7 @@ import games.thecodewarrior.hooked.common.hook.FlightHookType
 import games.thecodewarrior.hooked.common.hook.HookType
 
 class HookEntry {
-    var name: ResourceLocation = "hooked:missingno".toRl()
+    var name: ResourceLocation = "missingno".toRl()
     lateinit var behavior: HookBehavior
     lateinit var appearance: HookAppearance
 }
@@ -69,9 +69,9 @@ abstract class HookAppearance {
 }
 open class BasicHookAppearance: HookAppearance() {
     var playerGap: Double = 0.0
-    val hookModel: ResourceLocation = "hooked:missingno".toRl()
-    val verticalRope: ResourceLocation = "hooked:missingno".toRl()
-    val horizontalRope: ResourceLocation = "hooked:missingno".toRl()
+    val hookModel: ResourceLocation = "missingno".toRl()
+    val verticalRope: ResourceLocation = "missingno".toRl()
+    val horizontalRope: ResourceLocation = "missingno".toRl()
 
     override fun createRenderer(type: HookType): HookRenderer = BasicHookRenderer(
         type as BasicHookType,
@@ -84,9 +84,9 @@ open class BasicHookAppearance: HookAppearance() {
 
 class FlightHookAppearance: HookAppearance() {
     var playerGap: Double = 0.0
-    val hookModel: ResourceLocation = "hooked:missingno".toRl()
-    val verticalRope: ResourceLocation = "hooked:missingno".toRl()
-    val horizontalRope: ResourceLocation = "hooked:missingno".toRl()
+    val hookModel: ResourceLocation = "missingno".toRl()
+    val verticalRope: ResourceLocation = "missingno".toRl()
+    val horizontalRope: ResourceLocation = "missingno".toRl()
 
     override fun createRenderer(type: HookType): HookRenderer = FlightHookRenderer(
         type as BasicHookType,
