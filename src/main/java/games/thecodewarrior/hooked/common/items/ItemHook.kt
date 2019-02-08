@@ -47,7 +47,8 @@ class ItemHook : ItemMod("hook"), IExtraVariantHolder, IBauble {
         get() = (HookTypes.map { it.value.model } + listOf("missingno")).toTypedArray()
     override val meshDefinition: ((stack: ItemStack) -> ModelResourceLocation)?
         get() = { stack ->
-            getType(stack)?.model?.let { ModelHandler.getResource("hooked", it) } ?: ModelResourceLocation("missingno")
+            ModelHandler.getResource("hooked", getType(stack)?.model ?: "missingno")
+                ?: ModelResourceLocation("hooked:missingno")
         }
 
 
