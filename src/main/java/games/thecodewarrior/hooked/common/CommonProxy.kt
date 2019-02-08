@@ -1,19 +1,24 @@
 package games.thecodewarrior.hooked.common
 
 import com.teamwizardry.librarianlib.features.network.PacketHandler
+import games.thecodewarrior.hooked.common.config.ConfigResourcePack
+import games.thecodewarrior.hooked.common.config.HookTypes
+import games.thecodewarrior.hooked.common.config.inject
+import games.thecodewarrior.hooked.common.hook.BasicHookType
+import games.thecodewarrior.hooked.common.hook.FlightHookType
+import games.thecodewarrior.hooked.common.hook.HookType
+import games.thecodewarrior.hooked.common.items.ModItems
+import games.thecodewarrior.hooked.common.network.PacketFireHook
+import games.thecodewarrior.hooked.common.network.PacketHookCapSync
+import games.thecodewarrior.hooked.common.network.PacketHookedJump
+import games.thecodewarrior.hooked.common.network.PacketMove
+import games.thecodewarrior.hooked.common.network.PacketRetractHook
 import net.minecraft.entity.EntityLivingBase
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 import net.minecraftforge.fml.relauncher.Side
-import games.thecodewarrior.hooked.common.config.HookTypes
-import games.thecodewarrior.hooked.common.hook.BasicHookType
-import games.thecodewarrior.hooked.common.hook.FlightHookType
-import games.thecodewarrior.hooked.common.hook.HookType
-import games.thecodewarrior.hooked.common.items.ItemHook
-import games.thecodewarrior.hooked.common.items.ModItems
-import games.thecodewarrior.hooked.common.network.*
 
 /**
  * Created by TheCodeWarrior
@@ -24,7 +29,15 @@ open class CommonProxy {
         MinecraftForge.EVENT_BUS.register(this)
     }
 
+    val lateinitPack = ConfigResourcePack("hooked_extra", "hooked").inject()//LateinitResourcePack("hooked_extra", setOf("hooked")).inject()
+
     open fun pre(e: FMLPreInitializationEvent) {
+        val configFile = e.suggestedConfigurationFile
+        val configName = configFile.nameWithoutExtension
+
+//        lateinitPack.pack = ConfigResourcePack(configFile.resolveSibling("$configName.resources"), "hooked_extra")
+        lateinitPack.directory = configFile.resolveSibling("$configName.resources")
+
         ModItems
         network()
         HookTickHandler
@@ -32,7 +45,7 @@ open class CommonProxy {
         HookType.register(BasicHookType::class.java, "basic")
         HookType.register(FlightHookType::class.java, "flight")
 
-        val hooksFile = e.suggestedConfigurationFile.resolveSibling(e.suggestedConfigurationFile.nameWithoutExtension + ".types.json")
+        val hooksFile = configFile.resolveSibling("$configName.types.json")
         if(!hooksFile.exists()) {
             val default = javaClass.getResourceAsStream("/assets/hooked/defaultConfig.json").bufferedReader().readText()
             hooksFile.writeText(default)
