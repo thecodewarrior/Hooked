@@ -20,7 +20,7 @@ Add the folowing item at the end of the hook type list in `hooked.types.json`, r
 }
 ```
 A collapsed version of the JSON should look like this. I use `{ ... }` as a condensed version of each item, and everything after the `//` is an explanation I've added:
-```json
+```
 {
     "entries": [ // the `[` starts a list
         {        // the start of an item
