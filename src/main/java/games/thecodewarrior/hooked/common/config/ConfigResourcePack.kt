@@ -11,6 +11,7 @@ import net.minecraft.client.resources.data.IMetadataSection
 import net.minecraft.client.resources.data.MetadataSerializer
 import net.minecraft.util.ResourceLocation
 import net.minecraftforge.fml.relauncher.ReflectionHelper
+import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOUtils
 import java.awt.image.BufferedImage
 import java.io.BufferedInputStream
@@ -50,6 +51,17 @@ class ConfigResourcePack(
         return this
     }
 
+    fun addDefault(name: String, data: InputStream): ConfigResourcePack {
+        data.use { data ->
+            val file = getFile(name)
+            if (file?.exists() == false && name !in overrides && stripPrefix(name) == null) {
+                file.parentFile.mkdirs()
+                FileUtils.copyInputStreamToFile(data, file)
+            }
+            return this
+        }
+    }
+
     override fun getResourceDomains(): Set<String> = setOf(domain)
 
     override fun getPackName(): String = name
@@ -74,31 +86,31 @@ class ConfigResourcePack(
         }
         val file = this.getFile(name)
 
-        return if (file == null) {
-            throw ResourcePackFileNotFoundException(this.directory ?: File("/packDirectoryIsNull"), name)
+        if (file?.isFile == true) {
+            return BufferedInputStream(FileInputStream(file))
         } else {
-            BufferedInputStream(FileInputStream(file))
+            throw ResourcePackFileNotFoundException(this.directory ?: File("/packDirectoryIsNull"), name)
         }
     }
 
     override fun hasResourceName(name: String): Boolean {
-        return name in overrides || this.getFile(name) != null
+        return name in overrides || this.getFile(name)?.isFile == true
     }
 
     private fun getFile(name: String): File? {
         val directory = this.directory ?: return null
-        if(!name.startsWith("assets/$domain")) return null
 
         try {
-            val file = File(directory, name.removePrefix("assets/$domain"))
-
-            if (file.isFile) {
-                return file
-            }
+            return File(directory, stripPrefix(name) ?: return null)
         } catch (var3: IOException) {
         }
 
         return null
+    }
+
+    private fun stripPrefix(name: String): String? {
+        if(!name.startsWith("assets/$domain")) return null
+        return name.removePrefix("assets/$domain")
     }
 }
 

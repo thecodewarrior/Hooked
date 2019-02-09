@@ -29,14 +29,14 @@ open class CommonProxy {
         MinecraftForge.EVENT_BUS.register(this)
     }
 
-    val lateinitPack = ConfigResourcePack("hooked_extra", "hooked").inject()//LateinitResourcePack("hooked_extra", setOf("hooked")).inject()
+    val configResources = ConfigResourcePack("hooked_extra", "hooked").inject()
 
     open fun pre(e: FMLPreInitializationEvent) {
         val configFile = e.suggestedConfigurationFile
         val configName = configFile.nameWithoutExtension
 
-//        lateinitPack.pack = ConfigResourcePack(configFile.resolveSibling("$configName.resources"), "hooked_extra")
-        lateinitPack.directory = configFile.resolveSibling("$configName.resources")
+        configResources.directory = configFile.resolveSibling("$configName.resources")
+        addDefaultResources()
 
         ModItems
         network()
@@ -47,7 +47,7 @@ open class CommonProxy {
 
         val hooksFile = configFile.resolveSibling("$configName.types.json")
         if(!hooksFile.exists()) {
-            val default = javaClass.getResourceAsStream("/assets/hooked/defaultConfig.json").bufferedReader().readText()
+            val default = javaClass.getResourceAsStream("/assets/hooked/default_config/hooked.types.json").bufferedReader().readText()
             hooksFile.writeText(default)
             HookTypes.read(default)
         } else {
@@ -71,5 +71,9 @@ open class CommonProxy {
     }
 
     open fun  setAutoJump(entityLiving: EntityLivingBase, value: Boolean) {
+    }
+
+    fun addDefaultResources() {
+
     }
 }
