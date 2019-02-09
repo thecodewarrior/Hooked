@@ -51,10 +51,18 @@ class ConfigResourcePack(
         return this
     }
 
+    fun addDir(name: String): ConfigResourcePack {
+        val file = getFile(name.removeSuffix("/"))
+        if (file?.exists() == false && name.removeSuffix("/") !in overrides) {
+            file.mkdirs()
+        }
+        return this
+    }
+
     fun addDefault(name: String, data: InputStream): ConfigResourcePack {
         data.use { data ->
             val file = getFile(name)
-            if (file?.exists() == false && name !in overrides && stripPrefix(name) == null) {
+            if (file?.exists() == false && name !in overrides) {
                 file.parentFile.mkdirs()
                 FileUtils.copyInputStreamToFile(data, file)
             }
