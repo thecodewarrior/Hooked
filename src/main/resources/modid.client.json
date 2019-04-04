@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "games.thecodewarrior.hooked.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "ModelItemOverrideDeserializerMixin",
+    "ModelItemOverrideMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

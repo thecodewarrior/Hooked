@@ -1,0 +1,31 @@
+{
+	"type": "forge:ore_shaped",
+	"pattern": [
+		"SSP",
+		" RS",
+		"R S"
+	],
+	"key": {
+		"P": {
+			"item": "minecraft:stone_pickaxe"
+		},
+		"R": {
+			"type": "minecraft:item_nbt",
+			"item": "hooked:component",
+			"nbt": {
+				"type": "rope"
+			}
+		},
+		"S": {
+			"type": "forge:ore_dict",
+			"ore": "stickWood"
+		}
+	},
+	"result": {
+		"type": "minecraft:item_nbt",
+		"item": "hooked:hook",
+		"nbt": {
+			"type": "wood"
+		}
+	}
+}

@@ -1,0 +1,24 @@
+item.hooked:hook.wood.tip.normal=A simple solution to escaping ditches and climbing trees\n<Hold Shift>
+item.hooked:hook.iron.tip.normal=Allows floating midair by firing two hooks at opposing points\n<Hold Shift>
+item.hooked:hook.diamond.tip.normal=Plenty of hooks, plenty of speed.\n<Hold Shift>
+item.hooked:hook.red.tip.normal=Creative flight within the volume defined by the hooks\n<Hold Shift>
+item.hooked:hook.ender.tip.normal=Fast. Very, very fast.\n<Hold Shift>
+
+item.hooked:hook.wood.tip.detail=A simple solution to escaping ditches and climbing trees\nPress %1$s to fire hook.\nJump to retract all hooks.\nSneak + press %1$s while looking toward a hook to retract it.
+item.hooked:hook.iron.tip.detail=Allows floating midair by firing two hooks at opposing points\nPress %1$s to fire hook.\nJump to retract all hooks.\nSneak + press %1$s while looking toward a hook to retract it.
+item.hooked:hook.diamond.tip.detail=Plenty of hooks, plenty of speed.\nPress %1$s to fire hook.\nJump to retract all hooks.\nSneak + press %1$s while looking toward a hook to retract it.
+item.hooked:hook.red.tip.detail=Creative flight within the volume defined by the hooks\nPress %1$s to fire hook.\nDouble jump to retract all hooks.\nSneak + press %1$s while looking toward a hook to retract it.
+item.hooked:hook.ender.tip.detail=Fast. Very, very fast.\nPress %1$s to fire hook.\nJump to retract all hooks.\nSneak + press %1$s while looking toward a hook to retract it.
+
+item.hooked:hook.wood.name=Wooden Hook
+item.hooked:hook.iron.name=Iron Hook
+item.hooked:hook.diamond.name=Diamond Hook
+item.hooked:hook.red.name=Red Hook
+item.hooked:hook.ender.name=Ender Hook
+
+item.hooked:component.rope.name=Rope
+item.hooked:component.chain.name=Iron Chain
+
+key.hooked.fire=Fire Hook
+
+item_group.hooked=Hooked

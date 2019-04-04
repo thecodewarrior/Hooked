@@ -1,0 +1,92 @@
+{
+    "components": [
+        "chain", "rope"
+    ],
+    "hooks": [
+        {
+            "type": "basic",
+            "id": "wood",
+            "model": "hook_wood",
+
+            "count": 1,
+            "range": 8.0,
+            "speed": 0.4,
+            "pullStrength": 0.2,
+            "hookLength": 0.5,
+            "jumpBoost": 0.05,
+
+            "playerGap": 0.0,
+            "hookModel": "hooked:hook/wood",
+            "verticalRopeTexture": "hooked:textures/hooks/wood/chain1.png",
+            "horizontalRopeTexture": "hooked:textures/hooks/wood/chain2.png"
+        },
+
+        {
+            "type": "basic",
+            "id": "iron",
+            "model": "hook_iron",
+            "count": 2,
+            "range": 16.0,
+            "speed": 0.8,
+            "pullStrength": 0.4,
+            "hookLength": 0.5,
+            "jumpBoost": 0.05,
+
+            "playerGap": 0.0,
+            "hookModel": "hooked:hook/iron",
+            "verticalRopeTexture": "hooked:textures/hooks/iron/chain1.png",
+            "horizontalRopeTexture": "hooked:textures/hooks/iron/chain2.png"
+        },
+
+        {
+            "type": "basic",
+            "id": "diamond",
+            "model": "hook_diamond",
+            "count": 4,
+            "range": 24.0,
+            "speed": 1.2,
+            "pullStrength": 1.0,
+            "hookLength": 0.5,
+            "jumpBoost": 0.05,
+
+            "playerGap": 0.0,
+            "hookModel": "hooked:hook/diamond",
+            "verticalRopeTexture": "hooked:textures/hooks/diamond/chain1.png",
+            "horizontalRopeTexture": "hooked:textures/hooks/diamond/chain2.png"
+        },
+
+        {
+            "type": "flight",
+            "id": "red",
+            "model": "hook_red",
+            "count": 8,
+            "range": 24.0,
+            "speed": 1.2,
+            "pullStrength": 0.8,
+            "hookLength": 0.5,
+            "jumpBoost": 0.05,
+
+            "playerGap": 1.0,
+            "hookModel": "hooked:hook/red",
+            "verticalRopeTexture": "hooked:textures/hooks/red/chain1.png",
+            "horizontalRopeTexture": "hooked:textures/hooks/red/chain2.png"
+        },
+
+        {
+            "type": "basic",
+            "id": "ender",
+            "model": "hook_ender",
+            "count": 1,
+            "range": 64.0,
+            "speed": 64.0,
+            "pullStrength": 2.25,
+            "hookLength": 0.5,
+            "jumpBoost": 0.05,
+
+            "playerGap": 0.0,
+            "hookModel": "hooked:hook/ender",
+            "verticalRopeTexture": "hooked:textures/hooks/ender/chain1.png",
+            "horizontalRopeTexture": "hooked:textures/hooks/ender/chain2.png"
+        }
+    ]
+}

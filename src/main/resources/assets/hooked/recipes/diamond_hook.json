@@ -1,0 +1,28 @@
+{
+	"type": "forge:ore_shaped",
+	"pattern": [
+		" DD",
+		" HD",
+		"D  "
+	],
+	"key": {
+		"H": {
+			"type": "minecraft:item_nbt",
+			"item": "hooked:hook",
+			"nbt": {
+				"type": "iron"
+			}
+		},
+		"D": {
+			"type": "forge:ore_dict",
+			"ore": "gemDiamond"
+		}
+	},
+	"result": {
+		"type": "minecraft:item_nbt",
+		"item": "hooked:hook",
+		"nbt": {
+			"type": "diamond"
+		}
+	}
+}

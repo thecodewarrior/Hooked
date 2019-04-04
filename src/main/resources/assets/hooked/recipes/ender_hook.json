@@ -1,0 +1,37 @@
+{
+	"type": "forge:ore_shaped",
+	"pattern": [
+		"PRE",
+		" HR",
+		"B P"
+	],
+	"key": {
+		"P": {
+			"type": "forge:ore_dict",
+			"ore": "enderpearl"
+		},
+		"H": {
+			"type": "minecraft:item_nbt",
+			"item": "hooked:hook",
+			"nbt": {
+				"type": "diamond"
+			}
+		},
+		"B": {
+			"item": "minecraft:blaze_powder"
+		},
+		"R": {
+			"item": "minecraft:blaze_rod"
+		},
+		"E": {
+			"item": "minecraft:ender_eye"
+		}
+	},
+	"result": {
+		"type": "minecraft:item_nbt",
+		"item": "hooked:hook",
+		"nbt": {
+			"type": "ender"
+		}
+	}
+}

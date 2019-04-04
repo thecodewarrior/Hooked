@@ -1,0 +1,19 @@
+{
+  "id": "hooked",
+  "name": "Hooked",
+  "description": "Grappling hooks done simple, natural, and useful",
+  "version": "${version}",
+  "side": "universal",
+  "languageAdapter": "net.fabricmc.language.kotlin.KotlinLanguageAdapter",
+  "initializers": [
+    "games.thecodewarrior.hooked.Hooked",
+    "games.thecodewarrior.hooked.HookedClient"
+  ],
+  "requires": {
+    "fabric": "*"
+  },
+  "mixins": {
+    "client": "modid.client.json",
+    "common": "modid.common.json"
+  }
+}

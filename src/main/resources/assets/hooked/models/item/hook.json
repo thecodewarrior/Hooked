@@ -1,0 +1,10 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "hooked:items/hook_missingno"
+  },
+  "overrides":[
+    {"nbt": { "hook_type": "iron" }, "model": "hooked:item/hook_iron"},
+    {"nbt": { "hook_type": "diamond" }, "model": "hooked:item/hook_diamond"}
+  ]
+}
