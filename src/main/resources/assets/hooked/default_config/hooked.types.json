@@ -2,7 +2,7 @@
     "entries": [
         {
             "type": "basic",
-            "name": "wood",
+            "id": "wood",
             "model": "hook_wood",
 
             "count": 1,
@@ -14,13 +14,13 @@
 
             "playerGap": 0.0,
             "hookModel": "hooked:hook/wood",
-            "verticalRope": "hooked:textures/hooks/wood/chain1.png",
-            "horizontalRope": "hooked:textures/hooks/wood/chain2.png"
+            "verticalRopeTexture": "hooked:textures/hooks/wood/chain1.png",
+            "horizontalRopeTexture": "hooked:textures/hooks/wood/chain2.png"
         },
 
         {
             "type": "basic",
-            "name": "iron",
+            "id": "iron",
             "model": "hook_iron",
             "count": 2,
             "range": 16.0,
@@ -31,13 +31,13 @@
 
             "playerGap": 0.0,
             "hookModel": "hooked:hook/iron",
-            "verticalRope": "hooked:textures/hooks/iron/chain1.png",
-            "horizontalRope": "hooked:textures/hooks/iron/chain2.png"
+            "verticalRopeTexture": "hooked:textures/hooks/iron/chain1.png",
+            "horizontalRopeTexture": "hooked:textures/hooks/iron/chain2.png"
         },
 
         {
             "type": "basic",
-            "name": "diamond",
+            "id": "diamond",
             "model": "hook_diamond",
             "count": 4,
             "range": 24.0,
@@ -48,13 +48,13 @@
 
             "playerGap": 0.0,
             "hookModel": "hooked:hook/diamond",
-            "verticalRope": "hooked:textures/hooks/diamond/chain1.png",
-            "horizontalRope": "hooked:textures/hooks/diamond/chain2.png"
+            "verticalRopeTexture": "hooked:textures/hooks/diamond/chain1.png",
+            "horizontalRopeTexture": "hooked:textures/hooks/diamond/chain2.png"
         },
 
         {
             "type": "flight",
-            "name": "red",
+            "id": "red",
             "model": "hook_red",
             "count": 8,
             "range": 24.0,
@@ -65,13 +65,13 @@
 
             "playerGap": 1.0,
             "hookModel": "hooked:hook/red",
-            "verticalRope": "hooked:textures/hooks/red/chain1.png",
-            "horizontalRope": "hooked:textures/hooks/red/chain2.png"
+            "verticalRopeTexture": "hooked:textures/hooks/red/chain1.png",
+            "horizontalRopeTexture": "hooked:textures/hooks/red/chain2.png"
         },
 
         {
             "type": "basic",
-            "name": "ender",
+            "id": "ender",
             "model": "hook_ender",
             "count": 1,
             "range": 64.0,
@@ -82,8 +82,8 @@
 
             "playerGap": 0.0,
             "hookModel": "hooked:hook/ender",
-            "verticalRope": "hooked:textures/hooks/ender/chain1.png",
-            "horizontalRope": "hooked:textures/hooks/ender/chain2.png"
+            "verticalRopeTexture": "hooked:textures/hooks/ender/chain1.png",
+            "horizontalRopeTexture": "hooked:textures/hooks/ender/chain2.png"
         }
     ]
 }

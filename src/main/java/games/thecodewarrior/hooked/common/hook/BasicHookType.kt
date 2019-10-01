@@ -12,8 +12,7 @@ import games.thecodewarrior.hooked.client.render.BasicHookRenderer
 import games.thecodewarrior.hooked.client.render.HookRenderer
 
 open class BasicHookType: HookType() {
-    override var name: String = "missingno"
-    override var model: String = "missingno"
+    override var id: String = "missingno"
     override var count: Int = 0
     override var range: Double = 5.0
     override var speed: Double = 0.2

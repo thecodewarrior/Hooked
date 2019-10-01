@@ -1,30 +1,20 @@
 package games.thecodewarrior.hooked.common.capability
 
-import com.teamwizardry.librarianlib.features.helpers.vec
-import com.teamwizardry.librarianlib.features.kotlin.toRl
-import com.teamwizardry.librarianlib.features.math.Vec2d
 import com.teamwizardry.librarianlib.features.network.PacketHandler
 import com.teamwizardry.librarianlib.features.saving.AbstractSaveHandler
-import com.teamwizardry.librarianlib.features.utilities.client.ClientRunnable
-import net.minecraft.entity.Entity
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.nbt.NBTBase
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.nbt.NBTTagString
 import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.MathHelper
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.common.capabilities.CapabilityInject
 import net.minecraftforge.common.capabilities.CapabilityManager
 import net.minecraftforge.common.capabilities.ICapabilityProvider
 import net.minecraftforge.common.util.INBTSerializable
 import net.minecraftforge.fml.common.network.NetworkRegistry
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
-import games.thecodewarrior.hooked.client.render.HookRenderer
 import games.thecodewarrior.hooked.common.config.HookTypes
 import games.thecodewarrior.hooked.common.hook.HookController
-import games.thecodewarrior.hooked.common.hook.HookType
 import games.thecodewarrior.hooked.common.items.ItemHook
 import games.thecodewarrior.hooked.common.network.PacketHookCapSync
 
@@ -64,7 +54,7 @@ class HooksCap(val player: EntityPlayer) {
     fun writeToNBT(compound: NBTTagCompound): NBTTagCompound {
         val controller = controller
         if(controller != null) {
-            compound.setTag("id", NBTTagString(controller.type.name))
+            compound.setTag("id", NBTTagString(controller.type.id))
             compound.setTag("controller", AbstractSaveHandler.writeAutoNBT(controller, false))
         }
         return compound

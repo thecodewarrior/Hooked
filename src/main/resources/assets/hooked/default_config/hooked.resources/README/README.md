@@ -6,7 +6,7 @@ Add the folowing item at the end of the hook type list in `hooked.types.json`, r
 ```json
 {
     "type": "basic",
-    "name": "<id>",
+    "id": "<id>",
 
     "count": 8,
     "range": 24.0,
@@ -59,7 +59,7 @@ The resources directory already contains the files necessary for an example hook
 ```json
 {
     "type": "basic",
-    "name": "example",
+    "id": "example",
 
     "count": 8,
     "range": 24.0,
@@ -74,7 +74,7 @@ The resources directory already contains the files necessary for an example hook
 ```
 
 - `"type"` - The [hook type](#hook_types). 
-- `"name"` - The hook ID. This must be unique and lowercase, and if it is changed or removed any hooks with the old ID will not function.
+- `"id"` - The hook ID. This must be unique and lowercase, and if it is changed or removed any hooks with the old ID will not function.
 - `"count"` - The hook count.
 - `"range"` - The range in blocks.
 - `"speed"` - The speed of hooks being fired in blocks per tick.
@@ -103,13 +103,15 @@ When multiple hooks are attached the player can freely move using the normal mov
 
 ## <a id="items"></a>Items
 
-### Textures
+### Translation
 
-TBD
+Given the type id the item has three keys:
+
+- `item.hooked:hook.<id>.name` - the item name
+- `item.hooked:hook.<id>.tip.normal` - the item tooltip when shift isn't pressed
+- `item.hooked:hook.<id>.tip.detail` - the item tooltip when shift is pressed
 
 ## <a id="textures"></a>Textures
-
-### Hook Textures
 
 The two rope textures (`"verticalRopeTexture"` and `"horizontalRopeTexture"`) are rendered at 90° to each other and repeated from the back of the hook to the player's waist. The chain texture is rendered 1 block wide.
 

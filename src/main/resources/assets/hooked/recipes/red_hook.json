@@ -10,8 +10,11 @@
 			"item": "minecraft:piston"
 		},
 		"H": {
+			"type": "minecraft:item_nbt",
 			"item": "hooked:hook",
-			"data": 2
+			"nbt": {
+				"type": "diamond"
+			}
 		},
 		"D": {
 			"type": "forge:ore_dict",
@@ -26,7 +29,10 @@
 		}
 	},
 	"result": {
+		"type": "minecraft:item_nbt",
 		"item": "hooked:hook",
-		"data": 3
+		"nbt": {
+			"type": "red"
+		}
 	}
 }

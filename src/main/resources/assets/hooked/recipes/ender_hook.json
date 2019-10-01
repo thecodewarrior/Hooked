@@ -11,8 +11,11 @@
 			"ore": "enderpearl"
 		},
 		"H": {
+			"type": "minecraft:item_nbt",
 			"item": "hooked:hook",
-			"data": 2
+			"nbt": {
+				"type": "diamond"
+			}
 		},
 		"B": {
 			"item": "minecraft:blaze_powder"
@@ -25,7 +28,10 @@
 		}
 	},
 	"result": {
+		"type": "minecraft:item_nbt",
 		"item": "hooked:hook",
-		"data": 4
+		"nbt": {
+			"type": "ender"
+		}
 	}
 }

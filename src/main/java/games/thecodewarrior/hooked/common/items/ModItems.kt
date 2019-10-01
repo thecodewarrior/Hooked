@@ -5,5 +5,5 @@ package games.thecodewarrior.hooked.common.items
  */
 object ModItems {
     val hook = ItemHook()
-    val micro = ItemMicrocraftingComponent()
+    val micro = ItemComponent()
 }

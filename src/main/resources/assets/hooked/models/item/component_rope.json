@@ -1,6 +1,6 @@
 {
 	"parent": "item/generated",
 	"textures": {
-		"layer0": "hooked:items/iron_chain_link"
+		"layer0": "hooked:items/component_rope"
 	}
 }

@@ -29,7 +29,7 @@ object HookTypes: Map<String, HookType> by types {
     fun read(json: String) {
         val container = gson.fromJson(json, ConfigContainer::class.java)
         container.entries.forEach {
-            types[it.name] = it
+            types[it.id] = it
         }
     }
 }

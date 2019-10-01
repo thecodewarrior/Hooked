@@ -22,9 +22,8 @@ import net.minecraftforge.registries.IForgeRegistryEntry
 import java.lang.reflect.Type
 
 abstract class HookType {
-    abstract val name: String
+    abstract val id: String
 
-    abstract val model: String
     /**
      * The number of simultaneous hooks allowed
      */

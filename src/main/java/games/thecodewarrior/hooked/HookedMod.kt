@@ -1,6 +1,7 @@
 package games.thecodewarrior.hooked
 
 import com.teamwizardry.librarianlib.features.base.ModCreativeTab
+import com.teamwizardry.librarianlib.features.kotlin.nbt
 import com.teamwizardry.librarianlib.features.utilities.LoggerBase
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
@@ -48,9 +49,12 @@ class HookedMod {
         val DEV_ENVIRONMENT = Launch.blackboard["fml.deobfuscatedEnvironment"] as Boolean
 
         val creativeTab = object : ModCreativeTab() {
-            override val iconStack = ItemStack(ModItems.hook)
+            override val iconStack: ItemStack
 
             init {
+                val stack = ItemStack(ModItems.hook)
+                stack.nbt["type"] = "tab_icon"
+                iconStack = stack
                 this.registerDefaultTab()
             }
         }

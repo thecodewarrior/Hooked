@@ -26,6 +26,10 @@ minecraft {
 
     clientJvmArgs = ["-Dfml.coreMods.load=" + corePlugin]
     serverJvmArgs = ["-Dfml.coreMods.load=" + corePlugin]
+
+    replace '%VERSION%', modVersion
+
+    replaceIn 'HookedMod.kt'
 }
 
 reobf {

@@ -7,8 +7,11 @@
 	],
 	"key": {
 		"H": {
+			"type": "minecraft:item_nbt",
 			"item": "hooked:hook",
-			"data": 1
+			"nbt": {
+				"type": "iron"
+			}
 		},
 		"D": {
 			"type": "forge:ore_dict",
@@ -16,7 +19,10 @@
 		}
 	},
 	"result": {
+		"type": "minecraft:item_nbt",
 		"item": "hooked:hook",
-		"data": 2
+		"nbt": {
+			"type": "diamond"
+		}
 	}
 }

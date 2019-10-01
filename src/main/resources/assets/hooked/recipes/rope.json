@@ -1,18 +1,30 @@
 {
-	"type": "forge:ore_shaped",
-	"pattern": [
-		"  F",
-		" F ",
-		"F  "
+	"type": "hooked:tool_ore_shapeless",
+	"ingredients": [
+		{
+			"type": "forge:ore_dict",
+			"ore": "treeSapling"
+		},
+		[
+			{ "item": "minecraft:wooden_sword", "data": 32767 },
+			{ "item": "minecraft:stone_sword", "data": 32767 },
+			{ "item": "minecraft:iron_sword", "data": 32767 },
+			{ "item": "minecraft:diamond_sword", "data": 32767 },
+			{ "item": "minecraft:golden_sword", "data": 32767 }
+		]
 	],
-	"key": {
-		"F": {
-			"item": "hooked:microcrafting",
-			"data": 0
-		}
-	},
+	"tools": [
+		{ "item": "minecraft:wooden_sword", "data": 32767 },
+		{ "item": "minecraft:stone_sword", "data": 32767 },
+		{ "item": "minecraft:iron_sword", "data": 32767 },
+		{ "item": "minecraft:diamond_sword", "data": 32767 },
+		{ "item": "minecraft:golden_sword", "data": 32767 }
+	],
 	"result": {
-		"item": "hooked:microcrafting",
-		"data": 1
+		"type": "minecraft:item_nbt",
+		"item": "hooked:component",
+		"nbt": {
+			"type": "rope"
+		}
 	}
 }
