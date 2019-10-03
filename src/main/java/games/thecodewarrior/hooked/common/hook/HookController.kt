@@ -19,6 +19,8 @@ import games.thecodewarrior.hooked.HookedMod
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.entity.player.EntityPlayerMP
+import net.minecraft.network.NetHandlerPlayServer
 import net.minecraft.util.math.RayTraceResult
 import net.minecraft.util.math.Vec3d
 import java.util.LinkedList
@@ -332,6 +334,8 @@ abstract class HookController<T: HookType>(
 
         player.fallDistance = 0f
         player.jumpTicks = 10
+
+        (player as? EntityPlayerMP)?.connection?.floatingTickCount = 0
         HookedMod.PROXY.setAutoJump(player, false)
         val waist = getWaistPos(player)
         val deltaPos = targetPoint - waist
@@ -372,5 +376,8 @@ abstract class HookController<T: HookType>(
 
         private var EntityLivingBase.jumpTicks by MethodHandleHelper.delegateForReadWrite<EntityLivingBase, Int>(
             EntityLivingBase::class.java, "jumpTicks", "field_70773_bE")
+        private var net.minecraft.network.NetHandlerPlayServer.floatingTickCount by MethodHandleHelper
+            .delegateForReadWrite<NetHandlerPlayServer, Int>(
+                NetHandlerPlayServer::class.java, "floatingTickCount", "field_147365_f")
     }
 }
