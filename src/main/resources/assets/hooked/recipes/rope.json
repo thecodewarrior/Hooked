@@ -21,10 +21,6 @@
 		{ "item": "minecraft:golden_sword", "data": 32767 }
 	],
 	"result": {
-		"type": "minecraft:item_nbt",
-		"item": "hooked:component",
-		"nbt": {
-			"type": "rope"
-		}
+		"item": "hooked:rope"
 	}
 }

@@ -10,11 +10,7 @@
 			"item": "minecraft:iron_pickaxe"
 		},
 		"C": {
-			"type": "minecraft:item_nbt",
-			"item": "hooked:component",
-			"nbt": {
-				"type": "chain"
-			}
+			"item": "hooked:chain"
 		},
 		"I": {
 			"type": "forge:ore_dict",

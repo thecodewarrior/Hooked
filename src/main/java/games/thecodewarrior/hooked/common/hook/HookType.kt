@@ -62,7 +62,6 @@ abstract class HookType {
     abstract fun createController(player: EntityPlayer): HookController<*>
 
     @get:SideOnly(Side.CLIENT)
-    @delegate:SideOnly(Side.CLIENT)
     @delegate:Transient
     val renderer: HookRenderer<*, *> by lazy { initRenderer() }
 
