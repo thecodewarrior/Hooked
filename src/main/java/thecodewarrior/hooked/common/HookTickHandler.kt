@@ -155,10 +155,13 @@ object HookTickHandler {
                 hook.status = EnumHookStatus.TORETRACT
             }
 
-            if (hook.block != null) {
-                if (hook.status == EnumHookStatus.PLANTED && entity.world.isAirBlock(hook.block)) {
-                    hook.status = EnumHookStatus.TORETRACT
-                }
+            /*
+             * todo someone with more experience with Kotlin null checking and coercing needs to look at this
+             * and determine how to resolve this. Nullable instances shouldn't be passable to java methods
+             * because you can't guarantee the null safety, but somehow, it's valid code...
+             * */
+            if (hook.block != null && hook.status == EnumHookStatus.PLANTED && entity.world.isAirBlock(hook.block)) {
+                hook.status = EnumHookStatus.TORETRACT
             }
 
             if (hook.status == EnumHookStatus.TORETRACT) {

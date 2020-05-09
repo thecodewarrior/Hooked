@@ -33,8 +33,10 @@ object HookRenderHandler {
             render(e.entity)
     }
 
+
     @SubscribeEvent
-    fun renderWorldEvent(e: RenderWorldLastEvent) {
+    @Suppress("UNUSED_PARAMETER") // we need the parameter to conform to the event signature, but we don't use it
+    fun renderWorldEvent(unused: RenderWorldLastEvent) {
         GlStateManager.pushMatrix()
         val player = Minecraft.getMinecraft().player
 
