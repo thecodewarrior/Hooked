@@ -10,14 +10,10 @@ import com.teamwizardry.librarianlib.features.saving.Save
 import com.teamwizardry.librarianlib.features.saving.SaveInPlace
 import net.minecraft.client.Minecraft
 import net.minecraft.entity.Entity
-import net.minecraft.entity.item.EntityItem
 import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.EnumDyeColor
-import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTBase
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.AxisAlignedBB
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.Vec3d
@@ -32,7 +28,6 @@ import thecodewarrior.hooked.common.HookType
 import thecodewarrior.hooked.common.network.PacketHookCapSync
 import thecodewarrior.hooked.common.network.PacketUpdateWeights
 import thecodewarrior.hooked.common.util.Barycentric
-import thecodewarrior.hooked.common.util.finiteOrDefault
 import java.util.*
 
 /**
@@ -125,16 +120,16 @@ class HooksCap {
     }
 
     fun limitToHookLength(pos: Vec3d, hooks: List<HookInfo>): Vec3d {
-        var pos = pos
+        var newPos = pos
         val clampRange = HookType.RED.range - 1/16.0 // includes one pixel of buffer space
         hooks.forEach { hook ->
             val relativePos = pos - hook.pos
             val length = relativePos.length()
             if(length > clampRange) {
-                pos = hook.pos + relativePos * (clampRange/length)
+                newPos = hook.pos + relativePos * (clampRange/length)
             }
         }
-        return pos
+        return newPos
     }
 
     fun correctPos() {
