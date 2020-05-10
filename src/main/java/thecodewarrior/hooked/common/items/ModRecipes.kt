@@ -18,6 +18,7 @@ import java.util.concurrent.ThreadLocalRandom
  * Created by TheCodeWarrior
  */
 class ShapelessOreToolRecipeFactory : IRecipeFactory {
+    @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
     override fun parse(context: net.minecraftforge.common.crafting.JsonContext?, json: JsonObject?): IRecipe {
         val group = JsonUtils.getString(json, "group", "")
 

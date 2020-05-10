@@ -40,7 +40,8 @@ object KeyBinds {
     }
 
     @SubscribeEvent
-    fun onKeyInput(e: InputEvent.KeyInputEvent) {
+    @Suppress("UNUSED_PARAMETER")
+    fun onKeyInput(unused: InputEvent.KeyInputEvent) {
         val player = Minecraft.getMinecraft().player
 
         if (keyFire.isPressed) {

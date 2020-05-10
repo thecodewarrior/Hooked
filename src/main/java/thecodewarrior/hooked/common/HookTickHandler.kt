@@ -155,10 +155,9 @@ object HookTickHandler {
                 hook.status = EnumHookStatus.TORETRACT
             }
 
-            if (hook.block != null) {
-                if (hook.status == EnumHookStatus.PLANTED && entity.world.isAirBlock(hook.block)) {
-                    hook.status = EnumHookStatus.TORETRACT
-                }
+            @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
+            if (hook.block != null && hook.status == EnumHookStatus.PLANTED && entity.world.isAirBlock(hook.block)) {
+                hook.status = EnumHookStatus.TORETRACT
             }
 
             if (hook.status == EnumHookStatus.TORETRACT) {
