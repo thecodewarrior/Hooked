@@ -1,0 +1,20 @@
+{
+  "item.hooked.wood_hook.tip.normal": "A simple solution to escaping ditches and climbing trees\n<Hold Shift>",
+  "item.hooked.iron_hook.tip.normal": "Allows floating midair by firing two hooks at opposing points\n<Hold Shift>",
+  "item.hooked.diamond_hook.tip.normal": "Plenty of hooks, plenty of speed.\n<Hold Shift>",
+  "item.hooked.red_hook.tip.normal": "Creative flight within the volume defined by the hooks\n<Hold Shift>",
+  "item.hooked.ender_hook.tip.normal": "Fast. Very, very fast.\n<Hold Shift>",
+  "item.hooked.wood_hook.tip.detail": "A simple solution to escaping ditches and climbing trees\nPress %1$s to fire hook.\nJump to retract all hooks.\nSneak + press %1$s while looking toward a hook to retract it.",
+  "item.hooked.iron_hook.tip.detail": "Allows floating midair by firing two hooks at opposing points\nPress %1$s to fire hook.\nJump to retract all hooks.\nSneak + press %1$s while looking toward a hook to retract it.",
+  "item.hooked.diamond_hook.tip.detail": "Plenty of hooks, plenty of speed.\nPress %1$s to fire hook.\nJump to retract all hooks.\nSneak + press %1$s while looking toward a hook to retract it.",
+  "item.hooked.red_hook.tip.detail": "Creative flight within the volume defined by the hooks\nPress %1$s to fire hook.\nDouble jump to retract all hooks.\nSneak + press %1$s while looking toward a hook to retract it.",
+  "item.hooked.ender_hook.tip.detail": "Fast. Very, very fast.\nPress %1$s to fire hook.\nJump to retract all hooks.\nSneak + press %1$s while looking toward a hook to retract it.",
+  "item.hooked.wood_hook": "Wooden Hook",
+  "item.hooked.iron_hook": "Iron Hook",
+  "item.hooked.diamond_hook": "Diamond Hook",
+  "item.hooked.red_hook": "Red Hook",
+  "item.hooked.ender_hook": "Ender Hook",
+  "key.hooked.fire": "Fire Hook",
+  "itemGroup.hooked": "Hooked",
+  "curios.identifier.hooked": "Grappling Hook"
+}

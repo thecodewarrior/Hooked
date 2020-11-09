@@ -1,0 +1,19 @@
+{
+  "item.hooked.wood_hook.tip.normal": "穴から出たり、木を登ったりする道具\n<Shift を長押し>",
+  "item.hooked.iron_hook.tip.normal": "鈎を反対のところに発射すると空中で浮かぶ\n<Shift を長押し>",
+  "item.hooked.diamond_hook.tip.normal": "鈎がたっぷり、速度が速い。\n<Shift を長押し>",
+  "item.hooked.red_hook.tip.normal": "鈎の境界の中でクリエイティブモードの飛行可能\n<Shift を長押し>",
+  "item.hooked.ender_hook.tip.normal": "速い。すごく速い。\n<Shift を長押し>",
+  "item.hooked.wood_hook.tip.detail": "%1$s を押すと鈎を発射する。\nジャンプすると全ての鈎を引っ込める。\n鈎を見て、スニークしながら %1$s を押すとその鈎を引っ込める。",
+  "item.hooked.iron_hook.tip.detail": "%1$s を押すと鈎を発射する。\nジャンプすると全ての鈎を引っ込める。\n鈎を見て、スニークしながら %1$s を押すとその鈎を引っ込める。",
+  "item.hooked.diamond_hook.tip.detail": "%1$s を押すと鈎を発射する。\nジャンプすると全ての鈎を引っ込める。\n鈎を見て、スニークしながら %1$s を押すとその鈎を引っ込める。",
+  "item.hooked.red_hook.tip.detail": "%1$s を押すと鈎を発射する。\nジャンプすると全ての鈎を引っ込める。\n鈎を見て、スニークしながら %1$s を押すとその鈎を引っ込める。",
+  "item.hooked.ender_hook.tip.detail": "%1$s を押すと鈎を発射する。\nジャンプすると全ての鈎を引っ込める。\n鈎を見て、スニークしながら %1$s を押すとその鈎を引っ込める。",
+  "item.hooked.wood_hook": "木の鈎",
+  "item.hooked.iron_hook": "鉄の鈎",
+  "item.hooked.diamond_hook": "ダイヤモンドの鈎",
+  "item.hooked.red_hook": "赤い鈎",
+  "item.hooked.ender_hook": "エンダー鈎",
+  "key.hooked.fire": "鈎を発射する",
+  "itemGroup.hooked": "Hooked"
+}
