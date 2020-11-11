@@ -34,3 +34,9 @@ Hooked: Grappling hooks done simple, natural, and useful.
     versionRange="[5.0.0a0,)"
     ordering="NONE"
     side="BOTH"
+[[dependencies.hooked]]
+    modId="curios"
+    mandatory=true
+    versionRange="[FORGE-1.15.2-2.0.2.6,)"
+    ordering="NONE"
+    side="BOTH"

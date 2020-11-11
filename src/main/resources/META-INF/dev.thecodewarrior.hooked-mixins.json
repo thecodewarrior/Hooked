@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "package": "dev.thecodewarrior.hooked.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "dev.thecodewarrior.hooked-refmap.json",
+  "mixins": [
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

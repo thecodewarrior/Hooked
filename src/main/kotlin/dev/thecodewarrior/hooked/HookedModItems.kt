@@ -12,7 +12,7 @@ object HookedModItems {
         ironHook.from(registrationManager.add(
             ItemSpec("iron_hook")
                 .maxStackSize(1)
-                .item { HookItem(it.itemProperties) }
+                .item { HookItem(it.itemProperties, HookedModHookTypes.iron) }
                 .datagen { simpleModel() }
         ))
         registrationManager.itemGroupIcon = ironHook
