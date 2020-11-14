@@ -21,9 +21,9 @@ import kotlin.math.sqrt
 
 @RefractClass
 data class FireHookPacket @RefractConstructor constructor(
-    @Refract val uuid: UUID = UUID.randomUUID(),
-    @Refract val pos: Vec3d = Vec3d.ZERO,
-    @Refract val direction: Vec3d = Vec3d.ZERO,
+    @Refract val uuid: UUID,
+    @Refract val pos: Vec3d,
+    @Refract val direction: Vec3d,
 ): CourierPacket {
     override fun handle(context: NetworkEvent.Context) {
         val player = context.sender!!

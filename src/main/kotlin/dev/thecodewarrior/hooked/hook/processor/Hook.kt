@@ -1,11 +1,11 @@
-package dev.thecodewarrior.hooked.hook.type
+package dev.thecodewarrior.hooked.hook.processor
 
 import com.teamwizardry.librarianlib.math.plus
 import com.teamwizardry.librarianlib.math.times
+import dev.thecodewarrior.hooked.hook.type.HookType
 import ll.dev.thecodewarrior.prism.annotation.Refract
 import ll.dev.thecodewarrior.prism.annotation.RefractClass
 import ll.dev.thecodewarrior.prism.annotation.RefractConstructor
-import net.minecraft.util.Direction
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
 import java.util.*

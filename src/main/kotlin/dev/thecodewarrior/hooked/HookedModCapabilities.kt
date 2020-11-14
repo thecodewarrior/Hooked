@@ -25,7 +25,8 @@ object HookedModCapabilities {
             HookedPlayerData::class.java,
             SimpleCapabilityStorage()
         ) {
-            HookedPlayerData()
+            throw UnsupportedOperationException("HookedPlayerData requires a player reference and thus has no " +
+                    "default constructor.")
         })
 
         registrationManager.add(CapabilitySpec(
@@ -37,11 +38,12 @@ object HookedModCapabilities {
     }
 
     @SubscribeEvent
-    fun attachTECapabilities(e: AttachCapabilitiesEvent<Entity>) {
-        if(e.`object` is PlayerEntity) {
+    fun attachEntityCapabilities(e: AttachCapabilitiesEvent<Entity>) {
+        val entity = e.`object`
+        if(entity is PlayerEntity) {
             e.addCapability(
                 loc("hooked:player_data"),
-                SimpleCapabilityProvider(HookedPlayerData.CAPABILITY, HookedPlayerData())
+                SimpleCapabilityProvider(HookedPlayerData.CAPABILITY, HookedPlayerData(entity))
             )
         }
     }

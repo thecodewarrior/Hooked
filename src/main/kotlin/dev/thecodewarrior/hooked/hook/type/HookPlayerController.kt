@@ -2,6 +2,8 @@ package dev.thecodewarrior.hooked.hook.type
 
 import com.teamwizardry.librarianlib.prism.SimpleSerializer
 import com.teamwizardry.librarianlib.prism.Sync
+import dev.thecodewarrior.hooked.hook.processor.Hook
+import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.nbt.CompoundNBT
 import net.minecraftforge.common.util.INBTSerializable
 
@@ -13,13 +15,18 @@ import net.minecraftforge.common.util.INBTSerializable
  *
  * Hook controllers should have important data serialized using [@Sync][Sync]
  */
-abstract class HookPlayerController(val type: HookType): INBTSerializable<CompoundNBT> {
+abstract class HookPlayerController: INBTSerializable<CompoundNBT> {
     private val serializer = SimpleSerializer.get(this.javaClass)
 
     /**
-     * Called before the hook processor updates hooks,
+     * Called when the controller is removed so it can do any cleanup necessary.
      */
-    abstract fun preTick()
+    open fun remove() {}
+
+    /**
+     * Called after the hook processor updates the hooks
+     */
+    abstract fun update(player: PlayerEntity, hooks: List<Hook>)
 
     override fun serializeNBT(): CompoundNBT {
         return serializer.createTag(this, Sync::class.java)
@@ -27,5 +34,11 @@ abstract class HookPlayerController(val type: HookType): INBTSerializable<Compou
 
     override fun deserializeNBT(nbt: CompoundNBT) {
         serializer.applyTag(nbt, this, Sync::class.java)
+    }
+
+    companion object {
+        val NONE: HookPlayerController = object: HookPlayerController() {
+            override fun update(player: PlayerEntity, hooks: List<Hook>) {}
+        }
     }
 }

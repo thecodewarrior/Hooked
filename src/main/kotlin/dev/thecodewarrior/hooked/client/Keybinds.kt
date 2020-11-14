@@ -33,11 +33,11 @@ object Keybinds {
                     val pos = player.getEyePosition(1f)
                     val direction = player.getLook(1f)
                     CommonHookProcessor.fireHook(data, uuid, pos, direction)
-//                    HookedMod.courier.sendToServer(FireHookPacket(
-//                        uuid,
-//                        pos,
-//                        direction
-//                    ))
+                    HookedMod.courier.sendToServer(FireHookPacket(
+                        uuid,
+                        pos,
+                        direction
+                    ))
                 }
             }
         }

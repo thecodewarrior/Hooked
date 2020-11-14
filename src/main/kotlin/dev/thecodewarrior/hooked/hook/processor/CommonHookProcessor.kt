@@ -3,14 +3,10 @@ package dev.thecodewarrior.hooked.hook.processor
 import com.teamwizardry.librarianlib.core.util.kotlin.getOrNull
 import com.teamwizardry.librarianlib.core.util.kotlin.inconceivable
 import com.teamwizardry.librarianlib.etcetera.Raycaster
-import com.teamwizardry.librarianlib.math.block
-import com.teamwizardry.librarianlib.math.minus
-import com.teamwizardry.librarianlib.math.plus
-import com.teamwizardry.librarianlib.math.times
+import com.teamwizardry.librarianlib.math.*
 import dev.thecodewarrior.hooked.HookedMod
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.capability.IHookItem
-import dev.thecodewarrior.hooked.hook.type.Hook
 import dev.thecodewarrior.hooked.hook.type.HookType
 import dev.thecodewarrior.hooked.util.getWaistPos
 import net.minecraft.entity.player.PlayerEntity
@@ -54,29 +50,23 @@ object CommonHookProcessor {
     fun playerPostTick(e: TickEvent.PlayerTickEvent) {
         if (e.phase != TickEvent.Phase.END) return
         val player = e.player
+        HookedMod.proxy.disableAutoJump(player, false)
         val data = getHookData(player) ?: return
 
         val equippedType = getEquippedHook(player)?.type ?: HookType.NONE
         if (data.type != equippedType) {
-            // controller.removeFromPlayer(player)
             data.hooks.clear()
             data.type = equippedType
-            // data.controller = ?
-            // data.controller.addToPlayer(player)
             data.markForSync()
         }
 
-        // controller.preTick()
         removeNaN(player, data)
+        removeAbsurdLength(player, data)
+        removeDuplicates(data)
 
         updateHooks(player, data)
 
-//        updateTargetPoint()
-//        updatePlayer()
-
-        removeAbsurdLength(player, data)
-        removeDuplicates(data)
-        // controller.postTick()
+        data.controller.update(player, data.hooks)
     }
 
     private fun removeNaN(player: PlayerEntity, data: HookedPlayerData) {
@@ -169,14 +159,16 @@ object CommonHookProcessor {
         val iterator = data.hooks.iterator()
         for (hook in iterator) {
             if(hook.state != Hook.State.RETRACTING) continue
-            val direction = hook.pos - player.getWaistPos()
-            val distance = direction.length()
+            val delta = hook.pos - player.getWaistPos()
+            val distance = delta.length()
 
             if (distance < max(data.type.speed, 1.0)) {
                 iterator.remove()
                 data.markForSync()
             } else {
-                hook.pos -= direction.normalize() * min(data.type.speed, distance)
+                val direction = delta / distance
+                hook.pos -= direction * min(data.type.speed, distance)
+                hook.direction = direction
             }
         }
     }

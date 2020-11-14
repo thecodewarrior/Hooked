@@ -1,6 +1,7 @@
 package dev.thecodewarrior.hooked
 
 import com.teamwizardry.librarianlib.core.util.kotlin.loc
+import com.teamwizardry.librarianlib.core.util.sided.SidedSupplier
 import com.teamwizardry.librarianlib.foundation.BaseMod
 import com.teamwizardry.librarianlib.foundation.util.TagWrappers
 import dev.thecodewarrior.hooked.client.HookRenderManager
@@ -26,12 +27,16 @@ import top.theillusivec4.curios.api.imc.CurioIMCMessage
 @Mod("hooked")
 object HookedMod: BaseMod(true) {
     val HOOKED_CURIOS_TAG = TagWrappers.item("curios:hooked")
+    val proxy: HookedProxy
+
     init {
         HookedModItems.registerItems(registrationManager)
         HookedModItems.registerItemDatagen(registrationManager)
         HookedModCapabilities.registerCapabilities(registrationManager)
         eventBus.register(HookedModHookTypes)
         courier.registerCourierPacket<FireHookPacket>(NetworkDirection.PLAY_TO_SERVER)
+
+        proxy = SidedSupplier.sided({ HookedClientProxy }, { HookedDedicatedServerProxy })
     }
 
     override fun clientSetup(e: FMLClientSetupEvent) {
