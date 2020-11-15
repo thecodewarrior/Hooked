@@ -55,6 +55,9 @@ abstract class CommonHookProcessor {
     }
 
     private fun updateHooks(player: PlayerEntity, data: HookedPlayerData) {
+        data.hooks.forEach { hook ->
+            hook.posLastTick = hook.pos
+        }
         updateExtending(player, data)
         updatePlanted(player, data)
         updateRetracting(player, data)
@@ -73,9 +76,9 @@ abstract class CommonHookProcessor {
                 player.world,
                 Raycaster.BlockMode.COLLISION,
                 hook.pos.x, hook.pos.y, hook.pos.z,
-                tip.x + hook.direction.x * castDistance,
-                tip.y + hook.direction.y * castDistance,
-                tip.z + hook.direction.z * castDistance
+                hook.pos.x + hook.direction.x * castDistance,
+                hook.pos.y + hook.direction.y * castDistance,
+                hook.pos.z + hook.direction.z * castDistance
             )
 
             hook.pos += hook.direction * (castDistance * raycaster.fraction - hook.type.hookLength)

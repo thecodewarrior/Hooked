@@ -15,7 +15,7 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.sign
 
-class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHookType): HookPlayerController() {
+open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHookType): HookPlayerController() {
     var didJump: Boolean = false
 
     override fun remove() {

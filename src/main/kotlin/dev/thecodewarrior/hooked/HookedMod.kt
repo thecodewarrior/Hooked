@@ -6,8 +6,11 @@ import com.teamwizardry.librarianlib.foundation.BaseMod
 import com.teamwizardry.librarianlib.foundation.util.TagWrappers
 import dev.thecodewarrior.hooked.client.HookRenderManager
 import dev.thecodewarrior.hooked.client.Keybinds
+import dev.thecodewarrior.hooked.client.renderer.BasicHookRenderer
 import dev.thecodewarrior.hooked.hook.processor.ClientHookProcessor
 import dev.thecodewarrior.hooked.hook.processor.ServerHookProcessor
+import dev.thecodewarrior.hooked.hook.type.BasicHookPlayerController
+import dev.thecodewarrior.hooked.hook.type.BasicHookType
 import dev.thecodewarrior.hooked.hook.type.HookType
 import dev.thecodewarrior.hooked.network.BasicHookJumpPacket
 import dev.thecodewarrior.hooked.network.FireHookPacket
@@ -50,6 +53,11 @@ object HookedMod: BaseMod(true) {
         ClientRegistry.registerKeyBinding(Keybinds.fireKey)
         HookRenderManager // registers itself for events
         ClientHookProcessor // registers itself for events
+        HookedModHookTypes.types.forEach {
+            if(it is BasicHookType) {
+                HookRenderManager.register(it, BasicHookRenderer(it.registryName!!))
+            }
+        }
     }
 
     override fun commonSetup(e: FMLCommonSetupEvent) {

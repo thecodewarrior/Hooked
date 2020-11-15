@@ -42,6 +42,10 @@ data class Hook @RefractConstructor constructor(
         set(value) {
             _state = value.ordinal
         }
+    /**
+     * The position of the tail of the hook last tick
+     */
+    var posLastTick: Vec3d = pos
 
     /**
      * The position of the tip of the hook, as computed from the pos and direction
