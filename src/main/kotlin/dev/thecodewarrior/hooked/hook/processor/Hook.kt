@@ -50,6 +50,6 @@ data class Hook @RefractConstructor constructor(
         get() = pos + direction * type.hookLength
 
     enum class State {
-        EXTENDING, PLANTED, RETRACTING
+        EXTENDING, PLANTED, RETRACTING, REMOVED
     }
 }

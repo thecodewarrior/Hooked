@@ -1,5 +1,6 @@
 package dev.thecodewarrior.hooked.hook.type
 
+import com.teamwizardry.librarianlib.core.util.kotlin.loc
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraftforge.registries.ForgeRegistryEntry
 
@@ -38,6 +39,9 @@ abstract class HookType: ForgeRegistryEntry<HookType>() {
 
     companion object {
         val NONE: HookType = object: HookType() {
+            init {
+                registryName = loc("hooked:none")
+            }
             override val count: Int = 0
             override val range: Double = 0.0
             override val speed: Double = 0.0

@@ -33,7 +33,15 @@ class HookedPlayerData(val player: PlayerEntity): BaseCapability() {
 
     var controller: HookPlayerController = HookPlayerController.NONE
 
-    var needsSync: Boolean = true
+    /**
+     * State that is only ever used on the *logical* server. This includes things like syncing status.
+     */
+    class ServerState {
+        val dirtyHooks: MutableList<Hook> = mutableListOf()
+        var forceFullSyncToClient: Boolean = false
+        var forceFullSyncToOthers: Boolean = false
+    }
+    var serverState: ServerState = ServerState()
 
     override fun deserializeNBT(nbt: CompoundNBT) {
         val oldType = type
@@ -50,15 +58,6 @@ class HookedPlayerData(val player: PlayerEntity): BaseCapability() {
         val nbt = super.serializeNBT()
         nbt.put("controller", controller.serializeNBT())
         return nbt
-    }
-
-    /**
-     * Marks this data to be synced in its entirety with clients.
-     *
-     * TODO: make single-hook sync packets for other players, since they aren't critical to keep exactly up to date.
-     */
-    fun markForSync() {
-        needsSync = true
     }
 
     companion object {

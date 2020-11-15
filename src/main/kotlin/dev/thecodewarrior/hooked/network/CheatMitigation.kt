@@ -9,6 +9,11 @@ import net.minecraft.entity.player.ServerPlayerEntity
  */
 object CheatMitigation {
     /**
+     * The tolerance for the starting position of hooks being fired
+     */
+    val fireHookTolerance = Tolerance(2.0, 16.0)
+
+    /**
      * Pings at or below this will use the minimum tolerance
      */
     val minimumPing = 50
@@ -17,11 +22,6 @@ object CheatMitigation {
      * Pings at or above this will use the maximum tolerance
      */
     val maximumPing = 2000
-
-    /**
-     * The tolerance for the starting position of hooks being fired
-     */
-    val fireHookTolerance = Tolerance(2.0, 16.0) // at minimum ping, accept
 
     /**
      * Creates a 0-1 value based on the player's current ping.

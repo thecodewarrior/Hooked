@@ -6,9 +6,13 @@ import com.teamwizardry.librarianlib.foundation.BaseMod
 import com.teamwizardry.librarianlib.foundation.util.TagWrappers
 import dev.thecodewarrior.hooked.client.HookRenderManager
 import dev.thecodewarrior.hooked.client.Keybinds
-import dev.thecodewarrior.hooked.hook.processor.CommonHookProcessor
+import dev.thecodewarrior.hooked.hook.processor.ClientHookProcessor
+import dev.thecodewarrior.hooked.hook.processor.ServerHookProcessor
 import dev.thecodewarrior.hooked.hook.type.HookType
+import dev.thecodewarrior.hooked.network.BasicHookJumpPacket
 import dev.thecodewarrior.hooked.network.FireHookPacket
+import dev.thecodewarrior.hooked.network.SyncHookDataPacket
+import dev.thecodewarrior.hooked.network.SyncIndividualHooksPacket
 import net.minecraft.inventory.container.PlayerContainer
 import net.minecraft.util.Tuple
 import net.minecraftforge.client.event.TextureStitchEvent
@@ -34,18 +38,22 @@ object HookedMod: BaseMod(true) {
         HookedModItems.registerItemDatagen(registrationManager)
         HookedModCapabilities.registerCapabilities(registrationManager)
         eventBus.register(HookedModHookTypes)
-        courier.registerCourierPacket<FireHookPacket>(NetworkDirection.PLAY_TO_SERVER)
-
         proxy = SidedSupplier.sided({ HookedClientProxy }, { HookedDedicatedServerProxy })
+
+        courier.registerCourierPacket<FireHookPacket>(NetworkDirection.PLAY_TO_SERVER)
+        courier.registerCourierPacket<SyncIndividualHooksPacket>(NetworkDirection.PLAY_TO_CLIENT)
+        courier.registerCourierPacket<SyncHookDataPacket>(NetworkDirection.PLAY_TO_CLIENT)
+        courier.registerCourierPacket<BasicHookJumpPacket>(NetworkDirection.PLAY_TO_SERVER)
     }
 
     override fun clientSetup(e: FMLClientSetupEvent) {
         ClientRegistry.registerKeyBinding(Keybinds.fireKey)
-        HookRenderManager // registers itself
+        HookRenderManager // registers itself for events
+        ClientHookProcessor // registers itself for events
     }
 
     override fun commonSetup(e: FMLCommonSetupEvent) {
-        CommonHookProcessor // registers itself
+        ServerHookProcessor // registers itself for events
     }
 
     override fun interModCommsEnqueue(e: InterModEnqueueEvent) {
@@ -70,6 +78,7 @@ object HookedMod: BaseMod(true) {
         RegistryBuilder<HookType>()
             .setName(loc("hooked:hook_type"))
             .setType(HookType::class.java)
+            .setDefaultKey(loc("hooked:none"))
             .create()
     }
 }

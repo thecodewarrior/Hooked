@@ -6,76 +6,50 @@ import com.teamwizardry.librarianlib.etcetera.Raycaster
 import com.teamwizardry.librarianlib.math.*
 import dev.thecodewarrior.hooked.HookedMod
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
-import dev.thecodewarrior.hooked.capability.IHookItem
-import dev.thecodewarrior.hooked.hook.type.HookType
 import dev.thecodewarrior.hooked.util.getWaistPos
 import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Vec3d
-import net.minecraftforge.common.MinecraftForge
-import net.minecraftforge.event.TickEvent
-import net.minecraftforge.eventbus.api.SubscribeEvent
-import top.theillusivec4.curios.api.CuriosAPI
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
 
-object CommonHookProcessor {
-    private val raycaster = Raycaster()
+/**
+ * See [ClientHookProcessor] and [ServerHookProcessor] for information about their netcode.
+ *
+ * In terms of processing, here's an overview (I'll try to keep it up to date):
+ *
+ * - Both the client and the server simulate the hook movement and update controllers
+ * - The client *doesn't* update the current type or controller based on the equipped hook item, all hook type updates
+ * come from on high
+ *
+ */
+abstract class CommonHookProcessor {
+    protected val raycaster: Raycaster = Raycaster()
 
-    init {
-        MinecraftForge.EVENT_BUS.register(this)
-    }
+    abstract fun onHookStateChange(player: PlayerEntity, data: HookedPlayerData, hook: Hook)
 
-    fun getHookData(player: PlayerEntity): HookedPlayerData? {
+    protected fun getHookData(player: PlayerEntity): HookedPlayerData? {
         return player.getCapability(HookedPlayerData.CAPABILITY).getOrNull()
     }
 
-    fun fireHook(data: HookedPlayerData, uuid: UUID, pos: Vec3d, direction: Vec3d) {
-        if(data.type != HookType.NONE) {
-            data.hooks.add(Hook(uuid, data.type, pos, Hook.State.EXTENDING.ordinal, direction, BlockPos.ZERO))
-        }
-        data.markForSync()
-    }
-
-    fun getEquippedHook(player: PlayerEntity): IHookItem? {
-        return CuriosAPI.getCuriosHandler(player).getOrNull()
-            ?.getStackInSlot("hooked", 0)
-            ?.getCapability(IHookItem.CAPABILITY)
-            ?.getOrNull()
-    }
-
-    @SubscribeEvent
-    fun playerPostTick(e: TickEvent.PlayerTickEvent) {
-        if (e.phase != TickEvent.Phase.END) return
-        val player = e.player
-        HookedMod.proxy.disableAutoJump(player, false)
-        val data = getHookData(player) ?: return
-
-        val equippedType = getEquippedHook(player)?.type ?: HookType.NONE
-        if (data.type != equippedType) {
-            data.hooks.clear()
-            data.type = equippedType
-            data.markForSync()
-        }
-
+    /**
+     * Ticks the hooks, applying motion, raycasting, etc.
+     */
+    protected fun applyHookMotion(player: PlayerEntity, data: HookedPlayerData) {
         removeNaN(player, data)
         removeAbsurdLength(player, data)
-        removeDuplicates(data)
 
         updateHooks(player, data)
-
-        data.controller.update(player, data.hooks)
     }
 
     private fun removeNaN(player: PlayerEntity, data: HookedPlayerData) {
         val iter = data.hooks.iterator()
         for (hook in iter) {
             if (!(hook.pos.x.isFinite() && hook.pos.y.isFinite() && hook.pos.z.isFinite())) {
+                hook.state = Hook.State.REMOVED
                 iter.remove()
                 logger.error("Removing hook $hook that had an infinite or NaN position from player ${player.uniqueID}")
-                data.markForSync()
+                onHookStateChange(player, data, hook)
             }
         }
     }
@@ -93,36 +67,38 @@ object CommonHookProcessor {
             val distanceLeft = data.type.range - (hook.pos - player.getWaistPos()).length()
 
             val tip = hook.tipPos
-            val castDistance = min(data.type.speed, distanceLeft)
+            val castDistance = min(data.type.speed, distanceLeft) + data.type.hookLength
 
             raycaster.cast(
                 player.world,
                 Raycaster.BlockMode.COLLISION,
-                tip.x, tip.y, tip.z,
+                hook.pos.x, hook.pos.y, hook.pos.z,
                 tip.x + hook.direction.x * castDistance,
                 tip.y + hook.direction.y * castDistance,
                 tip.z + hook.direction.z * castDistance
             )
 
-            hook.pos += hook.direction * (castDistance * raycaster.fraction)
+            hook.pos += hook.direction * (castDistance * raycaster.fraction - hook.type.hookLength)
 
             when (raycaster.hitType) {
                 Raycaster.HitType.BLOCK -> {
                     // if we hit a block, plant in it
                     hook.state = Hook.State.PLANTED
                     hook.block = block(raycaster.blockX, raycaster.blockY, raycaster.blockZ)
-                    data.markForSync()
+                    onHookStateChange(player, data, hook)
                 }
                 Raycaster.HitType.NONE -> {
                     // if we reached max extension, transition to the retracting state
                     if (distanceLeft <= data.type.speed) {
                         hook.state = Hook.State.RETRACTING
-                        data.markForSync()
+                        onHookStateChange(player, data, hook)
                     }
                 }
-                else -> inconceivable("Raycast only included blocks but returned non-block hit type ${raycaster.hitType}")
+                else -> {
+                    raycaster.reset()
+                    inconceivable("Raycast only included blocks but returned non-block hit type ${raycaster.hitType}")
+                }
             }
-            raycaster.reset()
         }
     }
 
@@ -138,18 +114,17 @@ object CommonHookProcessor {
                 player.world.isAirBlock(hook.block)
             ) {
                 hook.state = Hook.State.RETRACTING
-                data.markForSync()
+                onHookStateChange(player, data, hook)
             }
         }
         var plantedCount = 0
-        // count from the end of the list, removing everything after the threshold
-        val iter = data.hooks.asReversed().iterator()
-        for(hook in iter) {
+        // count from the end of the list, retracting everything after the threshold
+        for(hook in data.hooks.asReversed()) {
             if (hook.state == Hook.State.PLANTED) {
                 plantedCount++
                 if(plantedCount > data.type.count) {
-                    iter.remove()
-                    data.markForSync()
+                    hook.state = Hook.State.RETRACTING
+                    onHookStateChange(player, data, hook)
                 }
             }
         }
@@ -164,7 +139,8 @@ object CommonHookProcessor {
 
             if (distance < max(data.type.speed, 1.0)) {
                 iterator.remove()
-                data.markForSync()
+                hook.state = Hook.State.REMOVED
+                onHookStateChange(player, data, hook)
             } else {
                 val direction = delta / distance
                 hook.pos -= direction * min(data.type.speed, distance)
@@ -182,14 +158,10 @@ object CommonHookProcessor {
             if(distance > threshold) {
                 logger.warn("Hook was an absurd distance ($distance) from player. Removing $hook from $player")
                 iter.remove()
+                hook.state = Hook.State.REMOVED
+                onHookStateChange(player, data, hook)
             }
         }
-    }
-
-    private fun removeDuplicates(data: HookedPlayerData) {
-        val uuids = mutableSetOf<UUID>()
-        // iterate from the end, thus removing from the beginning
-        data.hooks.asReversed().removeIf { !uuids.add(it.uuid) }
     }
 
     private val logger = HookedMod.makeLogger<CommonHookProcessor>()

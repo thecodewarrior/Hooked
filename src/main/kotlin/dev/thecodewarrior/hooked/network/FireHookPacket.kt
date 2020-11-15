@@ -14,6 +14,7 @@ import com.teamwizardry.librarianlib.math.vec
 import dev.thecodewarrior.hooked.HookedMod
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.hook.processor.CommonHookProcessor
+import dev.thecodewarrior.hooked.hook.processor.ServerHookProcessor
 
 import net.minecraftforge.fml.network.NetworkEvent
 import kotlin.math.pow
@@ -21,7 +22,6 @@ import kotlin.math.sqrt
 
 @RefractClass
 data class FireHookPacket @RefractConstructor constructor(
-    @Refract val uuid: UUID,
     @Refract val pos: Vec3d,
     @Refract val direction: Vec3d,
 ): CourierPacket {
@@ -32,15 +32,13 @@ data class FireHookPacket @RefractConstructor constructor(
                 val distanceSq = pos.squareDistanceTo(player.getEyePosition(1f))
                 val maxDistance = CheatMitigation.fireHookTolerance.getValue(player)
                 if(distanceSq > maxDistance.pow(2)) {
+                    data.serverState.forceFullSyncToClient = true
                     logger.error(
                         "Player ${player.name} fired a hook from ${sqrt(distanceSq)} blocks away. The tolerance " +
                                 "based on their ping of ${player.ping} is $maxDistance"
                     )
                 } else {
-                    // if the UUID already exists, pick a new one. In the future this will trigger a full sync
-                    // i.e. in the future not everything will full sync :P
-                    val newUUID = if(data.hooks.any { it.uuid == uuid }) UUID.randomUUID() else uuid
-                    CommonHookProcessor.fireHook(data, newUUID, pos, direction.normalize())
+                    ServerHookProcessor.fireHook(data, pos, direction.normalize())
                 }
             }
         }

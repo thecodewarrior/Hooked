@@ -71,6 +71,7 @@ object HookRenderManager {
                 Hook.State.EXTENDING -> DistinctColors.green
                 Hook.State.PLANTED -> DistinctColors.blue
                 Hook.State.RETRACTING -> DistinctColors.red
+                Hook.State.REMOVED -> DistinctColors.black
             }
             val length = hook.type.hookLength
             val claw = length / 3

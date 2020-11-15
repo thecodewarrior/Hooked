@@ -2,7 +2,6 @@ package dev.thecodewarrior.hooked.hook.type
 
 import com.teamwizardry.librarianlib.core.util.mapSrgName
 import com.teamwizardry.librarianlib.math.*
-import dev.thecodewarrior.hooked.HookedMod
 import dev.thecodewarrior.hooked.hook.processor.Hook
 import dev.thecodewarrior.hooked.util.getWaistPos
 import ll.dev.thecodewarrior.mirror.Mirror
@@ -10,12 +9,15 @@ import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.ai.attributes.AttributeModifier
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.math.Vec3d
+import net.minecraftforge.common.MinecraftForge
 import java.util.*
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.sign
 
 class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHookType): HookPlayerController() {
+    var didJump: Boolean = false
+
     override fun remove() {
         val gravityAttribute = player.getAttribute(LivingEntity.ENTITY_GRAVITY)
         if(gravityAttribute.hasModifier(HOOK_GRAVITY))
@@ -23,6 +25,9 @@ class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHookTyp
     }
 
     override fun update(player: PlayerEntity, hooks: List<Hook>) {
+        val jumping: Boolean = didJump
+        didJump = false
+
         var plantedCount = 0
         var targetPoint = Vec3d.ZERO
         hooks.forEach { hook ->
@@ -35,19 +40,25 @@ class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHookTyp
         if (plantedCount == 0) {
             if(gravityAttribute.hasModifier(HOOK_GRAVITY))
                 gravityAttribute.removeModifier(HOOK_GRAVITY)
+            if(jumping) { // even if none are planted, retract any that are extending
+                hooks.forEach {
+                    it.state = Hook.State.RETRACTING
+                }
+            }
             return
-        } else {
-            if(!gravityAttribute.hasModifier(HOOK_GRAVITY))
-                gravityAttribute.applyModifier(HOOK_GRAVITY)
         }
-        targetPoint /= plantedCount
 
+        // we have at least one planted hook
+
+        if(!gravityAttribute.hasModifier(HOOK_GRAVITY))
+            gravityAttribute.applyModifier(HOOK_GRAVITY)
+        targetPoint /= plantedCount
         val waist = player.getWaistPos()
         val deltaPos = targetPoint - waist
         val deltaLen = deltaPos.length()
         val deltaNormal = deltaPos / deltaLen
 
-        if (isJumping.getFast(player)) {
+        if (jumping) {
             if (hooks.any { it.state == Hook.State.PLANTED }) {
                 val movementTowardPos = if (deltaPos == Vec3d.ZERO) 0.0 else player.motion dot deltaNormal
 
@@ -60,15 +71,19 @@ class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHookTyp
                         max(player.motion.y, 0.42 + type.jumpBoost), // 0.42 == vanilla jump speed
                         player.motion.z
                     )
+                } else {
+                    // give the player a boost
+                    player.motion += deltaNormal * (type.pullStrength * 0.2)
                 }
 //            markDirty()
             }
             hooks.forEach {
                 it.state = Hook.State.RETRACTING
             }
+            return
         }
 
-        HookedMod.proxy.disableAutoJump(player, true)
+//        HookedMod.proxy.disableAutoJump(player, true)
         player.fallDistance = 0f
 //        player.jumpTicks = 10
 
@@ -102,9 +117,11 @@ class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHookTyp
     }
 
     companion object {
-        private val isJumping = Mirror.reflectClass<LivingEntity>().getDeclaredField(mapSrgName("field_70703_bu"))
-
         private val HOOK_GRAVITY_ID: UUID = UUID.fromString("654bd58d-a1c6-40e7-9d2b-09699b9558fe")
         private val HOOK_GRAVITY: AttributeModifier = AttributeModifier(HOOK_GRAVITY_ID, "Hook gravity modifier", -0.05, AttributeModifier.Operation.ADDITION).setSaved(false)
+
+        init {
+            MinecraftForge.EVENT_BUS.register(this)
+        }
     }
 }

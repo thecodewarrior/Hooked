@@ -1,6 +1,9 @@
 {
   "replace": false,
   "values": [
-    "hooked:iron_hook"
+    "hooked:wood_hook",
+    "hooked:iron_hook",
+    "hooked:diamond_hook",
+    "hooked:ender_hook"
   ]
 }
