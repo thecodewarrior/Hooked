@@ -69,8 +69,8 @@ class BasicHookRenderer(val id: ResourceLocation):
         matrix.translate(waist)
         matrix.rotate(Quaternion.fromRotationTo(vec(0, 1, 0), hookPos - waist))
 
-        drawHalfChain(matrix, chain1RenderType, player.world, waist, chainDirection, chainLength, 0.5, 0.0)
-        drawHalfChain(matrix, chain2RenderType, player.world, waist, chainDirection, chainLength, 0.0, 0.5)
+        drawHalfChain(matrix, chain1RenderType, player.world, waist, chainDirection, chainLength, 0.5, 0.0, 0.0, 1.0)
+        drawHalfChain(matrix, chain2RenderType, player.world, waist, chainDirection, chainLength, 0.0, 0.5, -1.0, 0.0)
 
         matrix.pop()
 
@@ -110,14 +110,16 @@ class BasicHookRenderer(val id: ResourceLocation):
         chainDirection: Vec3d,
         chainLength: Double,
         deltaX: Double,
-        deltaZ: Double
+        deltaZ: Double,
+        normalX: Double,
+        normalZ: Double
     ) {
         val chainSegments = floorInt(chainLength)
         val firstSegmentLength = chainLength - chainSegments
 
         val buffer = IRenderTypeBuffer.getImpl(Client.tessellator.buffer)
 
-        val normal = matrix.transformDelta(vec(deltaZ, 0, deltaX)).normalize()
+        val normal = matrix.transformDelta(vec(normalX, 0, normalZ)).normalize()
         val rnormal = -normal
 
         val vb = buffer.getBuffer(renderType)
@@ -179,7 +181,6 @@ class BasicHookRenderer(val id: ResourceLocation):
             .alpha(DefaultRenderStates.DEFAULT_ALPHA)
             .depthTest(DefaultRenderStates.DEPTH_LEQUAL)
             .transparency(DefaultRenderStates.TRANSLUCENT_TRANSPARENCY)
-            .cull(DefaultRenderStates.CULL_DISABLED)
             .lightmap(DefaultRenderStates.LIGHTMAP_ENABLED)
             .diffuseLighting(DefaultRenderStates.DIFFUSE_LIGHTING_ENABLED)
         val state = stateBuilder.build(true)
