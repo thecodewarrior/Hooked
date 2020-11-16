@@ -8,6 +8,9 @@ import dev.thecodewarrior.hooked.HookedMod
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.util.getWaistPos
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraftforge.event.entity.player.PlayerEvent
+import net.minecraftforge.eventbus.api.EventPriority
+import net.minecraftforge.eventbus.api.SubscribeEvent
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min
@@ -25,6 +28,21 @@ import kotlin.math.pow
  */
 abstract class CommonHookProcessor {
     protected val raycaster: Raycaster = Raycaster()
+
+    fun fixSpeed(e: PlayerEvent.BreakSpeed) {
+//        PlayerEntity.getDigSpeed:
+//        if (!this.onGround) {
+//            f /= 5.0f
+//        }
+
+        if (!e.entity.onGround) {
+            e.entity.getCapability(HookedPlayerData.CAPABILITY).getOrNull()?.also { data ->
+                if(data.hooks.any { it.state == Hook.State.PLANTED }) {
+                    e.newSpeed *= 5
+                }
+            }
+        }
+    }
 
     abstract fun onHookStateChange(player: PlayerEntity, data: HookedPlayerData, hook: Hook)
 

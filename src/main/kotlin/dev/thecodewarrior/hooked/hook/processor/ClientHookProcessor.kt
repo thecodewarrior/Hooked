@@ -6,13 +6,17 @@ import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.hook.type.HookType
 import dev.thecodewarrior.hooked.network.FireHookPacket
 import net.minecraft.client.entity.player.ClientPlayerEntity
+import net.minecraft.entity.Entity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
 import net.minecraftforge.api.distmarker.Dist
 import net.minecraftforge.api.distmarker.OnlyIn
 import net.minecraftforge.common.MinecraftForge
+import net.minecraftforge.event.ForgeEventFactory
 import net.minecraftforge.event.TickEvent
+import net.minecraftforge.event.entity.player.PlayerEvent
+import net.minecraftforge.eventbus.api.EventPriority
 import net.minecraftforge.eventbus.api.SubscribeEvent
 import java.util.*
 
@@ -80,11 +84,17 @@ object ClientHookProcessor: CommonHookProcessor() {
         // this exists for server-side syncing
     }
 
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    fun breakSpeed(e: PlayerEvent.BreakSpeed) {
+        if(!isClient(e.entity)) return
+        fixSpeed(e)
+    }
+
     /**
      * Returns true if the passed player is from the logical client.
      */
-    private fun isClient(player: PlayerEntity): Boolean {
-        return player is ClientPlayerEntity
+    private fun isClient(entity: Entity): Boolean {
+        return entity.world.isRemote
     }
 
     private val logger = HookedMod.makeLogger<ClientHookProcessor>()

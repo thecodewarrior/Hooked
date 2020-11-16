@@ -7,6 +7,7 @@ import dev.thecodewarrior.hooked.capability.IHookItem
 import dev.thecodewarrior.hooked.hook.type.HookType
 import dev.thecodewarrior.hooked.network.SyncHookDataPacket
 import dev.thecodewarrior.hooked.network.SyncIndividualHooksPacket
+import net.minecraft.entity.Entity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.ServerPlayerEntity
 import net.minecraft.util.math.BlockPos
@@ -15,6 +16,7 @@ import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.TickEvent
 import net.minecraftforge.event.entity.EntityJoinWorldEvent
 import net.minecraftforge.event.entity.player.PlayerEvent
+import net.minecraftforge.eventbus.api.EventPriority
 import net.minecraftforge.eventbus.api.SubscribeEvent
 import net.minecraftforge.fml.network.PacketDistributor
 import top.theillusivec4.curios.api.CuriosAPI
@@ -130,11 +132,17 @@ object ServerHookProcessor: CommonHookProcessor() {
         }
     }
 
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    fun breakSpeed(e: PlayerEvent.BreakSpeed) {
+        if(!isServer(e.entity)) return
+        fixSpeed(e)
+    }
+
     /**
      * Returns true if the passed player is from the logical server.
      */
-    private fun isServer(player: PlayerEntity): Boolean {
-        return player is ServerPlayerEntity
+    private fun isServer(entity: Entity): Boolean {
+        return !entity.world.isRemote
     }
 
     private val logger = HookedMod.makeLogger<ServerHookProcessor>()
