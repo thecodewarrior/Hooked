@@ -11,7 +11,7 @@ import net.minecraft.entity.Entity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.ServerPlayerEntity
 import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Vec3d
+import net.minecraft.util.math.vector.Vector3d
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.TickEvent
 import net.minecraftforge.event.entity.EntityJoinWorldEvent
@@ -19,7 +19,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent
 import net.minecraftforge.eventbus.api.EventPriority
 import net.minecraftforge.eventbus.api.SubscribeEvent
 import net.minecraftforge.fml.network.PacketDistributor
-import top.theillusivec4.curios.api.CuriosAPI
+import top.theillusivec4.curios.api.CuriosApi
 import java.util.*
 
 /**
@@ -30,7 +30,7 @@ object ServerHookProcessor: CommonHookProcessor() {
         MinecraftForge.EVENT_BUS.register(this)
     }
 
-    fun fireHook(data: HookedPlayerData, pos: Vec3d, direction: Vec3d) {
+    fun fireHook(data: HookedPlayerData, pos: Vector3d, direction: Vector3d) {
         if (data.type == HookType.NONE) {
             // they seem to think they can fire hooks
             data.serverState.forceFullSyncToClient = true
@@ -96,8 +96,10 @@ object ServerHookProcessor: CommonHookProcessor() {
     }
 
     private fun getEquippedHook(player: PlayerEntity): IHookItem? {
-        return CuriosAPI.getCuriosHandler(player).getOrNull()
-            ?.getStackInSlot("hooked", 0)
+        return CuriosApi.getCuriosHelper()
+            .getCuriosHandler(player).getOrNull()
+            ?.getStacksHandler("hooked")?.getOrNull()
+            ?.stacks?.getStackInSlot(0)
             ?.getCapability(IHookItem.CAPABILITY)
             ?.getOrNull()
     }

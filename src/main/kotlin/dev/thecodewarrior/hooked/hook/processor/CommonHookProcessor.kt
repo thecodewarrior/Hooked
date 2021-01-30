@@ -1,5 +1,6 @@
 package dev.thecodewarrior.hooked.hook.processor
 
+import com.teamwizardry.librarianlib.core.util.block
 import com.teamwizardry.librarianlib.core.util.kotlin.getOrNull
 import com.teamwizardry.librarianlib.core.util.kotlin.inconceivable
 import com.teamwizardry.librarianlib.etcetera.Raycaster
@@ -35,7 +36,7 @@ abstract class CommonHookProcessor {
 //            f /= 5.0f
 //        }
 
-        if (!e.entity.onGround) {
+        if (!e.entity.isOnGround) {
             e.entity.getCapability(HookedPlayerData.CAPABILITY).getOrNull()?.also { data ->
                 if(data.hooks.any { it.state == Hook.State.PLANTED }) {
                     e.newSpeed *= 5

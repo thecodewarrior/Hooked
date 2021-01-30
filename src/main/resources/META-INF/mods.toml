@@ -1,37 +1,36 @@
-modLoader="kotlinfml"
-loaderVersion="[2,)"
-issueTrackerURL="https://github.com/thecodewarrior/Hooked/issues" #optional
+modLoader="kotlinforforge"
+loaderVersion="[1,)"
+
+license="BSD 2-Clause"
+issueTrackerURL="https://github.com/thecodewarrior/Hooked/issues"
+
 [[mods]]
 modId="hooked"
 version="${file.jarVersion}"
 displayName="Hooked"
-# A URL for the "homepage" for this mod, displayed in the mod UI
-# displayURL="http://example.com/" #optional
 logoFile="hooked_banner.png"
-# A text field displayed in the mod UI
 credits="Much thanks to QuickHull3d"
-# A text field displayed in the mod UI
-authors="thecodewarrior" #optional
-# The description text for the mod (multi line!) (#mandatory)
+authors="thecodewarrior"
 description='''
 Hooked: Grappling hooks done simple, natural, and useful.
 '''
-[[dependencies.hooked]] #optional
+
+[[dependencies.hooked]]
     modId="forge"
     mandatory=true
-    versionRange="[31,)"
+    versionRange="[35,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.hooked]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.15.2]"
+    versionRange="[1.16.4]"
     ordering="NONE"
     side="BOTH"
 [[dependencies.hooked]]
     modId="librarianlib"
     mandatory=true
-    versionRange="[5.0.0a0,)"
+    versionRange="[5.0.0a3,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.hooked]]

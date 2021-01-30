@@ -1,6 +1,6 @@
 package dev.thecodewarrior.hooked
 
-import com.teamwizardry.librarianlib.core.util.kotlin.loc
+import com.teamwizardry.librarianlib.core.util.loc
 import com.teamwizardry.librarianlib.foundation.capability.SimpleCapabilityProvider
 import com.teamwizardry.librarianlib.foundation.capability.SimpleCapabilityStorage
 import com.teamwizardry.librarianlib.foundation.registration.CapabilitySpec

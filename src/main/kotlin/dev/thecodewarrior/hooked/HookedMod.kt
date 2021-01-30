@@ -1,6 +1,6 @@
 package dev.thecodewarrior.hooked
 
-import com.teamwizardry.librarianlib.core.util.kotlin.loc
+import com.teamwizardry.librarianlib.core.util.loc
 import com.teamwizardry.librarianlib.core.util.sided.SidedSupplier
 import com.teamwizardry.librarianlib.foundation.BaseMod
 import com.teamwizardry.librarianlib.foundation.util.TagWrappers
@@ -28,20 +28,18 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent
 import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent
 import net.minecraftforge.fml.network.NetworkDirection
 import net.minecraftforge.registries.RegistryBuilder
-import top.theillusivec4.curios.api.CuriosAPI
-import top.theillusivec4.curios.api.imc.CurioIMCMessage
+import net.minecraftforge.registries.RegistryManager
+import top.theillusivec4.curios.api.SlotTypeMessage
 
 @Mod("hooked")
 object HookedMod: BaseMod(true) {
     val HOOKED_CURIOS_TAG = TagWrappers.item("curios:hooked")
-    val proxy: HookedProxy
 
     init {
         HookedModItems.registerItems(registrationManager)
-        HookedModItems.registerItemDatagen(registrationManager)
         HookedModCapabilities.registerCapabilities(registrationManager)
+
         eventBus.register(HookedModHookTypes)
-        proxy = SidedSupplier.sided({ HookedClientProxy }, { HookedDedicatedServerProxy })
 
         courier.registerCourierPacket<FireHookPacket>(NetworkDirection.PLAY_TO_SERVER)
         courier.registerCourierPacket<SyncIndividualHooksPacket>(NetworkDirection.PLAY_TO_CLIENT)
@@ -65,13 +63,11 @@ object HookedMod: BaseMod(true) {
     }
 
     override fun interModCommsEnqueue(e: InterModEnqueueEvent) {
-        InterModComms.sendTo("curios", CuriosAPI.IMC.REGISTER_TYPE) {
-            CurioIMCMessage("hooked").also {
-                it.size = 1
-            }
-        }
-        InterModComms.sendTo("curios", CuriosAPI.IMC.REGISTER_ICON) {
-            Tuple("hooked", loc("hooked:gui/hook_slot"))
+        InterModComms.sendTo("curios", SlotTypeMessage.REGISTER_TYPE) {
+            SlotTypeMessage.Builder("hooked")
+                .size(1)
+                .icon(loc("hooked:gui/hook_slot"))
+                .build()
         }
     }
 

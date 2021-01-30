@@ -1,8 +1,10 @@
 package dev.thecodewarrior.hooked.hook.type
 
-import com.teamwizardry.librarianlib.core.util.kotlin.loc
+import com.teamwizardry.librarianlib.core.util.loc
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraftforge.registries.ForgeRegistryEntry
+import net.minecraftforge.registries.IForgeRegistry
+import net.minecraftforge.registries.RegistryManager
 
 abstract class HookType: ForgeRegistryEntry<HookType>() {
     /**
@@ -47,6 +49,10 @@ abstract class HookType: ForgeRegistryEntry<HookType>() {
             override val speed: Double = 0.0
             override val hookLength: Double = 0.0
             override fun createController(player: PlayerEntity): HookPlayerController = HookPlayerController.NONE
+        }
+
+        val REGISTRY: IForgeRegistry<HookType> by lazy {
+            RegistryManager.ACTIVE.getRegistry(HookType::class.java)
         }
     }
 }

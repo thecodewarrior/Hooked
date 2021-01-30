@@ -8,7 +8,7 @@ buildscript {
     }
     dependencies {
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_gradle_version"
         classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
     }
 }
@@ -107,6 +107,10 @@ repositories {
     maven { url = 'https://minecraft.curseforge.com/api/maven/' }
     maven { url = 'http://repo.spongepowered.org/maven' }
     maven { url = "https://maven.theillusivec4.top/" }
+    maven {
+        name = 'kotlinforforge'
+        url = 'https://thedarkcolour.github.io/KotlinForForge/'
+    }
 }
 
 dependencies {
@@ -115,12 +119,10 @@ dependencies {
             "foundation",
             "etcetera"
     ].each {
-        compile("com.teamwizardry.librarianlib:librarianlib-$it:$librarianlib_version") {
-            exclude group: 'kottle', module: 'Kottle'
-        }
+        compile("com.teamwizardry.librarianlib:librarianlib-$it:$librarianlib_version")
     }
-    runtimeOnly fg.deobf("top.theillusivec4.curios:curios:${curios_version}")
-    compileOnly fg.deobf("top.theillusivec4.curios:curios:${curios_version}:api")
+    runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:${curios_version}")
+    compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:${curios_version}:api")
     compile 'de.javagl:obj:0.3.0' 
 }
 

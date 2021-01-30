@@ -9,7 +9,7 @@ import net.minecraft.client.entity.player.ClientPlayerEntity
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Vec3d
+import net.minecraft.util.math.vector.Vector3d
 import net.minecraftforge.api.distmarker.Dist
 import net.minecraftforge.api.distmarker.OnlyIn
 import net.minecraftforge.common.MinecraftForge
@@ -43,7 +43,7 @@ object ClientHookProcessor: CommonHookProcessor() {
         }
     }
 
-    fun fireHook(data: HookedPlayerData, pos: Vec3d, direction: Vec3d) {
+    fun fireHook(data: HookedPlayerData, pos: Vector3d, direction: Vector3d) {
         if (data.type != HookType.NONE) {
             data.hooks.add(
                 Hook(

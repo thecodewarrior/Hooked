@@ -1,10 +1,8 @@
 package dev.thecodewarrior.hooked.client.renderer
 
-import com.mojang.blaze3d.systems.RenderSystem
-import com.teamwizardry.librarianlib.core.bridge.IRenderTypeState
 import com.teamwizardry.librarianlib.core.util.*
 import com.teamwizardry.librarianlib.core.util.kotlin.color
-import com.teamwizardry.librarianlib.core.util.kotlin.loc
+import com.teamwizardry.librarianlib.core.util.loc
 import com.teamwizardry.librarianlib.core.util.kotlin.normal
 import com.teamwizardry.librarianlib.core.util.kotlin.pos
 import com.teamwizardry.librarianlib.math.*
@@ -23,7 +21,7 @@ import net.minecraft.profiler.IProfiler
 import net.minecraft.resources.IResourceManager
 import net.minecraft.util.ResourceLocation
 import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Vec3d
+import net.minecraft.util.math.vector.Vector3d
 import net.minecraft.world.World
 import org.lwjgl.opengl.GL11
 import java.awt.Color
@@ -106,8 +104,8 @@ class BasicHookRenderer(val id: ResourceLocation):
         matrix: Matrix4d,
         renderType: RenderType,
         world: World,
-        waist: Vec3d,
-        chainDirection: Vec3d,
+        waist: Vector3d,
+        chainDirection: Vector3d,
         chainLength: Double,
         deltaX: Double,
         deltaZ: Double,

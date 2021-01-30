@@ -8,6 +8,7 @@ import com.teamwizardry.librarianlib.core.util.SimpleRenderTypes
 import com.teamwizardry.librarianlib.core.util.kotlin.color
 import com.teamwizardry.librarianlib.core.util.kotlin.getOrNull
 import com.teamwizardry.librarianlib.core.util.kotlin.pos
+import com.teamwizardry.librarianlib.core.util.vec
 import com.teamwizardry.librarianlib.math.*
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.client.renderer.HookRenderer

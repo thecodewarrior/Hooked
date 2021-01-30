@@ -1,35 +1,36 @@
 package dev.thecodewarrior.hooked.util
 
+import com.teamwizardry.librarianlib.core.util.vec
 import com.teamwizardry.librarianlib.math.*
 import dev.thecodewarrior.hooked.quickhull3d.Point3d
 import dev.thecodewarrior.hooked.quickhull3d.QuickHull3D
-import net.minecraft.util.math.Vec3d
+import net.minecraft.util.math.vector.Vector3d
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
 
 interface Constraint {
-    fun constrain(point: Vec3d): Vec3d
+    fun constrain(point: Vector3d): Vector3d
 }
 object NoConstraint: Constraint {
-    override fun constrain(point: Vec3d): Vec3d {
+    override fun constrain(point: Vector3d): Vector3d {
         return point
     }
 }
 
 class DynamicHull: Constraint {
-    var pointSet = setOf<Vec3d>()
+    var pointSet = setOf<Vector3d>()
         private set(value) {
             field = value
             points = value.toList()
         }
-    var points = listOf<Vec3d>()
+    var points = listOf<Vector3d>()
         private set
 
     var shape: Constraint = NoConstraint
         private set
 
-    fun update(newPoints: List<Vec3d>) {
+    fun update(newPoints: List<Vector3d>) {
         val uniquePoints = newPoints.toSet()
         if(uniquePoints == pointSet) return
         pointSet = uniquePoints
@@ -59,7 +60,7 @@ class DynamicHull: Constraint {
         shape = NoConstraint
     }
 
-    override fun constrain(point: Vec3d): Vec3d {
+    override fun constrain(point: Vector3d): Vector3d {
         return shape.constrain(point)
     }
 
@@ -100,7 +101,7 @@ class DynamicHull: Constraint {
         if(points.size < 3) return null
         if(points.size == 3) return Polygon(listOf(points[0], points[1], points[2]))
 
-        var sum = Vec3d.ZERO
+        var sum = Vector3d.ZERO
         points.forEach {
             sum += it
         }
@@ -132,19 +133,19 @@ class DynamicHull: Constraint {
         // Pick path with best conditioning:
         val dir =
             if(det_max == det_x) {
-                Vec3d(
+                Vector3d(
                     det_x,
                     xz*yz - xy*zz,
                     xy*yz - xz*yy
                 )
             } else if(det_max == det_y) {
-                Vec3d(
+                Vector3d(
                     xz*yz - xy*zz,
                     det_y,
                     xy*xz - yz*xx
                 )
             } else {
-                Vec3d(
+                Vector3d(
                     xy*yz - xz*yy,
                     xy*xz - yz*xx,
                     det_z
@@ -179,7 +180,7 @@ class DynamicHull: Constraint {
         val face = faces.first { otherIndex !in it }
 
         return Polygon(face.map {
-            vertices[it].toVec3d() + centroid
+            vertices[it].toVector3d() + centroid
         })
     }
 
@@ -192,23 +193,23 @@ class DynamicHull: Constraint {
     }
 }
 
-data class Point(val point: Vec3d): Constraint {
-    override fun constrain(point: Vec3d): Vec3d {
+data class Point(val point: Vector3d): Constraint {
+    override fun constrain(point: Vector3d): Vector3d {
         return point
     }
 }
 
-data class LineSegment(val a: Vec3d, val b: Vec3d): Constraint {
+data class LineSegment(val a: Vector3d, val b: Vector3d): Constraint {
     private val length = (b - a).length()
     private val normalized = if(length == 0.0) vec(0.0, 1.0, 0.0) else (b - a) / length
 
-    override fun constrain(point: Vec3d): Vec3d {
+    override fun constrain(point: Vector3d): Vector3d {
         val dot = (point - a) dot normalized
         return a + normalized * dot.clamp(0.0, length)
     }
 }
 
-data class Polygon(val points: List<Vec3d>): Constraint {
+data class Polygon(val points: List<Vector3d>): Constraint {
     /**
      * The list of edges in 3d world space
      */
@@ -233,23 +234,23 @@ data class Polygon(val points: List<Vec3d>): Constraint {
     /**
      * points[0], used as the "origin" for 2d space and when calculating the normal
      */
-    val a: Vec3d
+    val a: Vector3d
     /**
      * points[[bIndex]], used as the first point when calculating the normal
      */
-    val b: Vec3d
+    val b: Vector3d
     val bIndex: Int
     /**
      * points[[cIndex]], used as the second point when calculating the normal
      */
-    val c: Vec3d
+    val c: Vector3d
     val cIndex: Int
 
     /**
      * The normal vector, pointing out of the clockwise side of the face. defined as
      * `((b - a) cross (c - a)).normalize()`
      */
-    val normal: Vec3d
+    val normal: Vector3d
 
     init {
         a = points[0]
@@ -279,16 +280,16 @@ data class Polygon(val points: List<Vec3d>): Constraint {
         points2d = points.map { pointToPlane(it) }
     }
 
-    private fun pointToPlane(point: Vec3d): Vec2d {
+    private fun pointToPlane(point: Vector3d): Vec2d {
         val transformed = pointToPlane * point
         return Vec2d(transformed.x, transformed.y)
     }
 
-    private fun planeToPoint(point: Vec2d): Vec3d {
-        return planeToPoint * Vec3d(point.x, point.y, 0.0)
+    private fun planeToPoint(point: Vec2d): Vector3d {
+        return planeToPoint * Vector3d(point.x, point.y, 0.0)
     }
 
-    override fun constrain(point: Vec3d): Vec3d {
+    override fun constrain(point: Vector3d): Vector3d {
         val point2d = pointToPlane(point)
         if(point2d in this) return planeToPoint(point2d)
         return edges.map { it.constrain(point) }.minByOrNull { (it - point).lengthSquared() }!!
@@ -310,7 +311,7 @@ data class Polygon(val points: List<Vec3d>): Constraint {
 
 }
 
-data class Hull(val points: List<Vec3d>, val threshold: Double): Constraint {
+data class Hull(val points: List<Vector3d>, val threshold: Double): Constraint {
     val faces: List<Polygon>
 
     init {
@@ -318,24 +319,24 @@ data class Hull(val points: List<Vec3d>, val threshold: Double): Constraint {
         val quickHull = QuickHull3D()
         quickHull.explicitDistanceTolerance = threshold / 100.0
         quickHull.build(points.map { (it - origin).toPoint3d() }.toTypedArray())
-        val vertices = quickHull.vertices.map { it.toVec3d() + origin }
+        val vertices = quickHull.vertices.map { it.toVector3d() + origin }
         faces = quickHull.faces.map { indices ->
             Polygon(indices.map { vertices[it] })
         }
     }
 
-    override fun constrain(point: Vec3d): Vec3d {
+    override fun constrain(point: Vector3d): Vector3d {
         if(faces.all { (point-it.a) dot it.normal <= 0 }) // point is inside the hull
             return point
         return faces.map { it.constrain(point) }.minBy { (point - it).lengthSquared() }!!
     }
 }
 
-private fun Vec3d.toPoint3d() = Point3d(x, y, z)
-private fun Point3d.toVec3d() = Vec3d(x, y, z)
+private fun Vector3d.toPoint3d() = Point3d(x, y, z)
+private fun Point3d.toVector3d() = Vector3d(x, y, z)
 
 // https://gamedev.stackexchange.com/a/96487
-fun raySphereIntersection(point: Vec3d, direction: Vec3d, center: Vec3d, radius: Double): Double? {
+fun raySphereIntersection(point: Vector3d, direction: Vector3d, center: Vector3d, radius: Double): Double? {
     val m = point - center
     val b = m dot direction
     val c = (m dot m) - radius * radius

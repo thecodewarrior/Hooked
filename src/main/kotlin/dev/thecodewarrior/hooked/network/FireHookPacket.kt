@@ -1,29 +1,22 @@
 package dev.thecodewarrior.hooked.network
 
-import com.teamwizardry.librarianlib.core.util.Client
 import com.teamwizardry.librarianlib.core.util.kotlin.getOrNull
-import com.teamwizardry.librarianlib.core.util.sided.ClientSupplier
 import com.teamwizardry.librarianlib.courier.CourierPacket
+import dev.thecodewarrior.hooked.HookedMod
+import dev.thecodewarrior.hooked.capability.HookedPlayerData
+import dev.thecodewarrior.hooked.hook.processor.ServerHookProcessor
 import ll.dev.thecodewarrior.prism.annotation.Refract
 import ll.dev.thecodewarrior.prism.annotation.RefractClass
 import ll.dev.thecodewarrior.prism.annotation.RefractConstructor
-import net.minecraft.util.math.Vec3d
-import java.util.*
-import com.teamwizardry.librarianlib.math.plus
-import com.teamwizardry.librarianlib.math.vec
-import dev.thecodewarrior.hooked.HookedMod
-import dev.thecodewarrior.hooked.capability.HookedPlayerData
-import dev.thecodewarrior.hooked.hook.processor.CommonHookProcessor
-import dev.thecodewarrior.hooked.hook.processor.ServerHookProcessor
-
+import net.minecraft.util.math.vector.Vector3d
 import net.minecraftforge.fml.network.NetworkEvent
 import kotlin.math.pow
 import kotlin.math.sqrt
 
 @RefractClass
 data class FireHookPacket @RefractConstructor constructor(
-    @Refract val pos: Vec3d,
-    @Refract val direction: Vec3d,
+    @Refract val pos: Vector3d,
+    @Refract val direction: Vector3d,
 ): CourierPacket {
     override fun handle(context: NetworkEvent.Context) {
         val player = context.sender!!
