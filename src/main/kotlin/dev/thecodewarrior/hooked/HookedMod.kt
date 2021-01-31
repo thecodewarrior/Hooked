@@ -14,7 +14,6 @@ import dev.thecodewarrior.hooked.hook.type.FlightHookType
 import dev.thecodewarrior.hooked.hook.type.HookType
 import dev.thecodewarrior.hooked.network.HookJumpPacket
 import dev.thecodewarrior.hooked.network.FireHookPacket
-import dev.thecodewarrior.hooked.network.RetractFlightHooksPacket
 import dev.thecodewarrior.hooked.network.SyncHookDataPacket
 import dev.thecodewarrior.hooked.network.SyncIndividualHooksPacket
 import net.minecraft.inventory.container.PlayerContainer
@@ -44,7 +43,6 @@ object HookedMod: BaseMod(true) {
         courier.registerCourierPacket<SyncIndividualHooksPacket>(NetworkDirection.PLAY_TO_CLIENT)
         courier.registerCourierPacket<SyncHookDataPacket>(NetworkDirection.PLAY_TO_CLIENT)
         courier.registerCourierPacket<HookJumpPacket>(NetworkDirection.PLAY_TO_SERVER)
-        courier.registerCourierPacket<RetractFlightHooksPacket>(NetworkDirection.PLAY_TO_SERVER)
     }
 
     override fun clientSetup(e: FMLClientSetupEvent) {

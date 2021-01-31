@@ -1,24 +1,27 @@
 package dev.thecodewarrior.hooked.hook.processor
 
 import com.teamwizardry.librarianlib.core.util.Client
+import com.teamwizardry.librarianlib.math.dot
+import com.teamwizardry.librarianlib.math.minus
 import dev.thecodewarrior.hooked.HookedMod
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.hook.type.HookType
 import dev.thecodewarrior.hooked.network.FireHookPacket
-import net.minecraft.client.entity.player.ClientPlayerEntity
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.vector.Vector3d
 import net.minecraftforge.api.distmarker.Dist
 import net.minecraftforge.api.distmarker.OnlyIn
 import net.minecraftforge.common.MinecraftForge
-import net.minecraftforge.event.ForgeEventFactory
 import net.minecraftforge.event.TickEvent
 import net.minecraftforge.event.entity.player.PlayerEvent
 import net.minecraftforge.eventbus.api.EventPriority
 import net.minecraftforge.eventbus.api.SubscribeEvent
 import java.util.*
+import kotlin.math.acos
+import kotlin.math.cos
 
 /**
  * Processes hooks on the *logical* client.
@@ -43,23 +46,32 @@ object ClientHookProcessor: CommonHookProcessor() {
         }
     }
 
-    fun fireHook(data: HookedPlayerData, pos: Vector3d, direction: Vector3d) {
+    fun fireHook(data: HookedPlayerData, pos: Vector3d, direction: Vector3d, sneaking: Boolean) {
         if (data.type != HookType.NONE) {
-            data.hooks.add(
-                Hook(
-                    UUID.randomUUID(),
-                    data.type,
-                    pos,
-                    Hook.State.EXTENDING.ordinal,
-                    direction,
-                    BlockPos.ZERO
+            if(sneaking && data.controller.allowIndividualRetraction) {
+                for(hook in data.hooks) {
+                    if(isPointingAtHook(pos, direction, retractThreshold, hook)) {
+                        hook.state = Hook.State.RETRACTING
+                    }
+                }
+            } else {
+                data.hooks.add(
+                    Hook(
+                        UUID.randomUUID(),
+                        data.type,
+                        pos,
+                        Hook.State.EXTENDING.ordinal,
+                        direction,
+                        BlockPos.ZERO
+                    )
                 )
-            )
+            }
 
             HookedMod.courier.sendToServer(
                 FireHookPacket(
                     pos,
-                    direction
+                    direction,
+                    sneaking
                 )
             )
         }
@@ -76,8 +88,8 @@ object ClientHookProcessor: CommonHookProcessor() {
 
         // only apply the controller for our own player
         if(e.player == Client.player) {
-            data.controller.update(e.player, data.hooks, data.playerJumped)
-            data.playerJumped = false
+            data.controller.update(e.player, data.hooks, data.jumpState)
+            data.jumpState = null
         }
     }
 

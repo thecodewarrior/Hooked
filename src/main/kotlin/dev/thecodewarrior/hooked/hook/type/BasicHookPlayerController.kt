@@ -1,31 +1,23 @@
 package dev.thecodewarrior.hooked.hook.type
 
-import com.teamwizardry.librarianlib.core.util.mapSrgName
 import com.teamwizardry.librarianlib.core.util.vec
 import com.teamwizardry.librarianlib.math.*
+import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.hook.processor.Hook
 import dev.thecodewarrior.hooked.util.fromWaistPos
 import dev.thecodewarrior.hooked.util.getWaistPos
-import ll.dev.thecodewarrior.mirror.Mirror
-import net.minecraft.entity.LivingEntity
-import net.minecraft.entity.ai.attributes.AttributeModifier
 import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.entity.player.ServerPlayerEntity
-import net.minecraft.network.play.ServerPlayNetHandler
 import net.minecraft.util.math.vector.Vector3d
-import net.minecraftforge.common.ForgeMod.ENTITY_GRAVITY
-import net.minecraftforge.common.MinecraftForge
-import java.util.*
-import kotlin.math.abs
 import kotlin.math.max
-import kotlin.math.sign
 
 open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHookType): HookPlayerController() {
+    override val allowIndividualRetraction: Boolean = false
+
     override fun remove() {
         enableGravity(player)
     }
 
-    override fun update(player: PlayerEntity, hooks: List<Hook>, jumping: Boolean) {
+    override fun update(player: PlayerEntity, hooks: List<Hook>, jumpState: HookedPlayerData.JumpState?) {
         var plantedCount = 0
         var targetPoint = Vector3d.ZERO
         hooks.forEach { hook ->
@@ -36,7 +28,7 @@ open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHo
         }
         if (plantedCount == 0) {
             enableGravity(player)
-            if (jumping) { // even if none are planted, retract any that are extending
+            if (jumpState != null) { // even if none are planted, retract any that are extending
                 hooks.forEach {
                     it.state = Hook.State.RETRACTING
                 }
@@ -53,7 +45,7 @@ open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHo
         val deltaLen = deltaPos.length()
         val deltaNormal = deltaPos / deltaLen
 
-        if (jumping) {
+        if (jumpState != null) {
             if (hooks.any { it.state == Hook.State.PLANTED }) {
                 val movementTowardPos = if (deltaPos == Vector3d.ZERO) 0.0 else player.motion dot deltaNormal
 

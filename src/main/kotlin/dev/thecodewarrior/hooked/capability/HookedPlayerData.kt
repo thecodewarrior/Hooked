@@ -5,6 +5,9 @@ import com.teamwizardry.librarianlib.prism.Save
 import dev.thecodewarrior.hooked.hook.processor.Hook
 import dev.thecodewarrior.hooked.hook.type.HookPlayerController
 import dev.thecodewarrior.hooked.hook.type.HookType
+import ll.dev.thecodewarrior.prism.annotation.Refract
+import ll.dev.thecodewarrior.prism.annotation.RefractClass
+import ll.dev.thecodewarrior.prism.annotation.RefractConstructor
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.nbt.CompoundNBT
 import net.minecraftforge.common.capabilities.Capability
@@ -32,7 +35,14 @@ class HookedPlayerData(val player: PlayerEntity): BaseCapability() {
     var cooldownCounter: Int = 0
 
     var controller: HookPlayerController = HookPlayerController.NONE
-    var playerJumped: Boolean = false
+
+    @RefractClass
+    data class JumpState @RefractConstructor constructor(
+        @Refract val doubleJump: Boolean,
+        @Refract val sneaking: Boolean
+    )
+
+    var jumpState: JumpState? = null
 
     /**
      * State that is only ever used on the *logical* server. This includes things like syncing status.
@@ -42,6 +52,7 @@ class HookedPlayerData(val player: PlayerEntity): BaseCapability() {
         var forceFullSyncToClient: Boolean = false
         var forceFullSyncToOthers: Boolean = false
     }
+
     var serverState: ServerState = ServerState()
 
     override fun deserializeNBT(nbt: CompoundNBT) {

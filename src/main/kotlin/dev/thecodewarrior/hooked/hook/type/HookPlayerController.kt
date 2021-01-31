@@ -7,6 +7,7 @@ import com.teamwizardry.librarianlib.math.plus
 import com.teamwizardry.librarianlib.math.times
 import com.teamwizardry.librarianlib.prism.SimpleSerializer
 import com.teamwizardry.librarianlib.prism.Sync
+import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.hook.processor.Hook
 import ll.dev.thecodewarrior.mirror.Mirror
 import net.minecraft.entity.Entity
@@ -32,6 +33,7 @@ import kotlin.math.sign
  */
 abstract class HookPlayerController: INBTSerializable<CompoundNBT> {
     private val serializer = SimpleSerializer.get(this.javaClass)
+    abstract val allowIndividualRetraction: Boolean
 
     /**
      * Called when the controller is removed so it can do any cleanup necessary.
@@ -41,7 +43,7 @@ abstract class HookPlayerController: INBTSerializable<CompoundNBT> {
     /**
      * Called after the hook processor updates the hooks
      */
-    abstract fun update(player: PlayerEntity, hooks: List<Hook>, jumping: Boolean)
+    abstract fun update(player: PlayerEntity, hooks: List<Hook>, jumpState: HookedPlayerData.JumpState?)
 
     override fun serializeNBT(): CompoundNBT {
         return serializer.createTag(this, Sync::class.java)
@@ -126,7 +128,8 @@ abstract class HookPlayerController: INBTSerializable<CompoundNBT> {
 
     companion object {
         val NONE: HookPlayerController = object: HookPlayerController() {
-            override fun update(player: PlayerEntity, hooks: List<Hook>, jumping: Boolean) {}
+            override val allowIndividualRetraction: Boolean = false
+            override fun update(player: PlayerEntity, hooks: List<Hook>, jumpState: HookedPlayerData.JumpState?) {}
         }
 
         private val floatingTickCount = Mirror.reflectClass<ServerPlayNetHandler>()

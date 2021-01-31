@@ -30,15 +30,25 @@ object ServerHookProcessor: CommonHookProcessor() {
         MinecraftForge.EVENT_BUS.register(this)
     }
 
-    fun fireHook(data: HookedPlayerData, pos: Vector3d, direction: Vector3d) {
+    fun fireHook(data: HookedPlayerData, pos: Vector3d, direction: Vector3d, sneaking: Boolean) {
         if (data.type == HookType.NONE) {
             // they seem to think they can fire hooks
             data.serverState.forceFullSyncToClient = true
         } else {
-            val hook = Hook(UUID.randomUUID(), data.type, pos, Hook.State.EXTENDING.ordinal, direction, BlockPos.ZERO)
-            data.hooks.add(hook)
-            // this will cause a full sync to the client, and a single-hook sync to other clients
-            data.serverState.dirtyHooks.add(hook)
+            if (sneaking && data.controller.allowIndividualRetraction) {
+                for (hook in data.hooks) {
+                    if (isPointingAtHook(pos, direction, retractThreshold, hook)) {
+                        hook.state = Hook.State.RETRACTING
+                        data.serverState.dirtyHooks.add(hook)
+                    }
+                }
+            } else {
+                val hook =
+                    Hook(UUID.randomUUID(), data.type, pos, Hook.State.EXTENDING.ordinal, direction, BlockPos.ZERO)
+                data.hooks.add(hook)
+                // this will cause a full sync to the client, and a single-hook sync to other clients
+                data.serverState.dirtyHooks.add(hook)
+            }
         }
     }
 
@@ -57,8 +67,8 @@ object ServerHookProcessor: CommonHookProcessor() {
         }
 
         applyHookMotion(e.player, data)
-        data.controller.update(e.player, data.hooks, data.playerJumped)
-        data.playerJumped = false
+        data.controller.update(e.player, data.hooks, data.jumpState)
+        data.jumpState = null
 
         if (data.serverState.forceFullSyncToClient || data.serverState.dirtyHooks.isNotEmpty()) {
             val serverPlayer = e.player as ServerPlayerEntity // fail-fast
@@ -137,7 +147,7 @@ object ServerHookProcessor: CommonHookProcessor() {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     fun breakSpeed(e: PlayerEvent.BreakSpeed) {
-        if(!isServer(e.entity)) return
+        if (!isServer(e.entity)) return
         fixSpeed(e)
     }
 

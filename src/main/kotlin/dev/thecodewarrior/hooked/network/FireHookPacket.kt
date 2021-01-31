@@ -17,6 +17,7 @@ import kotlin.math.sqrt
 data class FireHookPacket @RefractConstructor constructor(
     @Refract val pos: Vector3d,
     @Refract val direction: Vector3d,
+    @Refract val sneaking: Boolean,
 ): CourierPacket {
     override fun handle(context: NetworkEvent.Context) {
         val player = context.sender!!
@@ -31,7 +32,7 @@ data class FireHookPacket @RefractConstructor constructor(
                                 "based on their ping of ${player.ping} is $maxDistance"
                     )
                 } else {
-                    ServerHookProcessor.fireHook(data, pos, direction.normalize())
+                    ServerHookProcessor.fireHook(data, pos, direction.normalize(), sneaking)
                 }
             }
         }

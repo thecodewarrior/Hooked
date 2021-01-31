@@ -3,6 +3,7 @@ package dev.thecodewarrior.hooked.hook.type
 import com.teamwizardry.librarianlib.math.dot
 import com.teamwizardry.librarianlib.math.minus
 import com.teamwizardry.librarianlib.math.times
+import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.hook.processor.Hook
 import dev.thecodewarrior.hooked.util.DynamicHull
 import dev.thecodewarrior.hooked.util.FadeTimer
@@ -15,36 +16,33 @@ open class FlightHookPlayerController(val player: PlayerEntity, val type: Flight
     val hull: DynamicHull = DynamicHull()
     var hasExternalFlight: Boolean = true
     var isFlightActive: Boolean = false
-    var isOutsideFlightRange: Boolean = false
-
-    var shouldRetract: Boolean = false
 
     /**
      * Used on the client to control rendering the wireframe hull.
      */
     var showHullTimer: FadeTimer = FadeTimer()
 
+    override val allowIndividualRetraction: Boolean = true
+
     override fun remove() {
         disableFlight()
     }
 
-    override fun update(player: PlayerEntity, hooks: List<Hook>, jumping: Boolean) {
+    override fun update(player: PlayerEntity, hooks: List<Hook>, jumpState: HookedPlayerData.JumpState?) {
         showHullTimer.tick()
 
         fixExternalFlight()
 
-        if(shouldRetract) {
+        if(jumpState != null && jumpState.doubleJump && jumpState.sneaking) {
             hooks.forEach {
                 it.state = Hook.State.RETRACTING
             }
         }
-        shouldRetract = false
 
         val planted = hooks.filter { it.state == Hook.State.PLANTED }
 
         // When only one hook is planted we don't do any creative flight and fall back to the basic behavior
         if (planted.size < 2) {
-            isOutsideFlightRange = false
             disableFlight()
 
             return
@@ -66,11 +64,13 @@ open class FlightHookPlayerController(val player: PlayerEntity, val type: Flight
             }
 
             if(allowFlight) {
-                isOutsideFlightRange = false
                 enableFlight()
             } else {
-                isOutsideFlightRange = true
                 disableFlight()
+            }
+
+            if(!allowFlight && jumpState?.doubleJump == true) {
+                showHullTimer.start(20)
             }
         }
 

@@ -9,7 +9,6 @@ import dev.thecodewarrior.hooked.hook.type.BasicHookPlayerController
 import dev.thecodewarrior.hooked.hook.type.FlightHookPlayerController
 import dev.thecodewarrior.hooked.hook.type.HookType
 import dev.thecodewarrior.hooked.network.HookJumpPacket
-import dev.thecodewarrior.hooked.network.RetractFlightHooksPacket
 import net.minecraft.client.settings.KeyBinding
 import net.minecraft.client.util.InputMappings
 import net.minecraftforge.client.event.InputEvent
@@ -42,27 +41,27 @@ object Keybinds {
 
         val player = Client.player ?: return
         player.getCapability(HookedPlayerData.CAPABILITY).getOrNull()?.also { data ->
-            if (data.type != HookType.NONE) {
-                if (fireKey.isPressed) {
-                    val pos = player.getEyePosition(1f)
-                    val direction = player.getLook(1f)
-                    ClientHookProcessor.fireHook(data, pos, direction)
-                }
+            if(data.type == HookType.NONE) {
+                return@also
             }
-            if (jumpPressed) {
-                data.playerJumped = true
-                HookedMod.courier.sendToServer(HookJumpPacket())
 
-                val controller = data.controller
+            val sneakPressed = Client.minecraft.gameSettings.keyBindSneak.isKeyDown
+            if (fireKey.isPressed) {
+                val pos = player.getEyePosition(1f)
+                val direction = player.getLook(1f)
+                ClientHookProcessor.fireHook(data, pos, direction, sneakPressed)
+            }
+
+            if (jumpPressed) {
+                val jumpState = HookedPlayerData.JumpState(
+                    doubleJump = doubleJumpTimer != 0,
+                    sneaking = sneakPressed
+                )
+                data.jumpState = jumpState
+                HookedMod.courier.sendToServer(HookJumpPacket(jumpState))
+
                 if (doubleJumpTimer == 0) {
                     doubleJumpTimer = 7
-                } else if(controller is FlightHookPlayerController) {
-                    if(Client.minecraft.gameSettings.keyBindSneak.isKeyDown) {
-                        controller.shouldRetract = true
-                        HookedMod.courier.sendToServer(RetractFlightHooksPacket())
-                    } else if(controller.isOutsideFlightRange) {
-                        controller.showHullTimer.start(20)
-                    }
                 }
             }
         }

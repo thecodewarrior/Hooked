@@ -9,10 +9,12 @@ import dev.thecodewarrior.hooked.HookedMod
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.util.getWaistPos
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.util.math.vector.Vector3d
 import net.minecraftforge.event.entity.player.PlayerEvent
 import net.minecraftforge.eventbus.api.EventPriority
 import net.minecraftforge.eventbus.api.SubscribeEvent
 import java.util.*
+import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
@@ -29,6 +31,7 @@ import kotlin.math.pow
  */
 abstract class CommonHookProcessor {
     protected val raycaster: Raycaster = Raycaster()
+    protected val retractThreshold: Double = cos(Math.toRadians(15.0))
 
     fun fixSpeed(e: PlayerEvent.BreakSpeed) {
 //        PlayerEntity.getDigSpeed:
@@ -49,6 +52,10 @@ abstract class CommonHookProcessor {
 
     protected fun getHookData(player: PlayerEntity): HookedPlayerData? {
         return player.getCapability(HookedPlayerData.CAPABILITY).getOrNull()
+    }
+
+    protected fun isPointingAtHook(pos: Vector3d, direction: Vector3d, cosThreshold: Double, hook: Hook): Boolean {
+        return direction dot (hook.pos - pos).normalize() > cosThreshold
     }
 
     /**
