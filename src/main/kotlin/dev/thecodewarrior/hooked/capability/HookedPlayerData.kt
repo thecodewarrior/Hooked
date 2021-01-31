@@ -32,6 +32,7 @@ class HookedPlayerData(val player: PlayerEntity): BaseCapability() {
     var cooldownCounter: Int = 0
 
     var controller: HookPlayerController = HookPlayerController.NONE
+    var playerJumped: Boolean = false
 
     /**
      * State that is only ever used on the *logical* server. This includes things like syncing status.

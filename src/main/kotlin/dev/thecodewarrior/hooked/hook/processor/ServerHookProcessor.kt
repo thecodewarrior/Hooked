@@ -57,7 +57,8 @@ object ServerHookProcessor: CommonHookProcessor() {
         }
 
         applyHookMotion(e.player, data)
-        data.controller.update(e.player, data.hooks)
+        data.controller.update(e.player, data.hooks, data.playerJumped)
+        data.playerJumped = false
 
         if (data.serverState.forceFullSyncToClient || data.serverState.dirtyHooks.isNotEmpty()) {
             val serverPlayer = e.player as ServerPlayerEntity // fail-fast

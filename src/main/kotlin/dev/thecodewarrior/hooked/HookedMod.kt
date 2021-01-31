@@ -1,23 +1,23 @@
 package dev.thecodewarrior.hooked
 
 import com.teamwizardry.librarianlib.core.util.loc
-import com.teamwizardry.librarianlib.core.util.sided.SidedSupplier
 import com.teamwizardry.librarianlib.foundation.BaseMod
 import com.teamwizardry.librarianlib.foundation.util.TagWrappers
 import dev.thecodewarrior.hooked.client.HookRenderManager
 import dev.thecodewarrior.hooked.client.Keybinds
 import dev.thecodewarrior.hooked.client.renderer.BasicHookRenderer
+import dev.thecodewarrior.hooked.client.renderer.FlightHookRenderer
 import dev.thecodewarrior.hooked.hook.processor.ClientHookProcessor
 import dev.thecodewarrior.hooked.hook.processor.ServerHookProcessor
-import dev.thecodewarrior.hooked.hook.type.BasicHookPlayerController
 import dev.thecodewarrior.hooked.hook.type.BasicHookType
+import dev.thecodewarrior.hooked.hook.type.FlightHookType
 import dev.thecodewarrior.hooked.hook.type.HookType
-import dev.thecodewarrior.hooked.network.BasicHookJumpPacket
+import dev.thecodewarrior.hooked.network.HookJumpPacket
 import dev.thecodewarrior.hooked.network.FireHookPacket
+import dev.thecodewarrior.hooked.network.RetractFlightHooksPacket
 import dev.thecodewarrior.hooked.network.SyncHookDataPacket
 import dev.thecodewarrior.hooked.network.SyncIndividualHooksPacket
 import net.minecraft.inventory.container.PlayerContainer
-import net.minecraft.util.Tuple
 import net.minecraftforge.client.event.TextureStitchEvent
 import net.minecraftforge.eventbus.api.SubscribeEvent
 import net.minecraftforge.fml.InterModComms
@@ -28,7 +28,6 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent
 import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent
 import net.minecraftforge.fml.network.NetworkDirection
 import net.minecraftforge.registries.RegistryBuilder
-import net.minecraftforge.registries.RegistryManager
 import top.theillusivec4.curios.api.SlotTypeMessage
 
 @Mod("hooked")
@@ -44,7 +43,8 @@ object HookedMod: BaseMod(true) {
         courier.registerCourierPacket<FireHookPacket>(NetworkDirection.PLAY_TO_SERVER)
         courier.registerCourierPacket<SyncIndividualHooksPacket>(NetworkDirection.PLAY_TO_CLIENT)
         courier.registerCourierPacket<SyncHookDataPacket>(NetworkDirection.PLAY_TO_CLIENT)
-        courier.registerCourierPacket<BasicHookJumpPacket>(NetworkDirection.PLAY_TO_SERVER)
+        courier.registerCourierPacket<HookJumpPacket>(NetworkDirection.PLAY_TO_SERVER)
+        courier.registerCourierPacket<RetractFlightHooksPacket>(NetworkDirection.PLAY_TO_SERVER)
     }
 
     override fun clientSetup(e: FMLClientSetupEvent) {
@@ -52,8 +52,9 @@ object HookedMod: BaseMod(true) {
         HookRenderManager // registers itself for events
         ClientHookProcessor // registers itself for events
         HookedModHookTypes.types.forEach {
-            if(it is BasicHookType) {
-                HookRenderManager.register(it, BasicHookRenderer(it.registryName!!))
+            when(it) {
+                is FlightHookType -> HookRenderManager.register(it, FlightHookRenderer(it))
+                is BasicHookType -> HookRenderManager.register(it, BasicHookRenderer(it))
             }
         }
     }

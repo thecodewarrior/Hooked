@@ -17,6 +17,7 @@ apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'kotlin'
+apply plugin: 'org.spongepowered.mixin'
 
 version = mod_version
 group = 'dev.thecodewarrior.hooked' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
@@ -115,6 +116,9 @@ repositories {
 
 dependencies {
     minecraft "net.minecraftforge:forge:$mc_version-$forge_version"
+    annotationProcessor "org.spongepowered:mixin:$mixin_version:processor"
+    testAnnotationProcessor "org.spongepowered:mixin:$mixin_version:processor"
+
     [
             "foundation",
             "etcetera"

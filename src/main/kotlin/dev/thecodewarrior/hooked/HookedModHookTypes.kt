@@ -2,6 +2,7 @@ package dev.thecodewarrior.hooked
 
 import com.teamwizardry.librarianlib.core.util.loc
 import dev.thecodewarrior.hooked.hook.type.BasicHookType
+import dev.thecodewarrior.hooked.hook.type.FlightHookType
 import dev.thecodewarrior.hooked.hook.type.HookType
 import net.minecraftforge.event.RegistryEvent
 import net.minecraftforge.eventbus.api.SubscribeEvent
@@ -40,6 +41,15 @@ object HookedModHookTypes {
             pullStrength = 2.25,
             jumpBoost = 0.05
         ).also { it.registryName = loc("hooked:ender_hook") },
+        FlightHookType(
+            count = 8,
+            range = 48.0,
+            speed = 1.2,
+            hookLength = 0.5,
+            pullStrength = 1.0,
+            jumpBoost = 0.05,
+            chainMargin = 3.0
+        ).also { it.registryName = loc("hooked:red_hook") },
     )
 
     @SubscribeEvent

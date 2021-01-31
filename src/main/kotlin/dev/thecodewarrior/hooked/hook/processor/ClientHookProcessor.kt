@@ -76,7 +76,8 @@ object ClientHookProcessor: CommonHookProcessor() {
 
         // only apply the controller for our own player
         if(e.player == Client.player) {
-            data.controller.update(e.player, data.hooks)
+            data.controller.update(e.player, data.hooks, data.playerJumped)
+            data.playerJumped = false
         }
     }
 

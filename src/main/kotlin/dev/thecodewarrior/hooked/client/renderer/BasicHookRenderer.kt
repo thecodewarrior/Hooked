@@ -10,6 +10,7 @@ import de.javagl.obj.*
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.hook.processor.Hook
 import dev.thecodewarrior.hooked.hook.type.BasicHookPlayerController
+import dev.thecodewarrior.hooked.hook.type.BasicHookType
 import dev.thecodewarrior.hooked.util.getWaistPos
 import net.minecraft.client.renderer.IRenderTypeBuffer
 import net.minecraft.client.renderer.RenderState
@@ -27,8 +28,9 @@ import org.lwjgl.opengl.GL11
 import java.awt.Color
 import java.io.IOException
 
-class BasicHookRenderer(val id: ResourceLocation):
+open class BasicHookRenderer(val type: BasicHookType):
     HookRenderer<BasicHookPlayerController>(), ISimpleReloadListener<BasicHookRenderer.ReloadData> {
+    private val id: ResourceLocation = type.registryName!!
 
     private var model: Obj = Objs.create()
     private var modelVertexIndices: IntArray = IntArray(0)
@@ -66,9 +68,11 @@ class BasicHookRenderer(val id: ResourceLocation):
         matrix.push()
         matrix.translate(waist)
         matrix.rotate(Quaternion.fromRotationTo(vec(0, 1, 0), hookPos - waist))
+        matrix.translate(0.0, type.chainMargin, 0.0)
 
-        drawHalfChain(matrix, chain1RenderType, player.world, waist, chainDirection, chainLength, 0.5, 0.0, 0.0, 1.0)
-        drawHalfChain(matrix, chain2RenderType, player.world, waist, chainDirection, chainLength, 0.0, 0.5, -1.0, 0.0)
+        val actualLength = chainLength - type.chainMargin
+        drawHalfChain(matrix, chain1RenderType, player.world, waist, chainDirection, actualLength, 0.5, 0.0, 0.0, 1.0)
+        drawHalfChain(matrix, chain2RenderType, player.world, waist, chainDirection, actualLength, 0.0, 0.5, -1.0, 0.0)
 
         matrix.pop()
 
@@ -112,6 +116,8 @@ class BasicHookRenderer(val id: ResourceLocation):
         normalX: Double,
         normalZ: Double
     ) {
+        if(chainLength < 0) // this can happen when the chain is shorter than the chain margin
+            return
         val chainSegments = floorInt(chainLength)
         val firstSegmentLength = chainLength - chainSegments
 
