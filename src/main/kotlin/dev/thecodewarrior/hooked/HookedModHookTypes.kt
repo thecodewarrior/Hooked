@@ -48,7 +48,6 @@ object HookedModHookTypes {
             hookLength = 0.5,
             pullStrength = 1.0,
             jumpBoost = 0.05,
-            chainMargin = 3.0
         ).also { it.registryName = loc("hooked:red_hook") },
     )
 

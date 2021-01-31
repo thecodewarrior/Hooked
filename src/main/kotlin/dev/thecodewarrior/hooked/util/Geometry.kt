@@ -11,14 +11,14 @@ import kotlin.math.sqrt
 
 interface BoundingShape {
     val wireframe: Set<WireframeEdge>
-    fun constrain(point: Vector3d): Vector3d
+    fun constrain(point: Vector3d): ConstraintResult
 }
 
 object NoBoundingShape: BoundingShape {
     override val wireframe: Set<WireframeEdge> = emptySet()
 
-    override fun constrain(point: Vector3d): Vector3d {
-        return point
+    override fun constrain(point: Vector3d): ConstraintResult {
+        return ConstraintResult(point, Vector3d.ZERO)
     }
 }
 
@@ -71,7 +71,7 @@ class DynamicHull: BoundingShape {
     override val wireframe: Set<WireframeEdge>
         get() = shape.wireframe
 
-    override fun constrain(point: Vector3d): Vector3d {
+    override fun constrain(point: Vector3d): ConstraintResult {
         return shape.constrain(point)
     }
 
@@ -211,8 +211,8 @@ class DynamicHull: BoundingShape {
 data class Point(val point: Vector3d): BoundingShape {
     override val wireframe: Set<WireframeEdge> = emptySet()
 
-    override fun constrain(point: Vector3d): Vector3d {
-        return point
+    override fun constrain(point: Vector3d): ConstraintResult {
+        return ConstraintResult(this.point, (point - this.point).normalize())
     }
 }
 
@@ -222,9 +222,12 @@ data class LineSegment(val a: Vector3d, val b: Vector3d): BoundingShape {
 
     override val wireframe: Set<WireframeEdge> = setOf(WireframeEdge(a, b))
 
-    override fun constrain(point: Vector3d): Vector3d {
+    override fun constrain(point: Vector3d): ConstraintResult {
         val dot = (point - a) dot normalized
-        return a + normalized * dot.clamp(0.0, length)
+        return ConstraintResult(
+            a + normalized * dot.clamp(0.0, length),
+            (point - (a + normalized * dot)).normalize()
+        )
     }
 }
 
@@ -317,10 +320,15 @@ data class Polygon(val points: List<Vector3d>): BoundingShape {
         return planeToPoint * Vector3d(point.x, point.y, 0.0)
     }
 
-    override fun constrain(point: Vector3d): Vector3d {
+    override fun constrain(point: Vector3d): ConstraintResult {
         val point2d = pointToPlane(point)
-        if (point2d in this) return planeToPoint(point2d)
-        return edges.map { it.constrain(point) }.minByOrNull { (it - point).lengthSquared() }!!
+        if (point2d in this) {
+            val constrainedPoint = planeToPoint(point2d)
+            val normal = (point - constrainedPoint).normalize()
+            return ConstraintResult(constrainedPoint, normal)
+        }
+
+        return edges.map { it.constrain(point) }.minByOrNull { (it.position - point).lengthSquared() }!!
     }
 
     // https://stackoverflow.com/a/8721483
@@ -352,10 +360,10 @@ data class Hull(val points: List<Vector3d>, val threshold: Double): BoundingShap
         }
     }
 
-    override fun constrain(point: Vector3d): Vector3d {
+    override fun constrain(point: Vector3d): ConstraintResult {
         if (faces.all { (point - it.a) dot it.normal <= 0 }) // point is inside the hull
-            return point
-        return faces.map { it.constrain(point) }.minBy { (point - it).lengthSquared() }!!
+            return ConstraintResult(point, Vector3d.ZERO)
+        return faces.map { it.constrain(point) }.minByOrNull { (point - it.position).lengthSquared() }!!
     }
 
     override val wireframe: Set<WireframeEdge> by lazy {
@@ -385,16 +393,14 @@ class WireframeEdge(val a: Vector3d, val b: Vector3d) {
     override fun hashCode(): Int {
         val aHash = a.hashCode()
         val bHash = b.hashCode()
-        var result = 0
-
-        if (aHash < bHash) {
-            result = aHash
-            result = 31 * result + bHash
+        val result = if (aHash < bHash) {
+            31 * aHash + bHash
         } else {
-            result = bHash
-            result = 31 * result + aHash
+            31 * bHash + aHash
         }
 
         return result
     }
 }
+
+class ConstraintResult(val position: Vector3d, val normal: Vector3d)

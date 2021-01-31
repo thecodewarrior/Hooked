@@ -6,9 +6,7 @@ import com.teamwizardry.librarianlib.core.util.DefaultRenderStates
 import com.teamwizardry.librarianlib.core.util.SimpleRenderTypes
 import com.teamwizardry.librarianlib.core.util.kotlin.color
 import com.teamwizardry.librarianlib.core.util.kotlin.pos
-import com.teamwizardry.librarianlib.core.util.vec
 import com.teamwizardry.librarianlib.math.Matrix4dStack
-import com.teamwizardry.librarianlib.math.clamp
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.hook.type.BasicHookPlayerController
 import dev.thecodewarrior.hooked.hook.type.FlightHookPlayerController
@@ -21,17 +19,17 @@ import net.minecraft.entity.player.PlayerEntity
 import org.lwjgl.opengl.GL11
 import java.awt.Color
 
-class FlightHookRenderer(type: FlightHookType): BasicHookRenderer(type) {
+class FlightHookRenderer(type: FlightHookType): SimpleHookRenderer<FlightHookPlayerController>(type) {
     override fun render(
         player: PlayerEntity,
         matrix: Matrix4dStack,
         partialTicks: Float,
         data: HookedPlayerData,
-        controller: BasicHookPlayerController
+        controller: FlightHookPlayerController
     ) {
-        super.render(player, matrix, partialTicks, data, controller)
+        renderHooks(player, matrix, partialTicks, data, 2.5)
 
-        if (controller is FlightHookPlayerController && controller.showHullTimer.value != 0.0) {
+        if (controller.showHullTimer.value != 0.0) {
             val frontColor = Color(1f, 0f, 0f)
             val backColor = Color(0.5f, 0f, 0f)
             val alpha = controller.showHullTimer.value.toFloat()

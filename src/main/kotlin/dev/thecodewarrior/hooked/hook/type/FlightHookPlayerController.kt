@@ -1,11 +1,15 @@
 package dev.thecodewarrior.hooked.hook.type
 
+import com.teamwizardry.librarianlib.math.dot
+import com.teamwizardry.librarianlib.math.minus
+import com.teamwizardry.librarianlib.math.times
 import dev.thecodewarrior.hooked.hook.processor.Hook
 import dev.thecodewarrior.hooked.util.DynamicHull
 import dev.thecodewarrior.hooked.util.FadeTimer
 import dev.thecodewarrior.hooked.util.fromWaistPos
 import dev.thecodewarrior.hooked.util.getWaistPos
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.util.math.vector.Vector3d
 
 open class FlightHookPlayerController(player: PlayerEntity, type: FlightHookType): BasicHookPlayerController(player, type) {
     val hull: DynamicHull = DynamicHull()
@@ -41,7 +45,7 @@ open class FlightHookPlayerController(player: PlayerEntity, type: FlightHookType
         if (planted.size < 2) {
             disableFlight()
 
-            return super.update(player, hooks, jumping)
+            return
         }
 
         enableFlight()
@@ -53,14 +57,17 @@ open class FlightHookPlayerController(player: PlayerEntity, type: FlightHookType
         val constrained = hull.constrain(waist)
 
         // keep the player's position in check
-        if(waist != constrained) {
+        if(waist != constrained.position) {
             applyRestoringForce(
                 player,
-                target = player.fromWaistPos(constrained),
+                target = player.fromWaistPos(constrained.position),
                 pullForce = type.pullStrength,
                 enforcementForce = 2.0,
                 lockPlayer = false
             )
+            if(constrained.normal != Vector3d.ZERO && (constrained.position - player.positionVec).length() < 2.0) {
+                player.motion -= constrained.normal * (player.motion dot constrained.normal)
+            }
             showHullTimer.start(10)
         }
     }

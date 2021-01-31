@@ -9,8 +9,7 @@ open class FlightHookType(
     hookLength: Double,
     pullStrength: Double,
     jumpBoost: Double,
-    chainMargin: Double,
-): BasicHookType(count, range, speed, hookLength, pullStrength, jumpBoost, chainMargin) {
+): BasicHookType(count, range, speed, hookLength, pullStrength, jumpBoost) {
     override fun createController(player: PlayerEntity): HookPlayerController {
         return FlightHookPlayerController(player, this)
     }
