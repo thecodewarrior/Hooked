@@ -53,11 +53,16 @@ object Keybinds {
                 data.playerJumped = true
                 HookedMod.courier.sendToServer(HookJumpPacket())
 
+                val controller = data.controller
                 if (doubleJumpTimer == 0) {
                     doubleJumpTimer = 7
-                } else if (Client.minecraft.gameSettings.keyBindSneak.isKeyDown) {
-                    (data.controller as? FlightHookPlayerController)?.shouldRetract = true
-                    HookedMod.courier.sendToServer(RetractFlightHooksPacket())
+                } else if(controller is FlightHookPlayerController) {
+                    if(Client.minecraft.gameSettings.keyBindSneak.isKeyDown) {
+                        controller.shouldRetract = true
+                        HookedMod.courier.sendToServer(RetractFlightHooksPacket())
+                    } else if(controller.isOutsideFlightRange) {
+                        controller.showHullTimer.start(20)
+                    }
                 }
             }
         }

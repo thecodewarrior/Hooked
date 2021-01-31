@@ -11,10 +11,11 @@ import dev.thecodewarrior.hooked.util.getWaistPos
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.math.vector.Vector3d
 
-open class FlightHookPlayerController(player: PlayerEntity, type: FlightHookType): BasicHookPlayerController(player, type) {
+open class FlightHookPlayerController(val player: PlayerEntity, val type: FlightHookType): HookPlayerController() {
     val hull: DynamicHull = DynamicHull()
     var hasExternalFlight: Boolean = true
     var isFlightActive: Boolean = false
+    var isOutsideFlightRange: Boolean = false
 
     var shouldRetract: Boolean = false
 
@@ -43,12 +44,12 @@ open class FlightHookPlayerController(player: PlayerEntity, type: FlightHookType
 
         // When only one hook is planted we don't do any creative flight and fall back to the basic behavior
         if (planted.size < 2) {
+            isOutsideFlightRange = false
             disableFlight()
 
             return
         }
 
-        enableFlight()
         if(hull.update(planted.map { it.pos })) {
             showHullTimer.start(20)
         }
@@ -56,8 +57,25 @@ open class FlightHookPlayerController(player: PlayerEntity, type: FlightHookType
         val waist = player.getWaistPos()
         val constrained = hull.constrain(waist)
 
-        // keep the player's position in check
-        if(waist != constrained.position) {
+        // if the player isn't flying, allow or disallow flight based upon whether they're inside the hull
+        if(!player.abilities.isFlying) {
+            val allowedFlightRange = 0.5
+            val allowFlight = waist.squareDistanceTo(constrained.position) < allowedFlightRange * allowedFlightRange
+            if(allowFlight != isFlightActive) {
+                showHullTimer.start(10)
+            }
+
+            if(allowFlight) {
+                isOutsideFlightRange = false
+                enableFlight()
+            } else {
+                isOutsideFlightRange = true
+                disableFlight()
+            }
+        }
+
+        // when flying, keep the player's position in check
+        if(player.abilities.isFlying && waist != constrained.position) {
             applyRestoringForce(
                 player,
                 target = player.fromWaistPos(constrained.position),
@@ -65,7 +83,7 @@ open class FlightHookPlayerController(player: PlayerEntity, type: FlightHookType
                 enforcementForce = 2.0,
                 lockPlayer = false
             )
-            if(constrained.normal != Vector3d.ZERO && (constrained.position - player.positionVec).length() < 2.0) {
+            if (constrained.normal != Vector3d.ZERO && (constrained.position - player.positionVec).length() < 2.0) {
                 player.motion -= constrained.normal * (player.motion dot constrained.normal)
             }
             showHullTimer.start(10)
@@ -75,7 +93,6 @@ open class FlightHookPlayerController(player: PlayerEntity, type: FlightHookType
     protected fun enableFlight() {
         if(!isFlightActive) {
             hasExternalFlight = player.abilities.allowFlying
-            player.abilities.isFlying = true
         }
 
         player.abilities.allowFlying = true
