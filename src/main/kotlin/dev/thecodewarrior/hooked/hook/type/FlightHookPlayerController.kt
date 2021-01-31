@@ -16,6 +16,7 @@ open class FlightHookPlayerController(val player: PlayerEntity, val type: Flight
     val hull: DynamicHull = DynamicHull()
     var hasExternalFlight: Boolean = true
     var isFlightActive: Boolean = false
+    var stopFallDamage: Boolean = false
 
     /**
      * Used on the client to control rendering the wireframe hull.
@@ -39,6 +40,13 @@ open class FlightHookPlayerController(val player: PlayerEntity, val type: Flight
             }
         }
 
+        if(stopFallDamage) {
+            player.fallDistance = 0f
+        }
+        if(player.isOnGround) {
+            stopFallDamage = false
+        }
+
         val planted = hooks.filter { it.state == Hook.State.PLANTED }
 
         // When only one hook is planted we don't do any creative flight and fall back to the basic behavior
@@ -59,8 +67,12 @@ open class FlightHookPlayerController(val player: PlayerEntity, val type: Flight
         if(!player.abilities.isFlying) {
             val allowedFlightRange = 0.5
             val allowFlight = waist.squareDistanceTo(constrained.position) < allowedFlightRange * allowedFlightRange
+
             if(allowFlight != isFlightActive) {
                 showHullTimer.start(10)
+                if(!allowFlight) {
+                    stopFallDamage = true
+                }
             }
 
             if(allowFlight) {
