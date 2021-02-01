@@ -8,10 +8,9 @@ import com.teamwizardry.librarianlib.core.util.kotlin.pos
 import com.teamwizardry.librarianlib.math.*
 import de.javagl.obj.*
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
-import dev.thecodewarrior.hooked.hook.processor.Hook
-import dev.thecodewarrior.hooked.hook.type.BasicHookType
-import dev.thecodewarrior.hooked.hook.type.HookPlayerController
-import dev.thecodewarrior.hooked.hook.type.HookType
+import dev.thecodewarrior.hooked.hook.Hook
+import dev.thecodewarrior.hooked.hook.HookPlayerController
+import dev.thecodewarrior.hooked.hook.HookType
 import dev.thecodewarrior.hooked.util.getWaistPos
 import net.minecraft.client.renderer.IRenderTypeBuffer
 import net.minecraft.client.renderer.RenderState

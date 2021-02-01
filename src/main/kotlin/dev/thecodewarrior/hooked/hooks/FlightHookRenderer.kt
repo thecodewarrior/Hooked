@@ -1,4 +1,4 @@
-package dev.thecodewarrior.hooked.client.renderer
+package dev.thecodewarrior.hooked.hooks
 
 import com.mojang.blaze3d.systems.RenderSystem
 import com.teamwizardry.librarianlib.core.util.Client
@@ -8,9 +8,7 @@ import com.teamwizardry.librarianlib.core.util.kotlin.color
 import com.teamwizardry.librarianlib.core.util.kotlin.pos
 import com.teamwizardry.librarianlib.math.Matrix4dStack
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
-import dev.thecodewarrior.hooked.hook.type.BasicHookPlayerController
-import dev.thecodewarrior.hooked.hook.type.FlightHookPlayerController
-import dev.thecodewarrior.hooked.hook.type.FlightHookType
+import dev.thecodewarrior.hooked.client.renderer.SimpleHookRenderer
 import dev.thecodewarrior.hooked.util.withAlpha
 import net.minecraft.client.renderer.IRenderTypeBuffer
 import net.minecraft.client.renderer.RenderState

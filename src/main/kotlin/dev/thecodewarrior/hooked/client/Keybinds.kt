@@ -4,10 +4,8 @@ import com.teamwizardry.librarianlib.core.util.Client
 import com.teamwizardry.librarianlib.core.util.kotlin.getOrNull
 import dev.thecodewarrior.hooked.HookedMod
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
-import dev.thecodewarrior.hooked.hook.processor.ClientHookProcessor
-import dev.thecodewarrior.hooked.hook.type.BasicHookPlayerController
-import dev.thecodewarrior.hooked.hook.type.FlightHookPlayerController
-import dev.thecodewarrior.hooked.hook.type.HookType
+import dev.thecodewarrior.hooked.hook.ClientHookProcessor
+import dev.thecodewarrior.hooked.hook.HookType
 import dev.thecodewarrior.hooked.network.HookJumpPacket
 import net.minecraft.client.settings.KeyBinding
 import net.minecraft.client.util.InputMappings

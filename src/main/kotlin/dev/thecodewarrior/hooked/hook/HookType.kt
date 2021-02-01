@@ -1,4 +1,4 @@
-package dev.thecodewarrior.hooked.hook.type
+package dev.thecodewarrior.hooked.hook
 
 import com.teamwizardry.librarianlib.core.util.loc
 import net.minecraft.entity.player.PlayerEntity
@@ -6,48 +6,39 @@ import net.minecraftforge.registries.ForgeRegistryEntry
 import net.minecraftforge.registries.IForgeRegistry
 import net.minecraftforge.registries.RegistryManager
 
-abstract class HookType: ForgeRegistryEntry<HookType>() {
+abstract class HookType(
     /**
      * The number of simultaneous hooks allowed
      */
-    abstract val count: Int
-
+    val count: Int,
     /**
      * The maximum range from impact point to player
      */
-    abstract val range: Double
-
+    val range: Double,
     /**
      * The speed of the fired hooks in m/t
      */
-    abstract val speed: Double
-
+    val speed: Double,
     /**
      * The distance from the impact point to where the chain should attach
      */
-    abstract val hookLength: Double
+    val hookLength: Double,
+    /**
+     * Whether the player can retract individual hooks by holding shift while firing
+     */
+    val allowIndividualRetraction: Boolean,
+): ForgeRegistryEntry<HookType>() {
 
     /**
      * Create a new player controller
      */
     abstract fun createController(player: PlayerEntity): HookPlayerController
 
-//    @get:SideOnly(Side.CLIENT)
-//    @delegate:Transient
-//    val renderer: HookRenderer<*, *> by lazy { initRenderer() }
-
-//    @SideOnly(Side.CLIENT)
-//    protected abstract fun initRenderer(): HookRenderer<*, *>
-
     companion object {
-        val NONE: HookType = object: HookType() {
+        val NONE: HookType = object: HookType(0, 0.0, 0.0, 0.0, false) {
             init {
                 registryName = loc("hooked:none")
             }
-            override val count: Int = 0
-            override val range: Double = 0.0
-            override val speed: Double = 0.0
-            override val hookLength: Double = 0.0
             override fun createController(player: PlayerEntity): HookPlayerController = HookPlayerController.NONE
         }
 

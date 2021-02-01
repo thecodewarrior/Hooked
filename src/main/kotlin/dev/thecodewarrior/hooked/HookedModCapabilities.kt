@@ -7,7 +7,6 @@ import com.teamwizardry.librarianlib.foundation.registration.CapabilitySpec
 import com.teamwizardry.librarianlib.foundation.registration.RegistrationManager
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.capability.IHookItem
-import dev.thecodewarrior.hooked.hook.type.BasicHookType
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraftforge.common.MinecraftForge

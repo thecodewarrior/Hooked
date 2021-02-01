@@ -1,9 +1,8 @@
-package dev.thecodewarrior.hooked.client.renderer
+package dev.thecodewarrior.hooked.hooks
 
 import com.teamwizardry.librarianlib.math.Matrix4dStack
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
-import dev.thecodewarrior.hooked.hook.type.BasicHookPlayerController
-import dev.thecodewarrior.hooked.hook.type.BasicHookType
+import dev.thecodewarrior.hooked.client.renderer.SimpleHookRenderer
 import net.minecraft.entity.player.PlayerEntity
 
 class BasicHookRenderer(type: BasicHookType): SimpleHookRenderer<BasicHookPlayerController>(type) {

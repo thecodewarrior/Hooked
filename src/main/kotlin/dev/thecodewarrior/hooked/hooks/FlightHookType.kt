@@ -1,5 +1,7 @@
-package dev.thecodewarrior.hooked.hook.type
+package dev.thecodewarrior.hooked.hooks
 
+import dev.thecodewarrior.hooked.hook.HookPlayerController
+import dev.thecodewarrior.hooked.hook.HookType
 import net.minecraft.entity.player.PlayerEntity
 
 open class FlightHookType(
@@ -7,9 +9,9 @@ open class FlightHookType(
     range: Double,
     speed: Double,
     hookLength: Double,
-    pullStrength: Double,
-    jumpBoost: Double,
-): BasicHookType(count, range, speed, hookLength, pullStrength, jumpBoost) {
+    allowIndividualRetraction: Boolean,
+    val pullStrength: Double,
+): HookType(count, range, speed, hookLength, allowIndividualRetraction) {
     override fun createController(player: PlayerEntity): HookPlayerController {
         return FlightHookPlayerController(player, this)
     }

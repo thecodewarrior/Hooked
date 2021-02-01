@@ -1,10 +1,9 @@
-package dev.thecodewarrior.hooked.hook.processor
+package dev.thecodewarrior.hooked.hook
 
 import com.teamwizardry.librarianlib.core.util.kotlin.getOrNull
 import dev.thecodewarrior.hooked.HookedMod
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.capability.IHookItem
-import dev.thecodewarrior.hooked.hook.type.HookType
 import dev.thecodewarrior.hooked.network.SyncHookDataPacket
 import dev.thecodewarrior.hooked.network.SyncIndividualHooksPacket
 import net.minecraft.entity.Entity
@@ -35,7 +34,7 @@ object ServerHookProcessor: CommonHookProcessor() {
             // they seem to think they can fire hooks
             data.serverState.forceFullSyncToClient = true
         } else {
-            if (sneaking && data.controller.allowIndividualRetraction) {
+            if (sneaking && data.type.allowIndividualRetraction) {
                 for (hook in data.hooks) {
                     if (isPointingAtHook(pos, direction, retractThreshold, hook)) {
                         hook.state = Hook.State.RETRACTING

@@ -1,16 +1,12 @@
-package dev.thecodewarrior.hooked.hook.processor
+package dev.thecodewarrior.hooked.hook
 
 import com.teamwizardry.librarianlib.core.util.Client
-import com.teamwizardry.librarianlib.math.dot
-import com.teamwizardry.librarianlib.math.minus
 import dev.thecodewarrior.hooked.HookedMod
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
-import dev.thecodewarrior.hooked.hook.type.HookType
 import dev.thecodewarrior.hooked.network.FireHookPacket
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.vector.Vector3d
 import net.minecraftforge.api.distmarker.Dist
 import net.minecraftforge.api.distmarker.OnlyIn
@@ -20,8 +16,6 @@ import net.minecraftforge.event.entity.player.PlayerEvent
 import net.minecraftforge.eventbus.api.EventPriority
 import net.minecraftforge.eventbus.api.SubscribeEvent
 import java.util.*
-import kotlin.math.acos
-import kotlin.math.cos
 
 /**
  * Processes hooks on the *logical* client.
@@ -48,7 +42,7 @@ object ClientHookProcessor: CommonHookProcessor() {
 
     fun fireHook(data: HookedPlayerData, pos: Vector3d, direction: Vector3d, sneaking: Boolean) {
         if (data.type != HookType.NONE) {
-            if(sneaking && data.controller.allowIndividualRetraction) {
+            if(sneaking && data.type.allowIndividualRetraction) {
                 for(hook in data.hooks) {
                     if(isPointingAtHook(pos, direction, retractThreshold, hook)) {
                         hook.state = Hook.State.RETRACTING

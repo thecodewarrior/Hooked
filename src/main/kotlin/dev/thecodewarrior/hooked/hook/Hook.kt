@@ -1,8 +1,7 @@
-package dev.thecodewarrior.hooked.hook.processor
+package dev.thecodewarrior.hooked.hook
 
 import com.teamwizardry.librarianlib.math.plus
 import com.teamwizardry.librarianlib.math.times
-import dev.thecodewarrior.hooked.hook.type.HookType
 import ll.dev.thecodewarrior.prism.annotation.Refract
 import ll.dev.thecodewarrior.prism.annotation.RefractClass
 import ll.dev.thecodewarrior.prism.annotation.RefractConstructor

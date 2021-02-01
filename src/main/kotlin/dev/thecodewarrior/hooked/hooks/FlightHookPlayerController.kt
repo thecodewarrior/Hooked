@@ -1,10 +1,11 @@
-package dev.thecodewarrior.hooked.hook.type
+package dev.thecodewarrior.hooked.hooks
 
 import com.teamwizardry.librarianlib.math.dot
 import com.teamwizardry.librarianlib.math.minus
 import com.teamwizardry.librarianlib.math.times
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
-import dev.thecodewarrior.hooked.hook.processor.Hook
+import dev.thecodewarrior.hooked.hook.Hook
+import dev.thecodewarrior.hooked.hook.HookPlayerController
 import dev.thecodewarrior.hooked.util.DynamicHull
 import dev.thecodewarrior.hooked.util.FadeTimer
 import dev.thecodewarrior.hooked.util.fromWaistPos
@@ -22,8 +23,6 @@ open class FlightHookPlayerController(val player: PlayerEntity, val type: Flight
      * Used on the client to control rendering the wireframe hull.
      */
     var showHullTimer: FadeTimer = FadeTimer()
-
-    override val allowIndividualRetraction: Boolean = true
 
     override fun remove() {
         disableFlight()

@@ -12,12 +12,11 @@ import com.teamwizardry.librarianlib.core.util.vec
 import com.teamwizardry.librarianlib.math.*
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.client.renderer.HookRenderer
-import dev.thecodewarrior.hooked.hook.processor.Hook
-import dev.thecodewarrior.hooked.hook.type.HookPlayerController
-import dev.thecodewarrior.hooked.hook.type.HookType
+import dev.thecodewarrior.hooked.hook.Hook
+import dev.thecodewarrior.hooked.hook.HookPlayerController
+import dev.thecodewarrior.hooked.hook.HookType
 import dev.thecodewarrior.hooked.util.getWaistPos
 import net.minecraft.client.renderer.IRenderTypeBuffer
-import net.minecraft.client.renderer.RenderType
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraftforge.client.event.RenderWorldLastEvent
 import net.minecraftforge.common.MinecraftForge

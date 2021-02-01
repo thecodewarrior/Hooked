@@ -1,6 +1,6 @@
 package dev.thecodewarrior.hooked.capability
 
-import dev.thecodewarrior.hooked.hook.type.HookType
+import dev.thecodewarrior.hooked.hook.HookType
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.common.capabilities.CapabilityInject
 

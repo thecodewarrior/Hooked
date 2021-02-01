@@ -3,7 +3,7 @@ package dev.thecodewarrior.hooked.item
 import com.teamwizardry.librarianlib.foundation.item.BaseItem
 import dev.thecodewarrior.hooked.capability.BasicHookItem
 import dev.thecodewarrior.hooked.capability.IHookItem
-import dev.thecodewarrior.hooked.hook.type.HookType
+import dev.thecodewarrior.hooked.hook.HookType
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.item.Item

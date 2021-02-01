@@ -1,4 +1,4 @@
-package dev.thecodewarrior.hooked.hook.processor
+package dev.thecodewarrior.hooked.hook
 
 import com.teamwizardry.librarianlib.core.util.block
 import com.teamwizardry.librarianlib.core.util.kotlin.getOrNull
@@ -11,8 +11,6 @@ import dev.thecodewarrior.hooked.util.getWaistPos
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.math.vector.Vector3d
 import net.minecraftforge.event.entity.player.PlayerEvent
-import net.minecraftforge.eventbus.api.EventPriority
-import net.minecraftforge.eventbus.api.SubscribeEvent
 import java.util.*
 import kotlin.math.cos
 import kotlin.math.max

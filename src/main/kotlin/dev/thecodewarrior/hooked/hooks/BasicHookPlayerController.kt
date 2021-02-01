@@ -1,9 +1,10 @@
-package dev.thecodewarrior.hooked.hook.type
+package dev.thecodewarrior.hooked.hooks
 
 import com.teamwizardry.librarianlib.core.util.vec
 import com.teamwizardry.librarianlib.math.*
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
-import dev.thecodewarrior.hooked.hook.processor.Hook
+import dev.thecodewarrior.hooked.hook.Hook
+import dev.thecodewarrior.hooked.hook.HookPlayerController
 import dev.thecodewarrior.hooked.util.fromWaistPos
 import dev.thecodewarrior.hooked.util.getWaistPos
 import net.minecraft.entity.player.PlayerEntity
@@ -11,8 +12,6 @@ import net.minecraft.util.math.vector.Vector3d
 import kotlin.math.max
 
 open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHookType): HookPlayerController() {
-    override val allowIndividualRetraction: Boolean = false
-
     override fun remove() {
         enableGravity(player)
     }

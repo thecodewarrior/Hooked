@@ -2,9 +2,10 @@ package dev.thecodewarrior.hooked.capability
 
 import com.teamwizardry.librarianlib.foundation.capability.BaseCapability
 import com.teamwizardry.librarianlib.prism.Save
-import dev.thecodewarrior.hooked.hook.processor.Hook
-import dev.thecodewarrior.hooked.hook.type.HookPlayerController
-import dev.thecodewarrior.hooked.hook.type.HookType
+import dev.thecodewarrior.hooked.hook.Hook
+import dev.thecodewarrior.hooked.hook.HookPlayerController
+import dev.thecodewarrior.hooked.hook.HookType
+import dev.thecodewarrior.hooked.util.FadeTimer
 import ll.dev.thecodewarrior.prism.annotation.Refract
 import ll.dev.thecodewarrior.prism.annotation.RefractClass
 import ll.dev.thecodewarrior.prism.annotation.RefractConstructor

@@ -1,4 +1,4 @@
-package dev.thecodewarrior.hooked.hook.type
+package dev.thecodewarrior.hooked.hook
 
 import com.teamwizardry.librarianlib.core.util.mapSrgName
 import com.teamwizardry.librarianlib.core.util.vec
@@ -8,7 +8,6 @@ import com.teamwizardry.librarianlib.math.times
 import com.teamwizardry.librarianlib.prism.SimpleSerializer
 import com.teamwizardry.librarianlib.prism.Sync
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
-import dev.thecodewarrior.hooked.hook.processor.Hook
 import ll.dev.thecodewarrior.mirror.Mirror
 import net.minecraft.entity.Entity
 import net.minecraft.entity.ai.attributes.AttributeModifier
@@ -33,7 +32,6 @@ import kotlin.math.sign
  */
 abstract class HookPlayerController: INBTSerializable<CompoundNBT> {
     private val serializer = SimpleSerializer.get(this.javaClass)
-    abstract val allowIndividualRetraction: Boolean
 
     /**
      * Called when the controller is removed so it can do any cleanup necessary.
@@ -128,7 +126,6 @@ abstract class HookPlayerController: INBTSerializable<CompoundNBT> {
 
     companion object {
         val NONE: HookPlayerController = object: HookPlayerController() {
-            override val allowIndividualRetraction: Boolean = false
             override fun update(player: PlayerEntity, hooks: List<Hook>, jumpState: HookedPlayerData.JumpState?) {}
         }
 

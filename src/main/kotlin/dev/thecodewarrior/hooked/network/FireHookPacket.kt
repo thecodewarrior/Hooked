@@ -4,7 +4,7 @@ import com.teamwizardry.librarianlib.core.util.kotlin.getOrNull
 import com.teamwizardry.librarianlib.courier.CourierPacket
 import dev.thecodewarrior.hooked.HookedMod
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
-import dev.thecodewarrior.hooked.hook.processor.ServerHookProcessor
+import dev.thecodewarrior.hooked.hook.ServerHookProcessor
 import ll.dev.thecodewarrior.prism.annotation.Refract
 import ll.dev.thecodewarrior.prism.annotation.RefractClass
 import ll.dev.thecodewarrior.prism.annotation.RefractConstructor

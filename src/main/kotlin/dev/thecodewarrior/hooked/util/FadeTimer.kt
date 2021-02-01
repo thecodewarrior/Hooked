@@ -21,4 +21,9 @@ class FadeTimer {
         this.countdown = duration
         this.duration = duration
     }
+
+    fun reset() {
+        this.countdown = 0
+        this.duration = 0
+    }
 }
