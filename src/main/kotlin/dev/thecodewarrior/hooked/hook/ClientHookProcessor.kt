@@ -31,12 +31,13 @@ object ClientHookProcessor: CommonHookProcessor() {
     fun syncHook(data: HookedPlayerData, hook: Hook) {
         if(hook.state == Hook.State.REMOVED) {
             data.hooks.removeIf { it.uuid == hook.uuid }
-        }
-        val existingIndex = data.hooks.indexOfFirst { it.uuid == hook.uuid }
-        if(existingIndex == -1) {
-            data.hooks.add(hook)
         } else {
-            data.hooks[existingIndex] = hook
+            val existingIndex = data.hooks.indexOfFirst { it.uuid == hook.uuid }
+            if (existingIndex == -1) {
+                data.hooks.add(hook)
+            } else {
+                data.hooks[existingIndex] = hook
+            }
         }
     }
 
@@ -46,6 +47,7 @@ object ClientHookProcessor: CommonHookProcessor() {
                 for(hook in data.hooks) {
                     if(isPointingAtHook(pos, direction, retractThreshold, hook)) {
                         hook.state = Hook.State.RETRACTING
+                        data.serverState.dirtyHooks.add(hook)
                     }
                 }
             } else {
@@ -82,9 +84,11 @@ object ClientHookProcessor: CommonHookProcessor() {
 
         // only apply the controller for our own player
         if(e.player == Client.player) {
-            data.controller.update(e.player, data.hooks, data.jumpState)
+            data.controller.update(e.player, data.hooks, data.serverState.dirtyHooks, data.jumpState)
             data.jumpState = null
         }
+
+        data.serverState.dirtyHooks.clear()
     }
 
     override fun onHookStateChange(player: PlayerEntity, data: HookedPlayerData, hook: Hook) {

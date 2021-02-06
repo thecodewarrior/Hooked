@@ -49,7 +49,7 @@ class HookedPlayerData(val player: PlayerEntity): BaseCapability() {
      * State that is only ever used on the *logical* server. This includes things like syncing status.
      */
     class ServerState {
-        val dirtyHooks: MutableList<Hook> = mutableListOf()
+        val dirtyHooks: MutableSet<Hook> = mutableSetOf()
         var forceFullSyncToClient: Boolean = false
         var forceFullSyncToOthers: Boolean = false
     }

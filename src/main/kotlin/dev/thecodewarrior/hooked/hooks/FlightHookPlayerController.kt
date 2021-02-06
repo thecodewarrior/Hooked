@@ -28,7 +28,12 @@ open class FlightHookPlayerController(val player: PlayerEntity, val type: Flight
         disableFlight()
     }
 
-    override fun update(player: PlayerEntity, hooks: List<Hook>, jumpState: HookedPlayerData.JumpState?) {
+    override fun update(
+        player: PlayerEntity,
+        hooks: List<Hook>,
+        dirtyHooks: MutableSet<Hook>,
+        jumpState: HookedPlayerData.JumpState?
+    ) {
         showHullTimer.tick()
 
         fixExternalFlight()
@@ -36,6 +41,7 @@ open class FlightHookPlayerController(val player: PlayerEntity, val type: Flight
         if(jumpState != null && jumpState.doubleJump && jumpState.sneaking) {
             hooks.forEach {
                 it.state = Hook.State.RETRACTING
+                dirtyHooks.add(it)
             }
         }
 

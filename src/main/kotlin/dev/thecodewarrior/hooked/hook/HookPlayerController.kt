@@ -41,7 +41,7 @@ abstract class HookPlayerController: INBTSerializable<CompoundNBT> {
     /**
      * Called after the hook processor updates the hooks
      */
-    abstract fun update(player: PlayerEntity, hooks: List<Hook>, jumpState: HookedPlayerData.JumpState?)
+    abstract fun update(player: PlayerEntity, hooks: List<Hook>, dirtyHooks: MutableSet<Hook>, jumpState: HookedPlayerData.JumpState?)
 
     override fun serializeNBT(): CompoundNBT {
         return serializer.createTag(this, Sync::class.java)
@@ -126,7 +126,12 @@ abstract class HookPlayerController: INBTSerializable<CompoundNBT> {
 
     companion object {
         val NONE: HookPlayerController = object: HookPlayerController() {
-            override fun update(player: PlayerEntity, hooks: List<Hook>, jumpState: HookedPlayerData.JumpState?) {}
+            override fun update(
+                player: PlayerEntity,
+                hooks: List<Hook>,
+                dirtyHooks: MutableSet<Hook>,
+                jumpState: HookedPlayerData.JumpState?
+            ) {}
         }
 
         private val floatingTickCount = Mirror.reflectClass<ServerPlayNetHandler>()

@@ -66,7 +66,7 @@ object ServerHookProcessor: CommonHookProcessor() {
         }
 
         applyHookMotion(e.player, data)
-        data.controller.update(e.player, data.hooks, data.jumpState)
+        data.controller.update(e.player, data.hooks, data.serverState.dirtyHooks, data.jumpState)
         data.jumpState = null
 
         if (data.serverState.forceFullSyncToClient || data.serverState.dirtyHooks.isNotEmpty()) {

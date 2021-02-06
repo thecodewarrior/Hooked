@@ -16,7 +16,12 @@ open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHo
         enableGravity(player)
     }
 
-    override fun update(player: PlayerEntity, hooks: List<Hook>, jumpState: HookedPlayerData.JumpState?) {
+    override fun update(
+        player: PlayerEntity,
+        hooks: List<Hook>,
+        dirtyHooks: MutableSet<Hook>,
+        jumpState: HookedPlayerData.JumpState?
+    ) {
         var plantedCount = 0
         var targetPoint = Vector3d.ZERO
         hooks.forEach { hook ->
@@ -30,6 +35,7 @@ open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHo
             if (jumpState != null) { // even if none are planted, retract any that are extending
                 hooks.forEach {
                     it.state = Hook.State.RETRACTING
+                    dirtyHooks.add(it)
                 }
             }
             return
@@ -65,6 +71,7 @@ open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHo
             }
             hooks.forEach {
                 it.state = Hook.State.RETRACTING
+                dirtyHooks.add(it)
             }
             return
         }

@@ -1,6 +1,7 @@
 package dev.thecodewarrior.hooked
 
 import com.teamwizardry.librarianlib.core.util.loc
+import com.teamwizardry.librarianlib.core.util.sided.SidedRunnable
 import com.teamwizardry.librarianlib.foundation.BaseMod
 import com.teamwizardry.librarianlib.foundation.util.TagWrappers
 import dev.thecodewarrior.hooked.client.HookRenderManager
@@ -17,6 +18,8 @@ import dev.thecodewarrior.hooked.network.FireHookPacket
 import dev.thecodewarrior.hooked.network.SyncHookDataPacket
 import dev.thecodewarrior.hooked.network.SyncIndividualHooksPacket
 import net.minecraft.inventory.container.PlayerContainer
+import net.minecraftforge.api.distmarker.Dist
+import net.minecraftforge.api.distmarker.OnlyIn
 import net.minecraftforge.client.event.TextureStitchEvent
 import net.minecraftforge.eventbus.api.SubscribeEvent
 import net.minecraftforge.fml.InterModComms
@@ -70,6 +73,7 @@ object HookedMod: BaseMod(true) {
         }
     }
 
+    @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     fun textureStitch(e: TextureStitchEvent.Pre) {
         if(e.map.textureLocation == PlayerContainer.LOCATION_BLOCKS_TEXTURE) {
