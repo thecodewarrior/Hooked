@@ -43,8 +43,6 @@ class HookedPlayerData(val player: PlayerEntity): BaseCapability() {
         @Refract val sneaking: Boolean
     )
 
-    var jumpState: JumpState? = null
-
     /**
      * State that is only ever used on the *logical* server. This includes things like syncing status.
      */

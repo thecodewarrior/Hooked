@@ -51,6 +51,12 @@ object ServerHookProcessor: CommonHookProcessor() {
         }
     }
 
+    fun jump(data: HookedPlayerData, doubleJump: Boolean, sneaking: Boolean) {
+        if (data.type != HookType.NONE) {
+            data.controller.jump(data.player, data.hooks, data.serverState.dirtyHooks, doubleJump, sneaking)
+        }
+    }
+
     @SubscribeEvent
     fun playerPostTick(e: TickEvent.PlayerTickEvent) {
         if (!isServer(e.player)) return
@@ -66,8 +72,7 @@ object ServerHookProcessor: CommonHookProcessor() {
         }
 
         applyHookMotion(e.player, data)
-        data.controller.update(e.player, data.hooks, data.serverState.dirtyHooks, data.jumpState)
-        data.jumpState = null
+        data.controller.update(e.player, data.hooks, data.serverState.dirtyHooks)
 
         if (data.serverState.forceFullSyncToClient || data.serverState.dirtyHooks.isNotEmpty()) {
             val serverPlayer = e.player as ServerPlayerEntity // fail-fast

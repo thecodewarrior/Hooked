@@ -3,7 +3,6 @@ package dev.thecodewarrior.hooked.hooks
 import com.teamwizardry.librarianlib.math.dot
 import com.teamwizardry.librarianlib.math.minus
 import com.teamwizardry.librarianlib.math.times
-import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.hook.Hook
 import dev.thecodewarrior.hooked.hook.HookPlayerController
 import dev.thecodewarrior.hooked.util.DynamicHull
@@ -24,26 +23,45 @@ open class FlightHookPlayerController(val player: PlayerEntity, val type: Flight
      */
     var showHullTimer: FadeTimer = FadeTimer()
 
+    private val allowedFlightRange = 0.5
+
     override fun remove() {
         disableFlight()
     }
 
-    override fun update(
+    override fun jump(
         player: PlayerEntity,
         hooks: List<Hook>,
         dirtyHooks: MutableSet<Hook>,
-        jumpState: HookedPlayerData.JumpState?
+        doubleJump: Boolean,
+        sneaking: Boolean
     ) {
-        showHullTimer.tick()
-
-        fixExternalFlight()
-
-        if(jumpState != null && jumpState.doubleJump && jumpState.sneaking) {
+        if(doubleJump && sneaking) {
             hooks.forEach {
                 it.state = Hook.State.RETRACTING
                 dirtyHooks.add(it)
             }
         }
+
+        if(doubleJump && hooks.any { it.state == Hook.State.PLANTED }) {
+            val waist = player.getWaistPos()
+            val constrained = hull.constrain(waist)
+            val allowFlight = waist.squareDistanceTo(constrained.position) < allowedFlightRange * allowedFlightRange
+
+            if(!allowFlight) {
+                showHullTimer.start(20)
+            }
+        }
+    }
+
+    override fun update(
+        player: PlayerEntity,
+        hooks: List<Hook>,
+        dirtyHooks: MutableSet<Hook>
+    ) {
+        showHullTimer.tick()
+
+        fixExternalFlight()
 
         if(stopFallDamage) {
             player.fallDistance = 0f
@@ -70,7 +88,6 @@ open class FlightHookPlayerController(val player: PlayerEntity, val type: Flight
 
         // if the player isn't flying, allow or disallow flight based upon whether they're inside the hull
         if(!player.abilities.isFlying) {
-            val allowedFlightRange = 0.5
             val allowFlight = waist.squareDistanceTo(constrained.position) < allowedFlightRange * allowedFlightRange
 
             if(allowFlight != isFlightActive) {
@@ -84,10 +101,6 @@ open class FlightHookPlayerController(val player: PlayerEntity, val type: Flight
                 enableFlight()
             } else {
                 disableFlight()
-            }
-
-            if(!allowFlight && jumpState?.doubleJump == true) {
-                showHullTimer.start(20)
             }
         }
 

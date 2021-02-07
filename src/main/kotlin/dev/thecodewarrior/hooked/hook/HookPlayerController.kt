@@ -7,7 +7,6 @@ import com.teamwizardry.librarianlib.math.plus
 import com.teamwizardry.librarianlib.math.times
 import com.teamwizardry.librarianlib.prism.SimpleSerializer
 import com.teamwizardry.librarianlib.prism.Sync
-import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import ll.dev.thecodewarrior.mirror.Mirror
 import net.minecraft.entity.Entity
 import net.minecraft.entity.ai.attributes.AttributeModifier
@@ -38,10 +37,12 @@ abstract class HookPlayerController: INBTSerializable<CompoundNBT> {
      */
     open fun remove() {}
 
+    abstract fun jump(player: PlayerEntity, hooks: List<Hook>, dirtyHooks: MutableSet<Hook>, doubleJump: Boolean, sneaking: Boolean)
+
     /**
      * Called after the hook processor updates the hooks
      */
-    abstract fun update(player: PlayerEntity, hooks: List<Hook>, dirtyHooks: MutableSet<Hook>, jumpState: HookedPlayerData.JumpState?)
+    abstract fun update(player: PlayerEntity, hooks: List<Hook>, dirtyHooks: MutableSet<Hook>)
 
     override fun serializeNBT(): CompoundNBT {
         return serializer.createTag(this, Sync::class.java)
@@ -126,11 +127,18 @@ abstract class HookPlayerController: INBTSerializable<CompoundNBT> {
 
     companion object {
         val NONE: HookPlayerController = object: HookPlayerController() {
-            override fun update(
+            override fun jump(
                 player: PlayerEntity,
                 hooks: List<Hook>,
                 dirtyHooks: MutableSet<Hook>,
-                jumpState: HookedPlayerData.JumpState?
+                doubleJump: Boolean,
+                sneaking: Boolean
+            ) {}
+
+            override fun update(
+                player: PlayerEntity,
+                hooks: List<Hook>,
+                dirtyHooks: MutableSet<Hook>
             ) {}
         }
 

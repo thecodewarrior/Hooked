@@ -4,6 +4,7 @@ import com.teamwizardry.librarianlib.core.util.Client
 import dev.thecodewarrior.hooked.HookedMod
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.network.FireHookPacket
+import dev.thecodewarrior.hooked.network.HookJumpPacket
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.math.BlockPos
@@ -73,6 +74,16 @@ object ClientHookProcessor: CommonHookProcessor() {
         }
     }
 
+    fun jump(data: HookedPlayerData, doubleJump: Boolean, sneaking: Boolean) {
+        if (data.type != HookType.NONE) {
+            data.controller.jump(data.player, data.hooks, data.serverState.dirtyHooks, doubleJump, sneaking)
+
+            HookedMod.courier.sendToServer(
+                HookJumpPacket(doubleJump, sneaking)
+            )
+        }
+    }
+
     @SubscribeEvent
     fun playerPostTick(e: TickEvent.PlayerTickEvent) {
         if (!isClient(e.player)) return
@@ -84,8 +95,7 @@ object ClientHookProcessor: CommonHookProcessor() {
 
         // only apply the controller for our own player
         if(e.player == Client.player) {
-            data.controller.update(e.player, data.hooks, data.serverState.dirtyHooks, data.jumpState)
-            data.jumpState = null
+            data.controller.update(e.player, data.hooks, data.serverState.dirtyHooks)
         }
 
         data.serverState.dirtyHooks.clear()

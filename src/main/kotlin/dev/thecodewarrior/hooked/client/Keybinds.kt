@@ -51,12 +51,7 @@ object Keybinds {
             }
 
             if (jumpPressed) {
-                val jumpState = HookedPlayerData.JumpState(
-                    doubleJump = doubleJumpTimer != 0,
-                    sneaking = sneakPressed
-                )
-                data.jumpState = jumpState
-                HookedMod.courier.sendToServer(HookJumpPacket(jumpState))
+                ClientHookProcessor.jump(data, doubleJumpTimer != 0, sneakPressed)
 
                 if (doubleJumpTimer == 0) {
                     doubleJumpTimer = 7
