@@ -17,5 +17,10 @@
   "key.category.hooked": "Hooked",
   "key.hooked.fire": "Fire Hook",
   "itemGroup.hooked": "Hooked",
-  "curios.identifier.hooked": "Grappling Hook"
+  "curios.identifier.hooked": "Grappling Hook",
+  "hooked.subtitle.fire_hook": "Grappling hook fires",
+  "hooked.subtitle.retract_hook": "Grappling hook retracts",
+  "hooked.subtitle.hook_hit": "Grappling hook hits",
+  "hooked.subtitle.hook_miss": "Grappling hook misses",
+  "hooked.subtitle.hook_dislodge": "Grappling hook dislodges"
 }

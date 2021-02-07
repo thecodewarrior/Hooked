@@ -2,6 +2,7 @@ package dev.thecodewarrior.hooked.hook
 
 import com.teamwizardry.librarianlib.core.util.kotlin.getOrNull
 import dev.thecodewarrior.hooked.HookedMod
+import dev.thecodewarrior.hooked.HookedModSounds
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.capability.IHookItem
 import dev.thecodewarrior.hooked.network.SyncHookDataPacket
@@ -9,6 +10,7 @@ import dev.thecodewarrior.hooked.network.SyncIndividualHooksPacket
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.ServerPlayerEntity
+import net.minecraft.util.SoundEvent
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.vector.Vector3d
 import net.minecraftforge.common.MinecraftForge
@@ -27,6 +29,23 @@ import java.util.*
 object ServerHookProcessor: CommonHookProcessor() {
     init {
         MinecraftForge.EVENT_BUS.register(this)
+    }
+
+    class Delegate(val data: HookedPlayerData): HookControllerDelegate {
+        override val player: PlayerEntity
+            get() = data.player
+        override val hooks: List<Hook>
+            get() = data.hooks
+
+        override fun markDirty(hook: Hook) {
+            data.serverState.dirtyHooks.add(hook)
+        }
+
+        override fun enqueueSound(sound: SoundEvent) {
+        }
+    }
+
+    override fun enqueueSound(sound: SoundEvent) {
     }
 
     fun fireHook(data: HookedPlayerData, pos: Vector3d, direction: Vector3d, sneaking: Boolean) {
@@ -53,7 +72,7 @@ object ServerHookProcessor: CommonHookProcessor() {
 
     fun jump(data: HookedPlayerData, doubleJump: Boolean, sneaking: Boolean) {
         if (data.type != HookType.NONE) {
-            data.controller.jump(data.player, data.hooks, data.serverState.dirtyHooks, doubleJump, sneaking)
+            data.controller.jump(Delegate(data), doubleJump, sneaking)
         }
     }
 
@@ -72,7 +91,7 @@ object ServerHookProcessor: CommonHookProcessor() {
         }
 
         applyHookMotion(e.player, data)
-        data.controller.update(e.player, data.hooks, data.serverState.dirtyHooks)
+        data.controller.update(Delegate(data))
 
         if (data.serverState.forceFullSyncToClient || data.serverState.dirtyHooks.isNotEmpty()) {
             val serverPlayer = e.player as ServerPlayerEntity // fail-fast

@@ -37,12 +37,6 @@ class HookedPlayerData(val player: PlayerEntity): BaseCapability() {
 
     var controller: HookPlayerController = HookPlayerController.NONE
 
-    @RefractClass
-    data class JumpState @RefractConstructor constructor(
-        @Refract val doubleJump: Boolean,
-        @Refract val sneaking: Boolean
-    )
-
     /**
      * State that is only ever used on the *logical* server. This includes things like syncing status.
      */

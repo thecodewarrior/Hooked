@@ -39,6 +39,7 @@ object HookedMod: BaseMod(true) {
     init {
         HookedModItems.registerItems(registrationManager)
         HookedModCapabilities.registerCapabilities(registrationManager)
+        HookedModSounds.registerSounds(registrationManager)
 
         eventBus.register(HookedModHookTypes)
 

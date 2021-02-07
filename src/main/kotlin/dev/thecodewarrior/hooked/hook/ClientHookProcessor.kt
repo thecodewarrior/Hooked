@@ -2,11 +2,13 @@ package dev.thecodewarrior.hooked.hook
 
 import com.teamwizardry.librarianlib.core.util.Client
 import dev.thecodewarrior.hooked.HookedMod
+import dev.thecodewarrior.hooked.HookedModSounds
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.network.FireHookPacket
 import dev.thecodewarrior.hooked.network.HookJumpPacket
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.util.SoundEvent
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.vector.Vector3d
 import net.minecraftforge.api.distmarker.Dist
@@ -29,6 +31,35 @@ object ClientHookProcessor: CommonHookProcessor() {
         MinecraftForge.EVENT_BUS.register(this)
     }
 
+    private val soundQueue = mutableSetOf<SoundEvent>()
+
+    class Delegate(val data: HookedPlayerData): HookControllerDelegate {
+        override val player: PlayerEntity
+            get() = data.player
+        override val hooks: List<Hook>
+            get() = data.hooks
+
+        override fun markDirty(hook: Hook) {
+            // nop on the client
+        }
+
+        override fun enqueueSound(sound: SoundEvent) {
+            soundQueue.add(sound)
+        }
+    }
+
+
+    fun playSoundQueue(player: PlayerEntity) {
+        for(sound in soundQueue) {
+            player.playSound(sound, 1f, 1f)
+        }
+        soundQueue.clear()
+    }
+
+    override fun enqueueSound(sound: SoundEvent) {
+        soundQueue.add(sound)
+    }
+
     fun syncHook(data: HookedPlayerData, hook: Hook) {
         if(hook.state == Hook.State.REMOVED) {
             data.hooks.removeIf { it.uuid == hook.uuid }
@@ -49,6 +80,7 @@ object ClientHookProcessor: CommonHookProcessor() {
                     if(isPointingAtHook(pos, direction, retractThreshold, hook)) {
                         hook.state = Hook.State.RETRACTING
                         data.serverState.dirtyHooks.add(hook)
+                        enqueueSound(HookedModSounds.retractHook)
                     }
                 }
             } else {
@@ -62,6 +94,7 @@ object ClientHookProcessor: CommonHookProcessor() {
                         BlockPos.ZERO
                     )
                 )
+                enqueueSound(HookedModSounds.fireHook)
             }
 
             HookedMod.courier.sendToServer(
@@ -71,12 +104,14 @@ object ClientHookProcessor: CommonHookProcessor() {
                     sneaking
                 )
             )
+            playSoundQueue(data.player)
         }
     }
 
     fun jump(data: HookedPlayerData, doubleJump: Boolean, sneaking: Boolean) {
         if (data.type != HookType.NONE) {
-            data.controller.jump(data.player, data.hooks, data.serverState.dirtyHooks, doubleJump, sneaking)
+            data.controller.jump(Delegate(data), doubleJump, sneaking)
+            playSoundQueue(data.player)
 
             HookedMod.courier.sendToServer(
                 HookJumpPacket(doubleJump, sneaking)
@@ -95,7 +130,10 @@ object ClientHookProcessor: CommonHookProcessor() {
 
         // only apply the controller for our own player
         if(e.player == Client.player) {
-            data.controller.update(e.player, data.hooks, data.serverState.dirtyHooks)
+            data.controller.update(Delegate(data))
+            playSoundQueue(data.player)
+        } else {
+            soundQueue.clear()
         }
 
         data.serverState.dirtyHooks.clear()

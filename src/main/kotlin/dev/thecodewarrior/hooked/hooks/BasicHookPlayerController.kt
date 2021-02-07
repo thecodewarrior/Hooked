@@ -2,7 +2,9 @@ package dev.thecodewarrior.hooked.hooks
 
 import com.teamwizardry.librarianlib.core.util.vec
 import com.teamwizardry.librarianlib.math.*
+import dev.thecodewarrior.hooked.HookedModSounds
 import dev.thecodewarrior.hooked.hook.Hook
+import dev.thecodewarrior.hooked.hook.HookControllerDelegate
 import dev.thecodewarrior.hooked.hook.HookPlayerController
 import dev.thecodewarrior.hooked.util.fromWaistPos
 import dev.thecodewarrior.hooked.util.getWaistPos
@@ -16,18 +18,16 @@ open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHo
     }
 
     override fun jump(
-        player: PlayerEntity,
-        hooks: List<Hook>,
-        dirtyHooks: MutableSet<Hook>,
+        delegate: HookControllerDelegate,
         doubleJump: Boolean,
         sneaking: Boolean
     ) {
         val waist = player.getWaistPos()
-        val deltaPos = getTargetPoint(hooks) - waist
+        val deltaPos = getTargetPoint(delegate.hooks) - waist
         val deltaLen = deltaPos.length()
         val deltaNormal = deltaPos / deltaLen
 
-        if (hooks.any { it.state == Hook.State.PLANTED }) {
+        if (delegate.hooks.any { it.state == Hook.State.PLANTED }) {
             val movementTowardPos = if (deltaPos == Vector3d.ZERO) 0.0 else player.motion dot deltaNormal
 
             // slow enough that we are likely to be stuck, or close enough to warrant a premature jump
@@ -44,20 +44,17 @@ open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHo
                 // give the player a boost
                 player.motion += deltaNormal * (type.pullStrength * 0.2)
             }
+            delegate.enqueueSound(HookedModSounds.retractHook)
         }
 
-        hooks.forEach {
+        delegate.hooks.forEach {
             it.state = Hook.State.RETRACTING
-            dirtyHooks.add(it)
+            delegate.markDirty(it)
         }
     }
 
-    override fun update(
-        player: PlayerEntity,
-        hooks: List<Hook>,
-        dirtyHooks: MutableSet<Hook>
-    ) {
-        if (hooks.none { it.state == Hook.State.PLANTED }) {
+    override fun update(delegate: HookControllerDelegate) {
+        if (delegate.hooks.none { it.state == Hook.State.PLANTED }) {
             enableGravity(player)
             return
         }
@@ -67,7 +64,7 @@ open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHo
         player.fallDistance = 0f
         clearFlyingKickTimer(player)
 
-        applyRestoringForce(player, player.fromWaistPos(getTargetPoint(hooks)), type.pullStrength)
+        applyRestoringForce(player, player.fromWaistPos(getTargetPoint(delegate.hooks)), type.pullStrength)
     }
 
     private fun getTargetPoint(hooks: List<Hook>): Vector3d {

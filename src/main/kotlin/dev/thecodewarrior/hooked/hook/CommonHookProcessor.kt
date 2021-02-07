@@ -6,9 +6,11 @@ import com.teamwizardry.librarianlib.core.util.kotlin.inconceivable
 import com.teamwizardry.librarianlib.etcetera.Raycaster
 import com.teamwizardry.librarianlib.math.*
 import dev.thecodewarrior.hooked.HookedMod
+import dev.thecodewarrior.hooked.HookedModSounds
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.util.getWaistPos
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.util.SoundEvent
 import net.minecraft.util.math.vector.Vector3d
 import net.minecraftforge.event.entity.player.PlayerEvent
 import java.util.*
@@ -46,6 +48,7 @@ abstract class CommonHookProcessor {
         }
     }
 
+    abstract fun enqueueSound(sound: SoundEvent)
     abstract fun onHookStateChange(player: PlayerEntity, data: HookedPlayerData, hook: Hook)
 
     protected fun getHookData(player: PlayerEntity): HookedPlayerData? {
@@ -113,12 +116,14 @@ abstract class CommonHookProcessor {
                     hook.state = Hook.State.PLANTED
                     hook.block = block(raycaster.blockX, raycaster.blockY, raycaster.blockZ)
                     onHookStateChange(player, data, hook)
+                    enqueueSound(HookedModSounds.hookHit)
                 }
                 Raycaster.HitType.NONE -> {
                     // if we reached max extension, transition to the retracting state
                     if (distanceLeft <= data.type.speed) {
                         hook.state = Hook.State.RETRACTING
                         onHookStateChange(player, data, hook)
+                        enqueueSound(HookedModSounds.hookMiss)
                     }
                 }
                 else -> {
@@ -126,6 +131,7 @@ abstract class CommonHookProcessor {
                     inconceivable("Raycast only included blocks but returned non-block hit type ${raycaster.hitType}")
                 }
             }
+            raycaster.reset()
         }
     }
 
@@ -142,6 +148,7 @@ abstract class CommonHookProcessor {
             ) {
                 hook.state = Hook.State.RETRACTING
                 onHookStateChange(player, data, hook)
+                enqueueSound(HookedModSounds.hookDislodge)
             }
         }
         var plantedCount = 0
@@ -152,6 +159,7 @@ abstract class CommonHookProcessor {
                 if(plantedCount > data.type.count) {
                     hook.state = Hook.State.RETRACTING
                     onHookStateChange(player, data, hook)
+                    enqueueSound(HookedModSounds.hookDislodge)
                 }
             }
         }

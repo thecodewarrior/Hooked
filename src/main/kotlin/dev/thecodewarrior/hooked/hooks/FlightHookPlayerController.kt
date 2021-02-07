@@ -3,7 +3,9 @@ package dev.thecodewarrior.hooked.hooks
 import com.teamwizardry.librarianlib.math.dot
 import com.teamwizardry.librarianlib.math.minus
 import com.teamwizardry.librarianlib.math.times
+import dev.thecodewarrior.hooked.HookedModSounds
 import dev.thecodewarrior.hooked.hook.Hook
+import dev.thecodewarrior.hooked.hook.HookControllerDelegate
 import dev.thecodewarrior.hooked.hook.HookPlayerController
 import dev.thecodewarrior.hooked.util.DynamicHull
 import dev.thecodewarrior.hooked.util.FadeTimer
@@ -30,20 +32,20 @@ open class FlightHookPlayerController(val player: PlayerEntity, val type: Flight
     }
 
     override fun jump(
-        player: PlayerEntity,
-        hooks: List<Hook>,
-        dirtyHooks: MutableSet<Hook>,
+        delegate: HookControllerDelegate,
         doubleJump: Boolean,
         sneaking: Boolean
     ) {
         if(doubleJump && sneaking) {
-            hooks.forEach {
+            if(delegate.hooks.any { it.state == Hook.State.PLANTED })
+                delegate.enqueueSound(HookedModSounds.retractHook)
+            delegate.hooks.forEach {
                 it.state = Hook.State.RETRACTING
-                dirtyHooks.add(it)
+                delegate.markDirty(it)
             }
         }
 
-        if(doubleJump && hooks.any { it.state == Hook.State.PLANTED }) {
+        if(doubleJump && delegate.hooks.any { it.state == Hook.State.PLANTED }) {
             val waist = player.getWaistPos()
             val constrained = hull.constrain(waist)
             val allowFlight = waist.squareDistanceTo(constrained.position) < allowedFlightRange * allowedFlightRange
@@ -55,9 +57,7 @@ open class FlightHookPlayerController(val player: PlayerEntity, val type: Flight
     }
 
     override fun update(
-        player: PlayerEntity,
-        hooks: List<Hook>,
-        dirtyHooks: MutableSet<Hook>
+        delegate: HookControllerDelegate
     ) {
         showHullTimer.tick()
 
@@ -70,7 +70,7 @@ open class FlightHookPlayerController(val player: PlayerEntity, val type: Flight
             stopFallDamage = false
         }
 
-        val planted = hooks.filter { it.state == Hook.State.PLANTED }
+        val planted = delegate.hooks.filter { it.state == Hook.State.PLANTED }
 
         // When only one hook is planted we don't do any creative flight and fall back to the basic behavior
         if (planted.size < 2) {
