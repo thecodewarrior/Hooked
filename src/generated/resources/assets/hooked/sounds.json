@@ -2,7 +2,7 @@
   "fire_hook": {
     "subtitle": "hooked.subtitle.fire_hook",
     "sounds": [
-      "minecraft:entity/bobber/castfast"
+      "minecraft:random/bow"
     ]
   },
   "retract_hook": {

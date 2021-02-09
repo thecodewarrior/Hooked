@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "hooked:diamond_hook"
+    ]
+  },
+  "criteria": {
+    "has_iron_hook": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "hooked:iron_hook"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "hooked:diamond_hook"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_iron_hook",
+      "has_the_recipe"
+    ]
+  ]
+}

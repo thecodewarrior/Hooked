@@ -40,6 +40,7 @@ object HookedMod: BaseMod(true) {
         HookedModItems.registerItems(registrationManager)
         HookedModCapabilities.registerCapabilities(registrationManager)
         HookedModSounds.registerSounds(registrationManager)
+        registrationManager.datagen.add(HookedModRecipes)
 
         eventBus.register(HookedModHookTypes)
 

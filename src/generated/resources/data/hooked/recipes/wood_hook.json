@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "TTP",
+    " ST",
+    "S T"
+  ],
+  "key": {
+    "T": {
+      "tag": "forge:rods/wooden"
+    },
+    "P": {
+      "item": "minecraft:wooden_pickaxe"
+    },
+    "S": {
+      "tag": "forge:string"
+    }
+  },
+  "result": {
+    "item": "hooked:wood_hook"
+  }
+}

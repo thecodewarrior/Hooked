@@ -116,7 +116,11 @@ abstract class CommonHookProcessor {
                     hook.state = Hook.State.PLANTED
                     hook.block = block(raycaster.blockX, raycaster.blockY, raycaster.blockZ)
                     onHookStateChange(player, data, hook)
-                    enqueueSound(HookedModSounds.hookHit)
+//                    enqueueSound(HookedModSounds.hookHit)
+                    enqueueSound(
+                        player.world.getBlockState(block(raycaster.blockX, raycaster.blockY, raycaster.blockZ))
+                            .soundType.hitSound
+                    )
                 }
                 Raycaster.HitType.NONE -> {
                     // if we reached max extension, transition to the retracting state

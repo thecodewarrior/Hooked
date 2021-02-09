@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " DD",
+    " HD",
+    "D  "
+  ],
+  "key": {
+    "D": {
+      "tag": "forge:gems/diamond"
+    },
+    "H": {
+      "item": "hooked:iron_hook"
+    }
+  },
+  "result": {
+    "item": "hooked:diamond_hook"
+  }
+}

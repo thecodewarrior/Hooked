@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "PDB",
+    " HD",
+    "C P"
+  ],
+  "key": {
+    "P": {
+      "item": "minecraft:piston"
+    },
+    "D": {
+      "tag": "forge:dusts/redstone"
+    },
+    "B": {
+      "item": "minecraft:redstone_block"
+    },
+    "H": {
+      "item": "hooked:diamond_hook"
+    },
+    "C": {
+      "item": "minecraft:comparator"
+    }
+  },
+  "result": {
+    "item": "hooked:red_hook"
+  }
+}
