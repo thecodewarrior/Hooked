@@ -29,6 +29,8 @@ abstract class HookType(
     val allowIndividualRetraction: Boolean,
 ): ForgeRegistryEntry<HookType>() {
 
+    abstract val translationBase: String
+
     /**
      * Create a new player controller
      */
@@ -39,6 +41,8 @@ abstract class HookType(
             init {
                 registryName = loc("hooked:none")
             }
+
+            override val translationBase: String = "hooked.controller.none"
             override fun createController(player: PlayerEntity): HookPlayerController = HookPlayerController.NONE
         }
 

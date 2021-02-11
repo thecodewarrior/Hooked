@@ -1,8 +1,10 @@
 package dev.thecodewarrior.hooked.item
 
+import com.teamwizardry.librarianlib.core.util.sided.SidedRunnable
 import com.teamwizardry.librarianlib.foundation.item.BaseItem
 import dev.thecodewarrior.hooked.capability.BasicHookItem
 import dev.thecodewarrior.hooked.capability.IHookItem
+import dev.thecodewarrior.hooked.client.Keybinds
 import dev.thecodewarrior.hooked.hook.HookType
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.util.ITooltipFlag
@@ -11,6 +13,7 @@ import net.minecraft.item.ItemStack
 import net.minecraft.nbt.CompoundNBT
 import net.minecraft.util.Direction
 import net.minecraft.util.text.ITextComponent
+import net.minecraft.util.text.StringTextComponent
 import net.minecraft.util.text.TranslationTextComponent
 import net.minecraft.world.World
 import net.minecraftforge.common.capabilities.Capability
@@ -34,10 +37,15 @@ class HookItem(properties: Properties, val type: HookType) : BaseItem(properties
         tooltip: MutableList<ITextComponent>,
         flagIn: ITooltipFlag
     ) {
+        tooltip.add(TranslationTextComponent("$defaultTranslationKey.tip"))
         if(Screen.hasShiftDown()) {
-            tooltip.add(TranslationTextComponent("$defaultTranslationKey.tip.detail"))
+            var keyName: ITextComponent = StringTextComponent("n/a")
+            SidedRunnable.client {
+                keyName = Keybinds.fireKey.func_238171_j_()
+            }
+            tooltip.add(TranslationTextComponent("${type.translationBase}.tooltip.controls", keyName))
         } else {
-            tooltip.add(TranslationTextComponent("$defaultTranslationKey.tip"))
+            tooltip.add(TranslationTextComponent("hooked.controller.universal.tooltip.collapsed"))
         }
 
         super.addInformation(stack, worldIn, tooltip, flagIn)

@@ -12,6 +12,8 @@ open class FlightHookType(
     allowIndividualRetraction: Boolean,
     val pullStrength: Double,
 ): HookType(count, range, speed, hookLength, allowIndividualRetraction) {
+    override val translationBase: String = "hooked.controller.flight"
+
     override fun createController(player: PlayerEntity): HookPlayerController {
         return FlightHookPlayerController(player, this)
     }

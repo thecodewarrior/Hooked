@@ -13,6 +13,8 @@ open class BasicHookType(
     val pullStrength: Double,
     val boostHeight: Double
 ): HookType(count, range, speed, hookLength, allowIndividualRetraction) {
+    override val translationBase: String = "hooked.controller.basic"
+
     override fun createController(player: PlayerEntity): HookPlayerController {
         return BasicHookPlayerController(player, this)
     }
