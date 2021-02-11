@@ -16,7 +16,7 @@ object HookedModHookTypes {
             hookLength = 0.5,
             allowIndividualRetraction = false,
             pullStrength = 0.2,
-            jumpBoost = 0.05
+            boostHeight = 1.5
         ).also { it.registryName = loc("hooked:wood_hook") },
         BasicHookType(
             count = 2,
@@ -25,7 +25,7 @@ object HookedModHookTypes {
             hookLength = 0.5,
             allowIndividualRetraction = false,
             pullStrength = 0.4,
-            jumpBoost = 0.05
+            boostHeight = 2.5
         ).also { it.registryName = loc("hooked:iron_hook") },
         BasicHookType(
             count = 4,
@@ -34,7 +34,7 @@ object HookedModHookTypes {
             hookLength = 0.5,
             allowIndividualRetraction = false,
             pullStrength = 1.0,
-            jumpBoost = 0.05
+            boostHeight = 2.5
         ).also { it.registryName = loc("hooked:diamond_hook") },
         BasicHookType(
             count = 1,
@@ -43,7 +43,7 @@ object HookedModHookTypes {
             hookLength = 0.5,
             allowIndividualRetraction = false,
             pullStrength = 2.25,
-            jumpBoost = 0.05
+            boostHeight = 2.5
         ).also { it.registryName = loc("hooked:ender_hook") },
         FlightHookType(
             count = 8,

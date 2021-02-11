@@ -11,7 +11,7 @@ open class BasicHookType(
     hookLength: Double,
     allowIndividualRetraction: Boolean,
     val pullStrength: Double,
-    val jumpBoost: Double
+    val boostHeight: Double
 ): HookType(count, range, speed, hookLength, allowIndividualRetraction) {
     override fun createController(player: PlayerEntity): HookPlayerController {
         return BasicHookPlayerController(player, this)

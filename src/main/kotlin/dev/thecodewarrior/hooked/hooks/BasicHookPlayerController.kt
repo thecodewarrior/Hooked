@@ -8,9 +8,17 @@ import dev.thecodewarrior.hooked.hook.HookControllerDelegate
 import dev.thecodewarrior.hooked.hook.HookPlayerController
 import dev.thecodewarrior.hooked.util.fromWaistPos
 import dev.thecodewarrior.hooked.util.getWaistPos
+import net.minecraft.entity.Entity
+import net.minecraft.entity.ai.attributes.ModifiableAttributeInstance
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.util.ReuseableStream
+import net.minecraft.util.math.AxisAlignedBB
+import net.minecraft.util.math.shapes.ISelectionContext
 import net.minecraft.util.math.vector.Vector3d
-import kotlin.math.max
+import net.minecraftforge.common.ForgeMod
+import java.util.UUID
+import kotlin.math.abs
+import kotlin.math.sqrt
 
 open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHookType): HookPlayerController() {
     override fun remove() {
@@ -22,35 +30,66 @@ open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHo
         doubleJump: Boolean,
         sneaking: Boolean
     ) {
-        val waist = player.getWaistPos()
-        val deltaPos = getTargetPoint(delegate.hooks) - waist
-        val deltaLen = deltaPos.length()
-        val deltaNormal = deltaPos / deltaLen
-
-        if (delegate.hooks.any { it.state == Hook.State.PLANTED }) {
-            val movementTowardPos = if (deltaPos == Vector3d.ZERO) 0.0 else player.motion dot deltaNormal
-
-            // slow enough that we are likely to be stuck, or close enough to warrant a premature jump
-            if (movementTowardPos in 0.0..2 / 20.0 || deltaLen < type.pullStrength * 4) {
-                player.motion *= 1.25
-                player.jump()
-                player.motion = vec(
-                    player.motion.x,
-                    max(player.motion.y, 0.42 + type.jumpBoost), // 0.42 == vanilla jump speed
-                    player.motion.z
-                )
-            } else {
-                // todo: this can feel pretty bad. make it apply a jump force if the hook is already pulling up?
-                // give the player a boost
-                player.motion += deltaNormal * (type.pullStrength * 0.2)
-            }
+        val plantedCount = delegate.hooks.count { it.state == Hook.State.PLANTED }
+        if (plantedCount > 0) {
             delegate.enqueueSound(HookedModSounds.retractHook)
+            performJump(delegate, plantedCount)
         }
 
         delegate.hooks.forEach {
             it.state = Hook.State.RETRACTING
             delegate.markDirty(it)
         }
+    }
+
+    protected open fun performJump(
+        delegate: HookControllerDelegate,
+        plantedCount: Int
+    ) {
+        val waist = player.getWaistPos()
+        val targetPos = getTargetPoint(delegate.hooks)
+        val deltaPos = targetPos - waist
+        val deltaLen = deltaPos.length()
+        val deltaNormal = deltaPos / deltaLen
+        val actualMotion = vec(
+            player.posX - player.prevPosX,
+            player.posY - player.prevPosY,
+            player.posZ - player.prevPosZ
+        )
+        val motionTowardTarget = if (deltaPos == Vector3d.ZERO) 0.0 else actualMotion dot deltaNormal
+
+        var boostAABB: AxisAlignedBB? = null
+
+        if (deltaLen < type.pullStrength * 2) {
+            boostAABB = player.boundingBox.offset(deltaPos) // the player's bounding box centered around the targetPos
+        }
+        if(abs(motionTowardTarget) < 0.1) {
+            boostAABB = player.boundingBox
+        }
+
+        if(boostAABB != null) {
+            // the maximum step height along the four cardinal directions
+            val stepHeight = boostTestOffsets.maxOf { computeStepHeight(player, boostAABB, it, type.boostHeight) }
+            // the absolute target height
+            val targetHeight = boostAABB.minY + stepHeight
+            // the height relative to the player's current position
+            val jumpHeight = targetHeight - player.posY
+            val gravity = getPlayerGravity(player)
+
+            player.jump()
+            if(jumpHeight > 0) {
+                player.motion = vec(
+                    player.motion.x,
+                    sqrt(2 * gravity * jumpHeight),
+                    player.motion.z
+                )
+            }
+
+            return
+        }
+
+        // if we don't do anything special, just give them a bit of a boost
+        player.motion += deltaNormal * (type.pullStrength * 0.2)
     }
 
     override fun update(delegate: HookControllerDelegate) {
@@ -67,7 +106,7 @@ open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHo
         applyRestoringForce(player, player.fromWaistPos(getTargetPoint(delegate.hooks)), type.pullStrength)
     }
 
-    private fun getTargetPoint(hooks: List<Hook>): Vector3d {
+    protected fun getTargetPoint(hooks: List<Hook>): Vector3d {
         var plantedCount = 0
         var targetPoint = Vector3d.ZERO
         hooks.forEach { hook ->
@@ -78,5 +117,97 @@ open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHo
         }
         targetPoint /= plantedCount
         return targetPoint
+    }
+
+    /**
+     * Get the current gravity strength for the given player.
+     *
+     * Based on this code from `LivingEntity.travel(travelVector)`:
+     *
+     * ```java
+     * double d0 = 0.08D;
+     * ModifiableAttributeInstance gravity = this.getAttribute(net.minecraftforge.common.ForgeMod.ENTITY_GRAVITY.get());
+     * boolean flag = this.getMotion().y <= 0.0D;
+     * if (flag && this.isPotionActive(Effects.SLOW_FALLING)) {
+     *     if (!gravity.hasModifier(SLOW_FALLING)) gravity.applyNonPersistentModifier(SLOW_FALLING);
+     *     this.fallDistance = 0.0F;
+     * } else if (gravity.hasModifier(SLOW_FALLING)) {
+     *     gravity.removeModifier(SLOW_FALLING);
+     * }
+     * d0 = gravity.getValue();
+     * ```
+     */
+    protected fun getPlayerGravity(player: PlayerEntity): Double {
+        val playerAttribute = player.getAttribute(ForgeMod.ENTITY_GRAVITY.get()) ?: return 0.08
+        // the moment we start moving up the slow falling modifier will be removed. In order to properly reflect this
+        // in our output, we need to make a copy and remove that modifier
+        gravityAttribute.copyValuesFromInstance(playerAttribute)
+        gravityAttribute.removeModifier(SLOW_FALLING_ID)
+        return gravityAttribute.value
+    }
+
+    private val gravityAttribute = ModifiableAttributeInstance(ForgeMod.ENTITY_GRAVITY.get()) {}
+
+    /**
+     * Based on the step height code from `Entity.getAllowedMovement`.
+     */
+    protected fun computeStepHeight(
+        player: PlayerEntity,
+        playerAABB: AxisAlignedBB,
+        offset: Vector3d,
+        maxHeight: Double
+    ): Double {
+        val selectionContext = ISelectionContext.forEntity(player)
+        val voxelStream = ReuseableStream(player.world.func_230318_c_(player, playerAABB.expand(offset)) { true })
+        val vector3d = if (offset.lengthSquared() == 0.0) offset else Entity.collideBoundingBoxHeuristically(
+            player, offset, playerAABB,
+            player.world, selectionContext, voxelStream
+        )
+
+        val collidedX = offset.x != vector3d.x
+        val collidedZ = offset.z != vector3d.z
+
+        if (maxHeight > 0.0f && (collidedX || collidedZ)) {
+            var vector3d1 = Entity.collideBoundingBoxHeuristically(
+                player, Vector3d(offset.x, maxHeight, offset.z), playerAABB,
+                player.world, selectionContext, voxelStream
+            )
+            val vector3d2 = Entity.collideBoundingBoxHeuristically(
+                player, Vector3d(0.0, maxHeight, 0.0), playerAABB.expand(offset.x, 0.0, offset.z),
+                player.world, selectionContext, voxelStream
+            )
+            if (vector3d2.y < maxHeight) {
+                val vector3d3 = Entity.collideBoundingBoxHeuristically(
+                    player, Vector3d(offset.x, 0.0, offset.z), playerAABB.offset(vector3d2),
+                    player.world, selectionContext, voxelStream
+                ).add(vector3d2)
+                if (Entity.horizontalMag(vector3d3) > Entity.horizontalMag(vector3d1)) {
+                    vector3d1 = vector3d3
+                }
+            }
+            if (Entity.horizontalMag(vector3d1) > Entity.horizontalMag(vector3d)) {
+                return vector3d1.add(
+                    Entity.collideBoundingBoxHeuristically(
+                        player, Vector3d(0.0, -vector3d1.y + offset.y, 0.0), playerAABB.offset(vector3d1),
+                        player.world, selectionContext, voxelStream
+                    )
+                ).y
+            }
+        }
+
+        return vector3d.y
+    }
+
+    companion object {
+        // this is private in `LivingEntity`
+        private val SLOW_FALLING_ID = UUID.fromString("A5B6CF2A-2F7C-31EF-9022-7C3E7D5E6ABA")
+
+        private val boostTestRange = 1.0
+        private val boostTestOffsets = listOf(
+            vec(boostTestRange, 0, 0),
+            vec(0, 0, boostTestRange),
+            vec(-boostTestRange, 0, 0),
+            vec(0, 0, -boostTestRange),
+        )
     }
 }
