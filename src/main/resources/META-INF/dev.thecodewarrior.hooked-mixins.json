@@ -4,6 +4,7 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "dev.thecodewarrior.hooked-refmap.json",
   "mixins": [
+    "PlayerEntityMixin"
   ],
   "client": [
   ],

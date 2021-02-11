@@ -20,5 +20,7 @@
   "item.hooked.wood_hook.tip": "A simple solution to escaping ditches and climbing trees.",
   "itemGroup.hooked": "Hooked",
   "key.category.hooked": "Hooked",
-  "key.hooked.fire": "Fire Hook"
+  "key.hooked.fire": "Fire Hook",
+  "stat.hooked.hook_one_cm": "Distance by Grappling Hook",
+  "stat.hooked.hooks_fired": "Grappling Hooks Fired"
 }

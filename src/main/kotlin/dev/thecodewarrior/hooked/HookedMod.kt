@@ -64,6 +64,9 @@ object HookedMod: BaseMod(true) {
 
     override fun commonSetup(e: FMLCommonSetupEvent) {
         ServerHookProcessor // registers itself for events
+        e.enqueueWork {
+            HookedModStats.register()
+        }
     }
 
     override fun interModCommsEnqueue(e: InterModEnqueueEvent) {

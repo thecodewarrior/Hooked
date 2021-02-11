@@ -3,6 +3,7 @@ package dev.thecodewarrior.hooked.hook
 import com.teamwizardry.librarianlib.core.util.kotlin.getOrNull
 import dev.thecodewarrior.hooked.HookedMod
 import dev.thecodewarrior.hooked.HookedModSounds
+import dev.thecodewarrior.hooked.HookedModStats
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.capability.IHookItem
 import dev.thecodewarrior.hooked.network.SyncHookDataPacket
@@ -61,11 +62,18 @@ object ServerHookProcessor: CommonHookProcessor() {
                     }
                 }
             } else {
-                val hook =
-                    Hook(UUID.randomUUID(), data.type, pos, Hook.State.EXTENDING.ordinal, direction, BlockPos.ZERO)
+                val hook = Hook(
+                    UUID.randomUUID(),
+                    data.type,
+                    pos,
+                    Hook.State.EXTENDING.ordinal,
+                    direction,
+                    BlockPos.ZERO
+                )
                 data.hooks.add(hook)
                 // this will cause a full sync to the client, and a single-hook sync to other clients
                 data.serverState.dirtyHooks.add(hook)
+                data.player.addStat(HookedModStats.hooksFired)
             }
         }
     }

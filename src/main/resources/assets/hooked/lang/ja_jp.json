@@ -20,5 +20,7 @@
   "item.hooked.wood_hook.tip": "穴から出たり、木を登ったりする道具",
   "itemGroup.hooked": "Hooked",
   "key.category.hooked": "Hooked",
-  "key.hooked.fire": "鈎を発射する"
+  "key.hooked.fire": "鈎を発射する",
+  "stat.hooked.hook_one_cm": "Distance by Grappling Hook",
+  "stat.hooked.hooks_fired": "Grappling Hooks Fired"
 }

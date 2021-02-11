@@ -1,8 +1,10 @@
 package dev.thecodewarrior.hooked.hooks
 
+import com.teamwizardry.librarianlib.core.util.mixinCast
 import com.teamwizardry.librarianlib.core.util.vec
 import com.teamwizardry.librarianlib.math.*
 import dev.thecodewarrior.hooked.HookedModSounds
+import dev.thecodewarrior.hooked.bridge.HookTravelFlag
 import dev.thecodewarrior.hooked.hook.Hook
 import dev.thecodewarrior.hooked.hook.HookControllerDelegate
 import dev.thecodewarrior.hooked.hook.HookPlayerController
@@ -23,6 +25,7 @@ import kotlin.math.sqrt
 open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHookType): HookPlayerController() {
     override fun remove() {
         enableGravity(player)
+        mixinCast<HookTravelFlag>(player).travelingByHook = false
     }
 
     override fun jump(
@@ -95,11 +98,13 @@ open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHo
     override fun update(delegate: HookControllerDelegate) {
         if (delegate.hooks.none { it.state == Hook.State.PLANTED }) {
             enableGravity(player)
+            mixinCast<HookTravelFlag>(player).travelingByHook = false
             return
         }
 
         // we have at least one planted hook
         disableGravity(player)
+        mixinCast<HookTravelFlag>(player).travelingByHook = true
         player.fallDistance = 0f
         clearFlyingKickTimer(player)
 

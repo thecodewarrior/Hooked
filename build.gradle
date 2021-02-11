@@ -44,7 +44,7 @@ minecraft {
             workingDirectory project.file('run')
             singleInstance true
 
-            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.markers', ''
             property 'forge.logging.console.level', 'debug'
 
             mods {
@@ -58,7 +58,7 @@ minecraft {
             workingDirectory project.file('run')
             singleInstance true
 
-            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.markers', ''
             property 'forge.logging.console.level', 'debug'
 
             mods {
@@ -73,7 +73,7 @@ minecraft {
             jvmArg('-XstartOnFirstThread')
             singleInstance true
 
-            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.markers', ''
             property 'forge.logging.console.level', 'debug'
 
             args '--mod', 'hooked', '--all',
