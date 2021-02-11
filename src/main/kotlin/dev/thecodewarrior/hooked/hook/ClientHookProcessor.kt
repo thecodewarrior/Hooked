@@ -123,12 +123,10 @@ object ClientHookProcessor: CommonHookProcessor() {
     fun playerPostTick(e: TickEvent.PlayerTickEvent) {
         if (!isClient(e.player)) return
         if (e.phase != TickEvent.Phase.END) return
-//        HookedMod.proxy.disableAutoJump(player, false)
         val data = getHookData(e.player) ?: return
 
         applyHookMotion(e.player, data)
 
-        // only apply the controller for our own player
         if(e.player == Client.player) {
             data.controller.update(Delegate(data))
             playSoundQueue(data.player)
@@ -137,10 +135,6 @@ object ClientHookProcessor: CommonHookProcessor() {
         }
 
         data.serverState.dirtyHooks.clear()
-    }
-
-    override fun onHookStateChange(player: PlayerEntity, data: HookedPlayerData, hook: Hook) {
-        // this exists for server-side syncing
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)

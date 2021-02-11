@@ -34,7 +34,7 @@ abstract class CommonHookProcessor {
     protected val retractThreshold: Double = cos(Math.toRadians(15.0))
 
     fun fixSpeed(e: PlayerEvent.BreakSpeed) {
-//        PlayerEntity.getDigSpeed:
+//        From `PlayerEntity.getDigSpeed`:
 //        if (!this.onGround) {
 //            f /= 5.0f
 //        }
@@ -49,7 +49,6 @@ abstract class CommonHookProcessor {
     }
 
     abstract fun enqueueSound(sound: SoundEvent)
-    abstract fun onHookStateChange(player: PlayerEntity, data: HookedPlayerData, hook: Hook)
 
     protected fun getHookData(player: PlayerEntity): HookedPlayerData? {
         return player.getCapability(HookedPlayerData.CAPABILITY).getOrNull()
@@ -76,7 +75,7 @@ abstract class CommonHookProcessor {
                 hook.state = Hook.State.REMOVED
                 iter.remove()
                 logger.error("Removing hook $hook that had an infinite or NaN position from player ${player.uniqueID}")
-                onHookStateChange(player, data, hook)
+                data.serverState.dirtyHooks.add(hook)
             }
         }
     }
@@ -115,7 +114,7 @@ abstract class CommonHookProcessor {
                     // if we hit a block, plant in it
                     hook.state = Hook.State.PLANTED
                     hook.block = block(raycaster.blockX, raycaster.blockY, raycaster.blockZ)
-                    onHookStateChange(player, data, hook)
+                    data.serverState.dirtyHooks.add(hook)
 //                    enqueueSound(HookedModSounds.hookHit)
                     enqueueSound(
                         player.world.getBlockState(block(raycaster.blockX, raycaster.blockY, raycaster.blockZ))
@@ -126,7 +125,7 @@ abstract class CommonHookProcessor {
                     // if we reached max extension, transition to the retracting state
                     if (distanceLeft <= data.type.speed) {
                         hook.state = Hook.State.RETRACTING
-                        onHookStateChange(player, data, hook)
+                        data.serverState.dirtyHooks.add(hook)
                         enqueueSound(HookedModSounds.hookMiss)
                     }
                 }
@@ -151,7 +150,7 @@ abstract class CommonHookProcessor {
                 player.world.isAirBlock(hook.block)
             ) {
                 hook.state = Hook.State.RETRACTING
-                onHookStateChange(player, data, hook)
+                data.serverState.dirtyHooks.add(hook)
                 enqueueSound(HookedModSounds.hookDislodge)
             }
         }
@@ -162,7 +161,7 @@ abstract class CommonHookProcessor {
                 plantedCount++
                 if(plantedCount > data.type.count) {
                     hook.state = Hook.State.RETRACTING
-                    onHookStateChange(player, data, hook)
+                    data.serverState.dirtyHooks.add(hook)
                     enqueueSound(HookedModSounds.hookDislodge)
                 }
             }
@@ -179,7 +178,7 @@ abstract class CommonHookProcessor {
             if (distance < max(data.type.speed, 1.0)) {
                 iterator.remove()
                 hook.state = Hook.State.REMOVED
-                onHookStateChange(player, data, hook)
+                data.serverState.dirtyHooks.add(hook)
             } else {
                 val direction = delta / distance
                 hook.pos -= direction * min(data.type.speed, distance)
@@ -198,7 +197,7 @@ abstract class CommonHookProcessor {
                 logger.warn("Hook was an absurd distance ($distance) from player. Removing $hook from $player")
                 iter.remove()
                 hook.state = Hook.State.REMOVED
-                onHookStateChange(player, data, hook)
+                data.serverState.dirtyHooks.add(hook)
             }
         }
     }

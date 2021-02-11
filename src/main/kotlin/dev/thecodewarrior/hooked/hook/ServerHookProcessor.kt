@@ -125,10 +125,6 @@ object ServerHookProcessor: CommonHookProcessor() {
         data.serverState.dirtyHooks.clear()
     }
 
-    override fun onHookStateChange(player: PlayerEntity, data: HookedPlayerData, hook: Hook) {
-        data.serverState.dirtyHooks.add(hook)
-    }
-
     private fun getEquippedHook(player: PlayerEntity): IHookItem? {
         return CuriosApi.getCuriosHelper()
             .getCuriosHandler(player).getOrNull()

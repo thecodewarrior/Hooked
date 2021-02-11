@@ -8,17 +8,18 @@ buildscript {
     }
     dependencies {
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
+        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_gradle_version"
     }
 }
 apply plugin: 'net.minecraftforge.gradle'
-// Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
+apply plugin: 'org.spongepowered.mixin'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'kotlin'
 
 version = mod_version
-group = 'dev.thecodewarrior.hooked' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+group = 'dev.thecodewarrior.hooked'
 archivesBaseName = 'hooked'
 
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
@@ -36,15 +37,7 @@ compileKotlin {
 println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
 
 minecraft {
-    // The mappings can be changed at any time, and must be in the following format.
-    // snapshot_YYYYMMDD   Snapshot are built nightly.
-    // stable_#            Stables are built at the discretion of the MCP team.
-    // Use non-default mappings at your own risk. they may not always work.
-    // Simply re-run your setup task after changing the mappings to update your workspace.
     mappings channel: mc_mappings_channel, version: mc_mappings_version
-    // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
-    
-    // accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
     runs {
         client {
@@ -123,6 +116,8 @@ dependencies {
     }
     runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:${curios_version}")
     compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:${curios_version}:api")
+    annotationProcessor "org.spongepowered:mixin:$mixin_version:processor"
+    testAnnotationProcessor "org.spongepowered:mixin:$mixin_version:processor"
     implementation "thedarkcolour:kotlinforforge:$kotlinforforge_version"
     compile 'de.javagl:obj:0.3.0'
 }
