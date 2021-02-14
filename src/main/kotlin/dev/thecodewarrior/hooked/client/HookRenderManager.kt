@@ -44,6 +44,9 @@ object HookRenderManager {
         val matrix = Matrix4dStack()
         matrix.set(e.matrixStack.last.matrix)
 
+        // the CULL_ENABLED render state does literally nothing. it assumes culling is already enabled
+        RenderSystem.enableCull()
+
         val world = Client.minecraft.world ?: return
         world.players.forEach { player ->
             player.getCapability(HookedPlayerData.CAPABILITY).getOrNull()?.also { data ->
