@@ -119,7 +119,12 @@ dependencies {
     annotationProcessor "org.spongepowered:mixin:$mixin_version:processor"
     testAnnotationProcessor "org.spongepowered:mixin:$mixin_version:processor"
     implementation "thedarkcolour:kotlinforforge:$kotlinforforge_version"
-    compile 'de.javagl:obj:0.3.0'
+}
+
+sourceSets {
+    main {
+        ext.refMap = "dev.thecodewarrior.hooked-refmap.json"
+    }
 }
 
 jar {
@@ -129,9 +134,7 @@ jar {
             "Implementation-Version": "${mod_version}",
             "Implementation-Vendor" :"thecodewarrior",
             "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+            "MixinConnector": "dev.thecodewarrior.hooked.MixinConnector"
         ])
     }
 }
-
-jar.finalizedBy('reobfJar')
-

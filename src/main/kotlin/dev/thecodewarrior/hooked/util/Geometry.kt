@@ -2,12 +2,11 @@ package dev.thecodewarrior.hooked.util
 
 import com.teamwizardry.librarianlib.core.util.vec
 import com.teamwizardry.librarianlib.math.*
-import dev.thecodewarrior.hooked.quickhull3d.Point3d
-import dev.thecodewarrior.hooked.quickhull3d.QuickHull3D
+import dev.thecodewarrior.hooked.shade.quickhull3d.Point3d
+import dev.thecodewarrior.hooked.shade.quickhull3d.QuickHull3D
 import net.minecraft.util.math.vector.Vector3d
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.sqrt
 
 interface BoundingShape {
     val wireframe: Set<WireframeEdge>

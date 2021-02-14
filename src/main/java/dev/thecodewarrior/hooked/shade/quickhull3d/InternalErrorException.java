@@ -1,4 +1,4 @@
-package dev.thecodewarrior.hooked.quickhull3d;
+package dev.thecodewarrior.hooked.shade.quickhull3d;
 
 /*
  * #%L

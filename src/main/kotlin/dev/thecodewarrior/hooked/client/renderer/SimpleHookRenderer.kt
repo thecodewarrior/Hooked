@@ -6,7 +6,7 @@ import com.teamwizardry.librarianlib.core.util.loc
 import com.teamwizardry.librarianlib.core.util.kotlin.normal
 import com.teamwizardry.librarianlib.core.util.kotlin.pos
 import com.teamwizardry.librarianlib.math.*
-import de.javagl.obj.*
+import dev.thecodewarrior.hooked.shade.obj.*
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.hook.Hook
 import dev.thecodewarrior.hooked.hook.HookPlayerController
