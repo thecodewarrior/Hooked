@@ -26,7 +26,7 @@ data class FireHookPacket @RefractConstructor constructor(
                 val distanceSq = pos.squareDistanceTo(player.getEyePosition(1f))
                 val maxDistance = CheatMitigation.fireHookTolerance.getValue(player)
                 if(distanceSq > maxDistance.pow(2)) {
-                    data.serverState.forceFullSyncToClient = true
+                    data.syncStatus.forceFullSyncToClient = true
                     logger.error(
                         "Player ${player.name} fired a hook from ${sqrt(distanceSq)} blocks away. The tolerance " +
                                 "based on their ping of ${player.ping} is $maxDistance"

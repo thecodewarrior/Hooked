@@ -5,10 +5,6 @@ import com.teamwizardry.librarianlib.prism.Save
 import dev.thecodewarrior.hooked.hook.Hook
 import dev.thecodewarrior.hooked.hook.HookPlayerController
 import dev.thecodewarrior.hooked.hook.HookType
-import dev.thecodewarrior.hooked.util.FadeTimer
-import ll.dev.thecodewarrior.prism.annotation.Refract
-import ll.dev.thecodewarrior.prism.annotation.RefractClass
-import ll.dev.thecodewarrior.prism.annotation.RefractConstructor
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.nbt.CompoundNBT
 import net.minecraftforge.common.capabilities.Capability
@@ -37,16 +33,13 @@ class HookedPlayerData(val player: PlayerEntity): BaseCapability() {
 
     var controller: HookPlayerController = HookPlayerController.NONE
 
-    /**
-     * State that is only ever used on the *logical* server. This includes things like syncing status.
-     */
-    class ServerState {
+    class SyncStatus {
         val dirtyHooks: MutableSet<Hook> = mutableSetOf()
         var forceFullSyncToClient: Boolean = false
         var forceFullSyncToOthers: Boolean = false
     }
 
-    var serverState: ServerState = ServerState()
+    var syncStatus: SyncStatus = SyncStatus()
 
     override fun deserializeNBT(nbt: CompoundNBT) {
         val oldType = type

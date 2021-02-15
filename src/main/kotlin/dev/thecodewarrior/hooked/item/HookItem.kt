@@ -8,7 +8,6 @@ import dev.thecodewarrior.hooked.client.Keybinds
 import dev.thecodewarrior.hooked.hook.HookType
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.util.ITooltipFlag
-import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.CompoundNBT
 import net.minecraft.util.Direction
@@ -39,13 +38,13 @@ class HookItem(properties: Properties, val type: HookType) : BaseItem(properties
     ) {
         tooltip.add(TranslationTextComponent("$defaultTranslationKey.tip"))
         if(Screen.hasShiftDown()) {
-            var keyName: ITextComponent = StringTextComponent("n/a")
+            var fireKeyName: ITextComponent = StringTextComponent("n/a")
             SidedRunnable.client {
-                keyName = Keybinds.fireKey.func_238171_j_()
+                fireKeyName = Keybinds.fireKey.func_238171_j_()
             }
-            tooltip.add(TranslationTextComponent("${type.translationBase}.tooltip.controls", keyName))
+            tooltip.addAll(type.controlLangKeys.map { key -> TranslationTextComponent(key, fireKeyName) })
         } else {
-            tooltip.add(TranslationTextComponent("hooked.controller.universal.tooltip.collapsed"))
+            tooltip.add(TranslationTextComponent("hooked.controller.universal.controls.collapsed"))
         }
 
         super.addInformation(stack, worldIn, tooltip, flagIn)

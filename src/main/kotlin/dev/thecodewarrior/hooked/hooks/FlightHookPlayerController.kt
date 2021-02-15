@@ -13,8 +13,9 @@ import dev.thecodewarrior.hooked.util.fromWaistPos
 import dev.thecodewarrior.hooked.util.getWaistPos
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.math.vector.Vector3d
+import kotlin.math.cos
 
-open class FlightHookPlayerController(val player: PlayerEntity, val type: FlightHookType): HookPlayerController() {
+class FlightHookPlayerController(val player: PlayerEntity, val type: FlightHookType): HookPlayerController() {
     val hull: DynamicHull = DynamicHull()
     var hasExternalFlight: Boolean = true
     var isFlightActive: Boolean = false
@@ -31,6 +32,32 @@ open class FlightHookPlayerController(val player: PlayerEntity, val type: Flight
         disableFlight()
     }
 
+    private val retractThreshold: Double = cos(Math.toRadians(15.0))
+    private fun isPointingAtHook(pos: Vector3d, direction: Vector3d, cosThreshold: Double, hook: Hook): Boolean {
+        return direction dot (hook.pos - pos).normalize() > cosThreshold
+    }
+
+    override fun fireHooks(
+        delegate: HookControllerDelegate,
+        pos: Vector3d,
+        direction: Vector3d,
+        sneaking: Boolean,
+        addHook: (pos: Vector3d, direction: Vector3d) -> Hook
+    ) {
+        if(sneaking) {
+            for (hook in delegate.hooks) {
+                if (isPointingAtHook(pos, direction, retractThreshold, hook)) {
+                    hook.state = Hook.State.RETRACTING
+                    delegate.markDirty(hook)
+                    delegate.playWorldSound(Hook.hitSound(delegate.world, hook.block), hook.pos, 1f, 1f)
+                    delegate.playFeedbackSound(HookedModSounds.retractHook, 1f, 1f)
+                }
+            }
+        } else {
+            addHook(pos, direction)
+        }
+    }
+
     override fun jump(
         delegate: HookControllerDelegate,
         doubleJump: Boolean,
@@ -38,10 +65,13 @@ open class FlightHookPlayerController(val player: PlayerEntity, val type: Flight
     ) {
         if(doubleJump && sneaking) {
             if(delegate.hooks.any { it.state == Hook.State.PLANTED })
-                delegate.enqueueSound(HookedModSounds.retractHook)
-            delegate.hooks.forEach {
-                it.state = Hook.State.RETRACTING
-                delegate.markDirty(it)
+                delegate.playFeedbackSound(HookedModSounds.retractHook, 1f, 1f)
+            for(hook in delegate.hooks) {
+                if(hook.state == Hook.State.PLANTED) {
+                    delegate.playWorldSound(Hook.hitSound(delegate.world, hook.block), hook.pos, 1f, 1f)
+                }
+                hook.state = Hook.State.RETRACTING
+                delegate.markDirty(hook)
             }
         }
 

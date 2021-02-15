@@ -23,13 +23,14 @@ abstract class HookType(
      * The distance from the impact point to where the chain should attach
      */
     val hookLength: Double,
-    /**
-     * Whether the player can retract individual hooks by holding shift while firing
-     */
-    val allowIndividualRetraction: Boolean,
 ): ForgeRegistryEntry<HookType>() {
 
     abstract val translationBase: String
+
+    /**
+     * The language keys to add to the item tooltip
+     */
+    abstract val controlLangKeys: List<String>
 
     /**
      * Create a new player controller
@@ -37,12 +38,14 @@ abstract class HookType(
     abstract fun createController(player: PlayerEntity): HookPlayerController
 
     companion object {
-        val NONE: HookType = object: HookType(0, 0.0, 0.0, 0.0, false) {
+        val NONE: HookType = object: HookType(0, 0.0, 0.0, 0.0) {
             init {
                 registryName = loc("hooked:none")
             }
 
             override val translationBase: String = "hooked.controller.none"
+            override val controlLangKeys: List<String> = emptyList()
+
             override fun createController(player: PlayerEntity): HookPlayerController = HookPlayerController.NONE
         }
 

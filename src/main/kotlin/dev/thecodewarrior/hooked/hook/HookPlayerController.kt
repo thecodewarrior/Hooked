@@ -7,6 +7,7 @@ import com.teamwizardry.librarianlib.math.plus
 import com.teamwizardry.librarianlib.math.times
 import com.teamwizardry.librarianlib.prism.SimpleSerializer
 import com.teamwizardry.librarianlib.prism.Sync
+import dev.thecodewarrior.hooked.HookedModSounds
 import ll.dev.thecodewarrior.mirror.Mirror
 import net.minecraft.entity.Entity
 import net.minecraft.entity.ai.attributes.AttributeModifier
@@ -37,12 +38,49 @@ abstract class HookPlayerController: INBTSerializable<CompoundNBT> {
      */
     open fun remove() {}
 
+    /**
+     * Called when the player tries to fire a hook
+     *
+     * @param addHook A function that will create and fire a hook
+     */
+    abstract fun fireHooks(
+        delegate: HookControllerDelegate,
+        pos: Vector3d, direction: Vector3d, sneaking: Boolean,
+        addHook: (pos: Vector3d, direction: Vector3d) -> Hook
+    )
+
+    /**
+     * Called when the jump key is pressed on the client
+     */
     abstract fun jump(delegate: HookControllerDelegate, doubleJump: Boolean, sneaking: Boolean)
 
     /**
      * Called after the hook processor updates the hooks
      */
     abstract fun update(delegate: HookControllerDelegate)
+
+    /**
+     * Called when a hook hits a block
+     */
+    open fun onHookHit(delegate: HookControllerDelegate, hook: Hook) {
+        delegate.playWorldSound(Hook.hitSound(delegate.world, hook.block), hook.pos, 1f, 1f)
+        delegate.playFeedbackSound(HookedModSounds.hookHit, 1f, 1f)
+    }
+
+    /**
+     * Called when a hook starts retracting because it reached full extension without hitting anything
+     */
+    open fun onHookMiss(delegate: HookControllerDelegate, hook: Hook) {
+        delegate.playFeedbackSound(HookedModSounds.hookMiss, 1f, 1f)
+    }
+
+    /**
+     * Called when a hook that was planted is dislodged
+     */
+    open fun onHookDislodge(delegate: HookControllerDelegate, hook: Hook, reason: DislodgeReason) {
+        if(reason != DislodgeReason.HOOK_COUNT)
+            delegate.playFeedbackSound(HookedModSounds.hookDislodge, 1f, 1f)
+    }
 
     override fun serializeNBT(): CompoundNBT {
         return serializer.createTag(this, Sync::class.java)
@@ -82,7 +120,7 @@ abstract class HookPlayerController: INBTSerializable<CompoundNBT> {
 
         if (deltaLen <= enforcementForce) { // close enough that we should set to avoid oscillations
             movePlayer(player, deltaPos)
-            if(lockPlayer)
+            if (lockPlayer)
                 player.motion = vec(0, 0, 0)
         } else {
             val pull = deltaPos * (pullForce / deltaLen)
@@ -95,7 +133,11 @@ abstract class HookPlayerController: INBTSerializable<CompoundNBT> {
         }
     }
 
-    private fun applyRestoringComponentForce(motionComponent: Double, pullForceComponent: Double, accelerationFactor: Double): Double {
+    private fun applyRestoringComponentForce(
+        motionComponent: Double,
+        pullForceComponent: Double,
+        accelerationFactor: Double
+    ): Double {
         if (abs(motionComponent) < abs(pullForceComponent) || sign(motionComponent) != sign(pullForceComponent)) {
             val adjusted = motionComponent + pullForceComponent * accelerationFactor
             if (abs(adjusted) > abs(pullForceComponent) && sign(adjusted) == sign(pullForceComponent))
@@ -125,9 +167,33 @@ abstract class HookPlayerController: INBTSerializable<CompoundNBT> {
         player.setPosition(newPos.x, newPos.y, newPos.z)
     }
 
+    enum class DislodgeReason {
+        /**
+         * The block the hook was attached to broke
+         */
+        BLOCK_BROKEN,
+
+        /**
+         * The player moved too far from the hook
+         */
+        DISTANCE,
+
+        /**
+         * The hook was dislodged because of the hook count limit
+         */
+        HOOK_COUNT
+    }
+
     companion object {
         val NONE: HookPlayerController = object: HookPlayerController() {
             override fun jump(delegate: HookControllerDelegate, doubleJump: Boolean, sneaking: Boolean) {}
+            override fun fireHooks(
+                delegate: HookControllerDelegate,
+                pos: Vector3d, direction: Vector3d, sneaking: Boolean,
+                addHook: (pos: Vector3d, direction: Vector3d) -> Hook
+            ) {
+            }
+
             override fun update(delegate: HookControllerDelegate) {}
         }
 
@@ -137,6 +203,7 @@ abstract class HookPlayerController: INBTSerializable<CompoundNBT> {
             .get(mapSrgName("func_213306_e"), Mirror.reflect<Vector3d>())
 
         private val HOOK_GRAVITY_ID: UUID = UUID.fromString("654bd58d-a1c6-40e7-9d2b-09699b9558fe")
+
         /**
          * The `MULTIPLY_TOTAL` operation applies a `*= 1 + value` to the final value. By having a modifier of -1 that
          * becomes `*= 0`, always nullifying the gravity.

@@ -2,7 +2,6 @@ package dev.thecodewarrior.hooked.hook
 
 import com.teamwizardry.librarianlib.core.util.kotlin.getOrNull
 import dev.thecodewarrior.hooked.HookedMod
-import dev.thecodewarrior.hooked.HookedModSounds
 import dev.thecodewarrior.hooked.HookedModStats
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.capability.IHookItem
@@ -11,9 +10,11 @@ import dev.thecodewarrior.hooked.network.SyncIndividualHooksPacket
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.ServerPlayerEntity
+import net.minecraft.util.SoundCategory
 import net.minecraft.util.SoundEvent
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.vector.Vector3d
+import net.minecraft.world.World
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.TickEvent
 import net.minecraftforge.event.entity.EntityJoinWorldEvent
@@ -32,55 +33,54 @@ object ServerHookProcessor: CommonHookProcessor() {
         MinecraftForge.EVENT_BUS.register(this)
     }
 
-    class Delegate(val data: HookedPlayerData): HookControllerDelegate {
-        override val player: PlayerEntity
-            get() = data.player
-        override val hooks: List<Hook>
-            get() = data.hooks
+    class Context(override val data: HookedPlayerData): HookProcessorContext {
+        override val type: HookType get() = data.type
+        override val controller: HookPlayerController get() = data.controller
+        override val player: PlayerEntity get() = data.player
+        override val world: World get() = data.player.world
+        override val hooks: MutableList<Hook> get() = data.hooks
 
         override fun markDirty(hook: Hook) {
-            data.serverState.dirtyHooks.add(hook)
+            data.syncStatus.dirtyHooks.add(hook)
         }
 
-        override fun enqueueSound(sound: SoundEvent) {
+        override fun playFeedbackSound(sound: SoundEvent, volume: Float, pitch: Float) {
+            // feedback sounds are played on the client
         }
-    }
 
-    override fun enqueueSound(sound: SoundEvent) {
+        override fun playWorldSound(sound: SoundEvent, pos: Vector3d, volume: Float, pitch: Float) {
+            data.player.world.playSound(null, pos.x, pos.y, pos.z, sound, SoundCategory.PLAYERS, volume, pitch)
+        }
     }
 
     fun fireHook(data: HookedPlayerData, pos: Vector3d, direction: Vector3d, sneaking: Boolean) {
         if (data.type == HookType.NONE) {
             // they seem to think they can fire hooks
-            data.serverState.forceFullSyncToClient = true
+            data.syncStatus.forceFullSyncToClient = true
         } else {
-            if (sneaking && data.type.allowIndividualRetraction) {
-                for (hook in data.hooks) {
-                    if (isPointingAtHook(pos, direction, retractThreshold, hook)) {
-                        hook.state = Hook.State.RETRACTING
-                        data.serverState.dirtyHooks.add(hook)
-                    }
-                }
-            } else {
+            data.controller.fireHooks(Context(data), pos, direction, sneaking) { hookPos, hookDirection ->
                 val hook = Hook(
                     UUID.randomUUID(),
                     data.type,
-                    pos,
+                    hookPos,
                     Hook.State.EXTENDING.ordinal,
-                    direction,
-                    BlockPos.ZERO
+                    hookDirection,
+                    BlockPos.ZERO,
+                    0
                 )
                 data.hooks.add(hook)
                 // this will cause a full sync to the client, and a single-hook sync to other clients
-                data.serverState.dirtyHooks.add(hook)
+                data.syncStatus.dirtyHooks.add(hook)
                 data.player.addStat(HookedModStats.hooksFired)
+
+                hook
             }
         }
     }
 
     fun jump(data: HookedPlayerData, doubleJump: Boolean, sneaking: Boolean) {
         if (data.type != HookType.NONE) {
-            data.controller.jump(Delegate(data), doubleJump, sneaking)
+            data.controller.jump(Context(data), doubleJump, sneaking)
         }
     }
 
@@ -94,24 +94,24 @@ object ServerHookProcessor: CommonHookProcessor() {
         if (data.type != equippedType) {
             data.hooks.clear()
             data.type = equippedType
-            data.serverState.forceFullSyncToClient = true
-            data.serverState.forceFullSyncToOthers = true
+            data.syncStatus.forceFullSyncToClient = true
+            data.syncStatus.forceFullSyncToOthers = true
         }
 
-        applyHookMotion(e.player, data)
-        data.controller.update(Delegate(data))
+        val context = Context(data)
+        applyHookMotion(context)
+        data.controller.update(context)
 
-        if (data.serverState.forceFullSyncToClient || data.serverState.dirtyHooks.isNotEmpty()) {
-            val serverPlayer = e.player as ServerPlayerEntity // fail-fast
+        if (data.syncStatus.forceFullSyncToClient || data.syncStatus.dirtyHooks.isNotEmpty()) {
             HookedMod.courier.send(
-                PacketDistributor.PLAYER.with { serverPlayer },
+                PacketDistributor.PLAYER.with { e.player as ServerPlayerEntity },
                 SyncHookDataPacket(
                     e.player.entityId,
                     data.serializeNBT()
                 )
             )
         }
-        if (data.serverState.forceFullSyncToOthers) {
+        if (data.syncStatus.forceFullSyncToOthers) {
             HookedMod.courier.send(
                 PacketDistributor.TRACKING_ENTITY.with { e.player },
                 SyncHookDataPacket(
@@ -119,18 +119,18 @@ object ServerHookProcessor: CommonHookProcessor() {
                     data.serializeNBT()
                 )
             )
-        } else if (data.serverState.dirtyHooks.isNotEmpty()) {
+        } else if (data.syncStatus.dirtyHooks.isNotEmpty()) {
             HookedMod.courier.send(
                 PacketDistributor.TRACKING_ENTITY.with { e.player },
                 SyncIndividualHooksPacket(
                     e.player.entityId,
-                    ArrayList(data.serverState.dirtyHooks)
+                    ArrayList(data.syncStatus.dirtyHooks)
                 )
             )
         }
-        data.serverState.forceFullSyncToClient = false
-        data.serverState.forceFullSyncToOthers = false
-        data.serverState.dirtyHooks.clear()
+        data.syncStatus.forceFullSyncToClient = false
+        data.syncStatus.forceFullSyncToOthers = false
+        data.syncStatus.dirtyHooks.clear()
     }
 
     private fun getEquippedHook(player: PlayerEntity): IHookItem? {
@@ -147,9 +147,8 @@ object ServerHookProcessor: CommonHookProcessor() {
         if (!isServer(e.player)) return
         val target = e.target
         target.getCapability(HookedPlayerData.CAPABILITY).getOrNull()?.also { data ->
-            val serverPlayer = e.player as ServerPlayerEntity // fail-fast
             HookedMod.courier.send(
-                PacketDistributor.PLAYER.with { serverPlayer },
+                PacketDistributor.PLAYER.with { e.player as ServerPlayerEntity },
                 SyncHookDataPacket(
                     target.entityId,
                     data.serializeNBT()

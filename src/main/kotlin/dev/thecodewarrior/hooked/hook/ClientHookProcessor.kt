@@ -11,6 +11,7 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.SoundEvent
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.vector.Vector3d
+import net.minecraft.world.World
 import net.minecraftforge.api.distmarker.Dist
 import net.minecraftforge.api.distmarker.OnlyIn
 import net.minecraftforge.common.MinecraftForge
@@ -31,33 +32,28 @@ object ClientHookProcessor: CommonHookProcessor() {
         MinecraftForge.EVENT_BUS.register(this)
     }
 
-    private val soundQueue = mutableSetOf<SoundEvent>()
-
-    class Delegate(val data: HookedPlayerData): HookControllerDelegate {
-        override val player: PlayerEntity
-            get() = data.player
-        override val hooks: List<Hook>
-            get() = data.hooks
+    class Context(override val data: HookedPlayerData): HookProcessorContext {
+        override val type: HookType get() = data.type
+        override val controller: HookPlayerController get() = data.controller
+        override val player: PlayerEntity get() = data.player
+        override val world: World get() = data.player.world
+        override val hooks: MutableList<Hook> get() = data.hooks
 
         override fun markDirty(hook: Hook) {
-            // nop on the client
+            data.syncStatus.dirtyHooks.add(hook)
         }
 
-        override fun enqueueSound(sound: SoundEvent) {
-            soundQueue.add(sound)
+        private val playedSounds = mutableSetOf<SoundEvent>()
+
+        override fun playFeedbackSound(sound: SoundEvent, volume: Float, pitch: Float) {
+            if(!playedSounds.add(sound))
+                return
+            player.playSound(sound, volume, pitch)
         }
-    }
 
-
-    fun playSoundQueue(player: PlayerEntity) {
-        for(sound in soundQueue) {
-            player.playSound(sound, 1f, 1f)
+        override fun playWorldSound(sound: SoundEvent, pos: Vector3d, volume: Float, pitch: Float) {
+            // world sounds are played on the server
         }
-        soundQueue.clear()
-    }
-
-    override fun enqueueSound(sound: SoundEvent) {
-        soundQueue.add(sound)
     }
 
     fun syncHook(data: HookedPlayerData, hook: Hook) {
@@ -75,26 +71,19 @@ object ClientHookProcessor: CommonHookProcessor() {
 
     fun fireHook(data: HookedPlayerData, pos: Vector3d, direction: Vector3d, sneaking: Boolean) {
         if (data.type != HookType.NONE) {
-            if(sneaking && data.type.allowIndividualRetraction) {
-                for(hook in data.hooks) {
-                    if(isPointingAtHook(pos, direction, retractThreshold, hook)) {
-                        hook.state = Hook.State.RETRACTING
-                        data.serverState.dirtyHooks.add(hook)
-                        enqueueSound(HookedModSounds.retractHook)
-                    }
-                }
-            } else {
-                data.hooks.add(
-                    Hook(
-                        UUID.randomUUID(),
-                        data.type,
-                        pos,
-                        Hook.State.EXTENDING.ordinal,
-                        direction,
-                        BlockPos.ZERO
-                    )
+            data.controller.fireHooks(Context(data), pos, direction, sneaking) { hookPos, hookDirection ->
+                val hook = Hook(
+                    UUID.randomUUID(),
+                    data.type,
+                    hookPos,
+                    Hook.State.EXTENDING.ordinal,
+                    hookDirection,
+                    BlockPos.ZERO,
+                    0
                 )
-                enqueueSound(HookedModSounds.fireHook)
+                data.hooks.add(hook)
+
+                hook
             }
 
             HookedMod.courier.sendToServer(
@@ -104,14 +93,12 @@ object ClientHookProcessor: CommonHookProcessor() {
                     sneaking
                 )
             )
-            playSoundQueue(data.player)
         }
     }
 
     fun jump(data: HookedPlayerData, doubleJump: Boolean, sneaking: Boolean) {
         if (data.type != HookType.NONE) {
-            data.controller.jump(Delegate(data), doubleJump, sneaking)
-            playSoundQueue(data.player)
+            data.controller.jump(Context(data), doubleJump, sneaking)
 
             HookedMod.courier.sendToServer(
                 HookJumpPacket(doubleJump, sneaking)
@@ -125,16 +112,13 @@ object ClientHookProcessor: CommonHookProcessor() {
         if (e.phase != TickEvent.Phase.END) return
         val data = getHookData(e.player) ?: return
 
-        applyHookMotion(e.player, data)
+        applyHookMotion(Context(data))
 
         if(e.player == Client.player) {
-            data.controller.update(Delegate(data))
-            playSoundQueue(data.player)
-        } else {
-            soundQueue.clear()
+            data.controller.update(Context(data))
         }
 
-        data.serverState.dirtyHooks.clear()
+        data.syncStatus.dirtyHooks.clear()
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)

@@ -7,6 +7,7 @@ import dev.thecodewarrior.hooked.HookedModSounds
 import dev.thecodewarrior.hooked.bridge.HookTravelFlag
 import dev.thecodewarrior.hooked.hook.Hook
 import dev.thecodewarrior.hooked.hook.HookControllerDelegate
+import dev.thecodewarrior.hooked.hook.HookProcessorContext
 import dev.thecodewarrior.hooked.hook.HookPlayerController
 import dev.thecodewarrior.hooked.util.fromWaistPos
 import dev.thecodewarrior.hooked.util.getWaistPos
@@ -22,10 +23,36 @@ import java.util.UUID
 import kotlin.math.abs
 import kotlin.math.sqrt
 
-open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHookType): HookPlayerController() {
+class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHookType): HookPlayerController() {
     override fun remove() {
         enableGravity(player)
         mixinCast<HookTravelFlag>(player).travelingByHook = false
+    }
+
+    override fun fireHooks(
+        delegate: HookControllerDelegate,
+        pos: Vector3d,
+        direction: Vector3d,
+        sneaking: Boolean,
+        addHook: (pos: Vector3d, direction: Vector3d) -> Hook
+    ) {
+        val hook = addHook(pos, direction)
+        hook.tag = if(sneaking) 0 else EXCLUSIVE_HOOK_TAG
+    }
+
+    override fun onHookHit(delegate: HookControllerDelegate, hook: Hook) {
+        super.onHookHit(delegate, hook)
+        if(hook.tag == EXCLUSIVE_HOOK_TAG) {
+            for(other in delegate.hooks) {
+                if(other !== hook && other.state == Hook.State.PLANTED) {
+                    other.state = Hook.State.RETRACTING
+                    delegate.markDirty(other)
+
+                    delegate.playWorldSound(Hook.hitSound(delegate.world, other.block), other.pos, 1f, 1f)
+                    delegate.playFeedbackSound(HookedModSounds.retractHook, 1f, 1f)
+                }
+            }
+        }
     }
 
     override fun jump(
@@ -33,21 +60,22 @@ open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHo
         doubleJump: Boolean,
         sneaking: Boolean
     ) {
-        val plantedCount = delegate.hooks.count { it.state == Hook.State.PLANTED }
-        if (plantedCount > 0) {
-            delegate.enqueueSound(HookedModSounds.retractHook)
-            performJump(delegate, plantedCount)
+        if (delegate.hooks.any { it.state == Hook.State.PLANTED }) {
+            performJump(delegate)
         }
 
-        delegate.hooks.forEach {
-            it.state = Hook.State.RETRACTING
-            delegate.markDirty(it)
+        for(hook in delegate.hooks) {
+            if(hook.state == Hook.State.PLANTED) {
+                delegate.playWorldSound(Hook.hitSound(delegate.world, hook.block), hook.pos, 1f, 1f)
+                delegate.playFeedbackSound(HookedModSounds.retractHook, 1f, 1f)
+            }
+            hook.state = Hook.State.RETRACTING
+            delegate.markDirty(hook)
         }
     }
 
-    protected open fun performJump(
-        delegate: HookControllerDelegate,
-        plantedCount: Int
+    private fun performJump(
+        delegate: HookControllerDelegate
     ) {
         val waist = player.getWaistPos()
         val targetPos = getTargetPoint(delegate.hooks)
@@ -214,5 +242,7 @@ open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHo
             vec(-boostTestRange, 0, 0),
             vec(0, 0, -boostTestRange),
         )
+
+        private val EXCLUSIVE_HOOK_TAG: Int = 1
     }
 }
