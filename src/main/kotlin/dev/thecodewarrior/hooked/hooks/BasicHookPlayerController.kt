@@ -25,7 +25,6 @@ import kotlin.math.sqrt
 
 class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHookType): HookPlayerController() {
     override fun remove() {
-        enableGravity(player)
         mixinCast<HookTravelFlag>(player).travelingByHook = false
     }
 
@@ -125,13 +124,11 @@ class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHookTyp
 
     override fun update(delegate: HookControllerDelegate) {
         if (delegate.hooks.none { it.state == Hook.State.PLANTED }) {
-            enableGravity(player)
             mixinCast<HookTravelFlag>(player).travelingByHook = false
             return
         }
 
         // we have at least one planted hook
-        disableGravity(player)
         mixinCast<HookTravelFlag>(player).travelingByHook = true
         player.fallDistance = 0f
         clearFlyingKickTimer(player)

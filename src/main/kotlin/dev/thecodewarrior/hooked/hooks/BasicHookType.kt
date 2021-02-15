@@ -9,6 +9,9 @@ class BasicHookType(
     range: Double,
     speed: Double,
     hookLength: Double,
+    /**
+     *
+     */
     val pullStrength: Double,
     val boostHeight: Double
 ): HookType(count, range, speed, hookLength) {

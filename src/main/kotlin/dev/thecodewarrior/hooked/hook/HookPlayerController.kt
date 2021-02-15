@@ -113,6 +113,7 @@ abstract class HookPlayerController: INBTSerializable<CompoundNBT> {
         pullForce: Double,
         enforcementForce: Double = pullForce,
         accelerationFactor: Double = 0.5,
+        arrestingFactor: Double = 1.0,
         lockPlayer: Boolean = true
     ) {
         val deltaPos = target - player.positionVec
@@ -126,9 +127,9 @@ abstract class HookPlayerController: INBTSerializable<CompoundNBT> {
             val pull = deltaPos * (pullForce / deltaLen)
 
             player.motion = vec(
-                applyRestoringComponentForce(player.motion.x, pull.x, accelerationFactor),
-                applyRestoringComponentForce(player.motion.y, pull.y, accelerationFactor),
-                applyRestoringComponentForce(player.motion.z, pull.z, accelerationFactor)
+                applyRestoringComponentForce(player.motion.x, pull.x, accelerationFactor, arrestingFactor),
+                applyRestoringComponentForce(player.motion.y, pull.y, accelerationFactor, arrestingFactor),
+                applyRestoringComponentForce(player.motion.z, pull.z, accelerationFactor, arrestingFactor)
             )
         }
     }
@@ -136,29 +137,23 @@ abstract class HookPlayerController: INBTSerializable<CompoundNBT> {
     private fun applyRestoringComponentForce(
         motionComponent: Double,
         pullForceComponent: Double,
-        accelerationFactor: Double
+        accelerationFactor: Double,
+        arrestingFactor: Double
     ): Double {
-        if (abs(motionComponent) < abs(pullForceComponent) || sign(motionComponent) != sign(pullForceComponent)) {
-            val adjusted = motionComponent + pullForceComponent * accelerationFactor
-            if (abs(adjusted) > abs(pullForceComponent) && sign(adjusted) == sign(pullForceComponent))
-                return pullForceComponent
-            else
-                return adjusted
+        val forceFactor = when {
+            sign(motionComponent) != sign(pullForceComponent) ->
+                arrestingFactor
+            abs(motionComponent) < abs(pullForceComponent) ->
+                accelerationFactor
+            else -> 0.0
         }
 
-        return motionComponent
-    }
+        val result = motionComponent + pullForceComponent * forceFactor
 
-    protected fun disableGravity(player: PlayerEntity) {
-        val gravityAttribute = player.getAttribute(ENTITY_GRAVITY.get()) ?: return
-        if (gravityAttribute.hasModifier(HOOK_GRAVITY))
-            gravityAttribute.applyNonPersistentModifier(HOOK_GRAVITY)
-    }
+        if (forceFactor != 0.0 && abs(result) > abs(pullForceComponent) && sign(result) == sign(pullForceComponent))
+            return pullForceComponent
 
-    protected fun enableGravity(player: PlayerEntity) {
-        val gravityAttribute = player.getAttribute(ENTITY_GRAVITY.get()) ?: return
-        if (gravityAttribute.hasModifier(HOOK_GRAVITY))
-            gravityAttribute.removeModifier(HOOK_GRAVITY)
+        return result
     }
 
     protected fun movePlayer(player: PlayerEntity, offset: Vector3d) {
@@ -201,18 +196,5 @@ abstract class HookPlayerController: INBTSerializable<CompoundNBT> {
             .getDeclaredField(mapSrgName("field_147365_f"))
         private val getAllowedMovement = Mirror.reflectClass<Entity>().declaredMethods
             .get(mapSrgName("func_213306_e"), Mirror.reflect<Vector3d>())
-
-        private val HOOK_GRAVITY_ID: UUID = UUID.fromString("654bd58d-a1c6-40e7-9d2b-09699b9558fe")
-
-        /**
-         * The `MULTIPLY_TOTAL` operation applies a `*= 1 + value` to the final value. By having a modifier of -1 that
-         * becomes `*= 0`, always nullifying the gravity.
-         */
-        private val HOOK_GRAVITY: AttributeModifier = AttributeModifier(
-            HOOK_GRAVITY_ID,
-            "Hook gravity modifier",
-            -1.0,
-            AttributeModifier.Operation.MULTIPLY_TOTAL
-        )
     }
 }
