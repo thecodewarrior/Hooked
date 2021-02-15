@@ -13,11 +13,17 @@ class BasicHookType(
     val boostHeight: Double
 ): HookType(count, range, speed, hookLength) {
     override val translationBase: String = "hooked.controller.basic"
-    override val controlLangKeys: List<String> = listOfNotNull(
-        "$translationBase.controls.fire",
-        if(count > 1) "$translationBase.controls.fire_extra" else null,
-        "$translationBase.controls.jump",
-    )
+    override val controlLangKeys: List<String> = if(count > 1)
+        listOf(
+            "$translationBase.controls.multi.fire",
+            "$translationBase.controls.multi.fire_extra",
+            "$translationBase.controls.multi.jump",
+        )
+    else
+        listOf(
+            "$translationBase.controls.single.fire",
+            "$translationBase.controls.single.jump",
+        )
 
     override fun createController(player: PlayerEntity): HookPlayerController {
         return BasicHookPlayerController(player, this)
