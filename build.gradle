@@ -89,7 +89,12 @@ minecraft {
     }
 }
 
-sourceSets.main.resources.srcDir(file('src/generated/resources'))
+sourceSets {
+    main {
+        ext.refMap = "dev.thecodewarrior.hooked-refmap.json"
+        resources.srcDir(file('src/generated/resources'))
+    }
+}
 
 repositories {
     mavenLocal()
@@ -97,7 +102,6 @@ repositories {
     maven { url = 'https://oss.jfrog.org/artifactory/oss-snapshot-local' }
     maven { url = 'https://jitpack.io' }
     maven { url = 'https://minecraft.curseforge.com/api/maven/' }
-    maven { url = 'http://repo.spongepowered.org/maven' }
     maven { url = "https://maven.theillusivec4.top/" }
     maven {
         name = 'kotlinforforge'
@@ -119,12 +123,6 @@ dependencies {
     annotationProcessor "org.spongepowered:mixin:$mixin_version:processor"
     testAnnotationProcessor "org.spongepowered:mixin:$mixin_version:processor"
     implementation "thedarkcolour:kotlinforforge:$kotlinforforge_version"
-}
-
-sourceSets {
-    main {
-        ext.refMap = "dev.thecodewarrior.hooked-refmap.json"
-    }
 }
 
 jar {

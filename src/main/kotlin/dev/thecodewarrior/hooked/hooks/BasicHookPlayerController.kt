@@ -4,10 +4,9 @@ import com.teamwizardry.librarianlib.core.util.mixinCast
 import com.teamwizardry.librarianlib.core.util.vec
 import com.teamwizardry.librarianlib.math.*
 import dev.thecodewarrior.hooked.HookedModSounds
-import dev.thecodewarrior.hooked.bridge.HookTravelFlag
+import dev.thecodewarrior.hooked.bridge.HookPlayerFlags
 import dev.thecodewarrior.hooked.hook.Hook
 import dev.thecodewarrior.hooked.hook.HookControllerDelegate
-import dev.thecodewarrior.hooked.hook.HookProcessorContext
 import dev.thecodewarrior.hooked.hook.HookPlayerController
 import dev.thecodewarrior.hooked.util.fromWaistPos
 import dev.thecodewarrior.hooked.util.getWaistPos
@@ -25,7 +24,7 @@ import kotlin.math.sqrt
 
 class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHookType): HookPlayerController() {
     override fun remove() {
-        mixinCast<HookTravelFlag>(player).travelingByHook = false
+        mixinCast<HookPlayerFlags>(player).hookedTravelingByHookFlag = false
     }
 
     override fun fireHooks(
@@ -60,6 +59,7 @@ class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHookTyp
         sneaking: Boolean
     ) {
         if (delegate.hooks.any { it.state == Hook.State.PLANTED }) {
+            mixinCast<HookPlayerFlags>(player).hookedShouldAbortElytraFlag = true
             performJump(delegate)
         }
 
@@ -124,12 +124,12 @@ class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHookTyp
 
     override fun update(delegate: HookControllerDelegate) {
         if (delegate.hooks.none { it.state == Hook.State.PLANTED }) {
-            mixinCast<HookTravelFlag>(player).travelingByHook = false
+            mixinCast<HookPlayerFlags>(player).hookedTravelingByHookFlag = false
             return
         }
 
         // we have at least one planted hook
-        mixinCast<HookTravelFlag>(player).travelingByHook = true
+        mixinCast<HookPlayerFlags>(player).hookedTravelingByHookFlag = true
         player.fallDistance = 0f
         clearFlyingKickTimer(player)
 

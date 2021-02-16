@@ -1,4 +1,5 @@
 {
+  "minVersion": "0.8.2",
   "required": true,
   "package": "dev.thecodewarrior.hooked.mixin",
   "compatibilityLevel": "JAVA_8",
@@ -7,6 +8,7 @@
     "PlayerEntityMixin"
   ],
   "client": [
+    "ClientPlayerEntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1
