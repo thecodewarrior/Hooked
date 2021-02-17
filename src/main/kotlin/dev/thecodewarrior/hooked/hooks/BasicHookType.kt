@@ -9,12 +9,10 @@ class BasicHookType(
     range: Double,
     speed: Double,
     hookLength: Double,
-    /**
-     *
-     */
+    cooldown: Int,
     val pullStrength: Double,
-    val boostHeight: Double
-): HookType(count, range, speed, hookLength) {
+    val boostHeight: Double,
+): HookType(count, range, speed, hookLength, cooldown) {
     override val translationBase: String = "hooked.controller.basic"
     override val controlLangKeys: List<String> = if(count > 1)
         listOf(

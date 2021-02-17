@@ -2,7 +2,6 @@ package dev.thecodewarrior.hooked.hook
 
 import com.teamwizardry.librarianlib.core.util.Client
 import dev.thecodewarrior.hooked.HookedMod
-import dev.thecodewarrior.hooked.HookedModSounds
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.network.FireHookPacket
 import dev.thecodewarrior.hooked.network.HookJumpPacket
@@ -23,14 +22,15 @@ import java.util.*
 
 /**
  * Processes hooks on the *logical* client.
- *
- * The
  */
-@OnlyIn(Dist.CLIENT) // fail-fast
+@OnlyIn(Dist.CLIENT)
 object ClientHookProcessor: CommonHookProcessor() {
     init {
         MinecraftForge.EVENT_BUS.register(this)
     }
+
+    @JvmStatic var hudCooldown: Double = 0.0
+    private var cooldownCounter: Int = 0
 
     class Context(override val data: HookedPlayerData): HookProcessorContext {
         override val type: HookType get() = data.type
@@ -39,9 +39,15 @@ object ClientHookProcessor: CommonHookProcessor() {
         override val world: World get() = data.player.world
         override val hooks: MutableList<Hook> get() = data.hooks
 
-        override fun markDirty(hook: Hook) {
-            data.syncStatus.dirtyHooks.add(hook)
+        // Note: in the interest of being resistant server-side lag, cooldowns are entirely on the client side.
+        override val cooldown: Int get() = cooldownCounter
+        override fun triggerCooldown() {
+            cooldownCounter = type.cooldown
         }
+
+        override fun markDirty(hook: Hook) {}
+        override fun forceFullSyncToClient() {}
+        override fun forceFullSyncToOthers() {}
 
         private val playedSounds = mutableSetOf<SoundEvent>()
 
@@ -71,7 +77,7 @@ object ClientHookProcessor: CommonHookProcessor() {
 
     fun fireHook(data: HookedPlayerData, pos: Vector3d, direction: Vector3d, sneaking: Boolean) {
         if (data.type != HookType.NONE) {
-            data.controller.fireHooks(Context(data), pos, direction, sneaking) { hookPos, hookDirection ->
+            val shouldSend = data.controller.fireHooks(Context(data), pos, direction, sneaking) { hookPos, hookDirection ->
                 val hook = Hook(
                     UUID.randomUUID(),
                     data.type,
@@ -86,13 +92,15 @@ object ClientHookProcessor: CommonHookProcessor() {
                 hook
             }
 
-            HookedMod.courier.sendToServer(
-                FireHookPacket(
-                    pos,
-                    direction,
-                    sneaking
+            if(shouldSend) {
+                HookedMod.courier.sendToServer(
+                    FireHookPacket(
+                        pos,
+                        direction,
+                        sneaking
+                    )
                 )
-            )
+            }
         }
     }
 
@@ -116,9 +124,16 @@ object ClientHookProcessor: CommonHookProcessor() {
 
         if(e.player == Client.player) {
             data.controller.update(Context(data))
+            if(data.type.cooldown == 0 || cooldownCounter > data.type.cooldown) {
+                cooldownCounter = 0
+                hudCooldown = 0.0
+            } else {
+                if(cooldownCounter > 0) {
+                    cooldownCounter--
+                }
+                hudCooldown = cooldownCounter / data.type.cooldown.toDouble()
+            }
         }
-
-        data.syncStatus.dirtyHooks.clear()
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)

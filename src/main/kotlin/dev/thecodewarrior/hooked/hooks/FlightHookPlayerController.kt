@@ -43,7 +43,7 @@ class FlightHookPlayerController(val player: PlayerEntity, val type: FlightHookT
         direction: Vector3d,
         sneaking: Boolean,
         addHook: (pos: Vector3d, direction: Vector3d) -> Hook
-    ) {
+    ): Boolean {
         if(sneaking) {
             for (hook in delegate.hooks) {
                 if (isPointingAtHook(pos, direction, retractThreshold, hook)) {
@@ -53,8 +53,13 @@ class FlightHookPlayerController(val player: PlayerEntity, val type: FlightHookT
                     delegate.playFeedbackSound(HookedModSounds.retractHook, 1f, 1f)
                 }
             }
-        } else {
+            return true
+        } else if(delegate.cooldown == 0) {
             addHook(pos, direction)
+            delegate.triggerCooldown()
+            return true
+        } else {
+            return false
         }
     }
 

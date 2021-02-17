@@ -23,6 +23,7 @@ abstract class HookType(
      * The distance from the impact point to where the chain should attach
      */
     val hookLength: Double,
+    val cooldown: Int,
 ): ForgeRegistryEntry<HookType>() {
 
     abstract val translationBase: String
@@ -38,7 +39,7 @@ abstract class HookType(
     abstract fun createController(player: PlayerEntity): HookPlayerController
 
     companion object {
-        val NONE: HookType = object: HookType(0, 0.0, 0.0, 0.0) {
+        val NONE: HookType = object: HookType(0, 0.0, 0.0, 0.0, 0) {
             init {
                 registryName = loc("hooked:none")
             }

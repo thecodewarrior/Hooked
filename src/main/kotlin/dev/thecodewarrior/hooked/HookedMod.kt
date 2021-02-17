@@ -5,6 +5,7 @@ import com.teamwizardry.librarianlib.core.util.sided.SidedRunnable
 import com.teamwizardry.librarianlib.foundation.BaseMod
 import com.teamwizardry.librarianlib.foundation.util.TagWrappers
 import dev.thecodewarrior.hooked.client.HookRenderManager
+import dev.thecodewarrior.hooked.client.HudRenderer
 import dev.thecodewarrior.hooked.client.Keybinds
 import dev.thecodewarrior.hooked.hooks.BasicHookRenderer
 import dev.thecodewarrior.hooked.hooks.FlightHookRenderer
@@ -54,6 +55,7 @@ object HookedMod: BaseMod(true) {
         ClientRegistry.registerKeyBinding(Keybinds.fireKey)
         HookRenderManager // registers itself for events
         ClientHookProcessor // registers itself for events
+        HudRenderer // registers itself for events
         HookedModHookTypes.types.forEach {
             when(it) {
                 is FlightHookType -> HookRenderManager.register(it, FlightHookRenderer(it))

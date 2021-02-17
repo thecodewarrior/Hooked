@@ -28,9 +28,6 @@ class HookedPlayerData(val player: PlayerEntity): BaseCapability() {
     @Save
     val hooks: LinkedList<Hook> = LinkedList()
 
-    @Save
-    var cooldownCounter: Int = 0
-
     var controller: HookPlayerController = HookPlayerController.NONE
 
     class SyncStatus {

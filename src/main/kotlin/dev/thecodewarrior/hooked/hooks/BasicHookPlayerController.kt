@@ -33,9 +33,15 @@ class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHookTyp
         direction: Vector3d,
         sneaking: Boolean,
         addHook: (pos: Vector3d, direction: Vector3d) -> Hook
-    ) {
-        val hook = addHook(pos, direction)
-        hook.tag = if(sneaking) 0 else EXCLUSIVE_HOOK_TAG
+    ): Boolean {
+        if(delegate.cooldown == 0) {
+            val hook = addHook(pos, direction)
+            hook.tag = if (sneaking) 0 else EXCLUSIVE_HOOK_TAG
+            delegate.triggerCooldown()
+            return true
+        } else {
+            return false
+        }
     }
 
     override fun onHookHit(delegate: HookControllerDelegate, hook: Hook) {

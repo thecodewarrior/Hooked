@@ -9,8 +9,9 @@ class FlightHookType(
     range: Double,
     speed: Double,
     hookLength: Double,
+    cooldown: Int,
     val pullStrength: Double,
-): HookType(count, range, speed, hookLength) {
+): HookType(count, range, speed, hookLength, cooldown) {
     override val translationBase: String = "hooked.controller.flight"
     override val controlLangKeys: List<String> = listOf(
         "$translationBase.controls.fire",

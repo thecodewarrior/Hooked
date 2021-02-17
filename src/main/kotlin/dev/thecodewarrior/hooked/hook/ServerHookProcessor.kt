@@ -40,8 +40,21 @@ object ServerHookProcessor: CommonHookProcessor() {
         override val world: World get() = data.player.world
         override val hooks: MutableList<Hook> get() = data.hooks
 
+        // Hooked is designed to be resistant to server-side lag, so we only process the cooldown on the client.
+        // Sure, this means it can be exploited, but it doesn't really affect balance, it mostly affects feel.
+        override val cooldown: Int get() = 0
+        override fun triggerCooldown() {}
+
         override fun markDirty(hook: Hook) {
             data.syncStatus.dirtyHooks.add(hook)
+        }
+
+        override fun forceFullSyncToClient() {
+            data.syncStatus.forceFullSyncToClient = true
+        }
+
+        override fun forceFullSyncToOthers() {
+            data.syncStatus.forceFullSyncToOthers = true
         }
 
         override fun playFeedbackSound(sound: SoundEvent, volume: Float, pitch: Float) {
@@ -101,6 +114,7 @@ object ServerHookProcessor: CommonHookProcessor() {
         val context = Context(data)
         applyHookMotion(context)
         data.controller.update(context)
+
 
         if (data.syncStatus.forceFullSyncToClient || data.syncStatus.dirtyHooks.isNotEmpty()) {
             HookedMod.courier.send(

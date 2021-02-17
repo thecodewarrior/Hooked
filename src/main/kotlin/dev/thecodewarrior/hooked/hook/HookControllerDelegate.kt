@@ -13,7 +13,12 @@ interface HookControllerDelegate {
     val world: World
     val hooks: List<Hook>
 
+    val cooldown: Int
+    fun triggerCooldown()
+
     fun markDirty(hook: Hook)
+    fun forceFullSyncToClient()
+    fun forceFullSyncToOthers()
 
     fun playFeedbackSound(sound: SoundEvent, volume: Float, pitch: Float)
     fun playWorldSound(sound: SoundEvent, pos: Vector3d, volume: Float, pitch: Float)

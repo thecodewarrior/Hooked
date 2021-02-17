@@ -13,11 +13,5 @@ interface HookProcessorContext: HookControllerDelegate {
     val data: HookedPlayerData
     val type: HookType
     val controller: HookPlayerController
-    override val player: PlayerEntity
-    override val world: World
     override val hooks: MutableList<Hook>
-
-    override fun markDirty(hook: Hook)
-    override fun playFeedbackSound(sound: SoundEvent, volume: Float, pitch: Float)
-    override fun playWorldSound(sound: SoundEvent, pos: Vector3d, volume: Float, pitch: Float)
 }
