@@ -22,7 +22,7 @@ import java.util.UUID
 import kotlin.math.abs
 import kotlin.math.sqrt
 
-class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHookType): HookPlayerController() {
+open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHookType): HookPlayerController() {
     override fun remove() {
         mixinCast<HookPlayerFlags>(player).hookedTravelingByHookFlag = false
     }

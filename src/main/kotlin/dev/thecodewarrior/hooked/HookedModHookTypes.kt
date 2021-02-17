@@ -3,6 +3,7 @@ package dev.thecodewarrior.hooked
 import com.teamwizardry.librarianlib.core.util.loc
 import dev.thecodewarrior.hooked.hook.HookType
 import dev.thecodewarrior.hooked.hooks.BasicHookType
+import dev.thecodewarrior.hooked.hooks.EnderHookType
 import dev.thecodewarrior.hooked.hooks.FlightHookType
 import net.minecraftforge.event.RegistryEvent
 import net.minecraftforge.eventbus.api.SubscribeEvent
@@ -36,7 +37,7 @@ object HookedModHookTypes {
             pullStrength = 1.0,
             boostHeight = 2.5
         ).also { it.registryName = loc("hooked:diamond_hook") },
-        BasicHookType(
+        EnderHookType(
             count = 1,
             range = 64.0,
             speed = 64.0,

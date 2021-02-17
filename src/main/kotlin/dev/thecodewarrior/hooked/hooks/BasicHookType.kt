@@ -4,7 +4,7 @@ import dev.thecodewarrior.hooked.hook.HookPlayerController
 import dev.thecodewarrior.hooked.hook.HookType
 import net.minecraft.entity.player.PlayerEntity
 
-class BasicHookType(
+open class BasicHookType(
     count: Int,
     range: Double,
     speed: Double,

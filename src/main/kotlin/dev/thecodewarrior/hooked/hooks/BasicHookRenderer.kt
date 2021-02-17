@@ -5,7 +5,7 @@ import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.client.renderer.SimpleHookRenderer
 import net.minecraft.entity.player.PlayerEntity
 
-class BasicHookRenderer(type: BasicHookType): SimpleHookRenderer<BasicHookPlayerController>(type) {
+open class BasicHookRenderer(type: BasicHookType): SimpleHookRenderer<BasicHookPlayerController>(type) {
     override fun render(
         player: PlayerEntity,
         matrix: Matrix4dStack,

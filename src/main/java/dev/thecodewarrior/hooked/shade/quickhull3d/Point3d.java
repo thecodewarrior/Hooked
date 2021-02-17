@@ -37,7 +37,7 @@ package dev.thecodewarrior.hooked.shade.quickhull3d;
  * 
  * @author John E. Lloyd, Fall 2004
  */
-public class Point3d extends Vector3d {
+public class Point3d extends QVector3d {
 
     /**
      * Creates a Point3d and initializes it to zero.
@@ -51,7 +51,7 @@ public class Point3d extends Vector3d {
      * @param v
      *            vector to be copied
      */
-    public Point3d(Vector3d v) {
+    public Point3d(QVector3d v) {
         set(v);
     }
 

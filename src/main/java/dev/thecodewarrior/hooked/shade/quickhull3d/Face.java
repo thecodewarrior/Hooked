@@ -62,10 +62,10 @@ class Face {
 
     private Point3d centroid;
 
-    private Vector3d normal;
+    private QVector3d normal;
 
     public Face() {
-        normal = new Vector3d();
+        normal = new QVector3d();
         centroid = new Point3d();
         mark = VISIBLE;
     }
@@ -135,7 +135,7 @@ class Face {
         centroid.scale(1 / (double) numVerts);
     }
 
-    public void computeNormal(Vector3d normal) {
+    public void computeNormal(QVector3d normal) {
         HalfEdge he1 = he0.next;
         HalfEdge he2 = he1.next;
 
@@ -172,7 +172,7 @@ class Face {
         normal.scale(1 / area);
     }
 
-    public void computeNormal(Vector3d normal, double minArea) {
+    public void computeNormal(QVector3d normal, double minArea) {
         computeNormal(normal);
 
         if (area < minArea) {
@@ -271,7 +271,7 @@ class Face {
      * 
      * @return the planar normal
      */
-    public Vector3d getNormal() {
+    public QVector3d getNormal() {
         return normal;
     }
 

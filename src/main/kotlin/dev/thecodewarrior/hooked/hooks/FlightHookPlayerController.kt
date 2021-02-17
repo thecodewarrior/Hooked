@@ -15,7 +15,7 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.math.vector.Vector3d
 import kotlin.math.cos
 
-class FlightHookPlayerController(val player: PlayerEntity, val type: FlightHookType): HookPlayerController() {
+open class FlightHookPlayerController(val player: PlayerEntity, val type: FlightHookType): HookPlayerController() {
     val hull: DynamicHull = DynamicHull()
     var hasExternalFlight: Boolean = true
     var isFlightActive: Boolean = false

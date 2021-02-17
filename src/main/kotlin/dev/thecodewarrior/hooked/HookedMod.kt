@@ -7,6 +7,7 @@ import com.teamwizardry.librarianlib.foundation.util.TagWrappers
 import dev.thecodewarrior.hooked.client.HookRenderManager
 import dev.thecodewarrior.hooked.client.HudRenderer
 import dev.thecodewarrior.hooked.client.Keybinds
+import dev.thecodewarrior.hooked.client.glitter.EnderHookParticleSystem
 import dev.thecodewarrior.hooked.hooks.BasicHookRenderer
 import dev.thecodewarrior.hooked.hooks.FlightHookRenderer
 import dev.thecodewarrior.hooked.hook.ClientHookProcessor
@@ -62,6 +63,7 @@ object HookedMod: BaseMod(true) {
                 is BasicHookType -> HookRenderManager.register(it, BasicHookRenderer(it))
             }
         }
+        EnderHookParticleSystem.addToGame()
     }
 
     override fun commonSetup(e: FMLCommonSetupEvent) {

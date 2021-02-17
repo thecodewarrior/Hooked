@@ -17,7 +17,7 @@ import net.minecraft.entity.player.PlayerEntity
 import org.lwjgl.opengl.GL11
 import java.awt.Color
 
-class FlightHookRenderer(type: FlightHookType): SimpleHookRenderer<FlightHookPlayerController>(type) {
+open class FlightHookRenderer(type: FlightHookType): SimpleHookRenderer<FlightHookPlayerController>(type) {
     override fun render(
         player: PlayerEntity,
         matrix: Matrix4dStack,

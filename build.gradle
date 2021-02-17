@@ -114,7 +114,8 @@ dependencies {
 
     [
             "foundation",
-            "etcetera"
+            "etcetera",
+            "glitter"
     ].each {
         compile("com.teamwizardry.librarianlib:librarianlib-$it:$librarianlib_version")
     }

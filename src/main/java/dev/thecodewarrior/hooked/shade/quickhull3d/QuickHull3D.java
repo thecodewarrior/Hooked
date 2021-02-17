@@ -570,8 +570,8 @@ public class QuickHull3D {
     }
 
     protected void computeMaxAndMin() {
-        Vector3d max = new Vector3d();
-        Vector3d min = new Vector3d();
+        QVector3d max = new QVector3d();
+        QVector3d min = new QVector3d();
 
         for (int i = 0; i < 3; i++) {
             maxVtxs[i] = minVtxs[i] = pointBuffer[0];
@@ -643,10 +643,10 @@ public class QuickHull3D {
 
         // set third vertex to be the vertex farthest from
         // the line between vtx0 and vtx1
-        Vector3d u01 = new Vector3d();
-        Vector3d diff02 = new Vector3d();
-        Vector3d nrml = new Vector3d();
-        Vector3d xprod = new Vector3d();
+        QVector3d u01 = new QVector3d();
+        QVector3d diff02 = new QVector3d();
+        QVector3d nrml = new QVector3d();
+        QVector3d xprod = new QVector3d();
         double maxSqr = 0;
         u01.sub(vtx[1].pnt, vtx[0].pnt);
         u01.normalize();

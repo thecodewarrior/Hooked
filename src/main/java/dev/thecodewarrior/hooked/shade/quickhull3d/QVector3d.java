@@ -39,7 +39,7 @@ import java.util.Random;
  * 
  * @author John E. Lloyd, Fall 2004
  */
-public class Vector3d {
+public class QVector3d {
 
     /**
      * Precision of a double.
@@ -64,7 +64,7 @@ public class Vector3d {
     /**
      * Creates a 3-vector and initializes its elements to 0.
      */
-    public Vector3d() {
+    public QVector3d() {
     }
 
     /**
@@ -73,7 +73,7 @@ public class Vector3d {
      * @param v
      *            vector to be copied
      */
-    public Vector3d(Vector3d v) {
+    public QVector3d(QVector3d v) {
         set(v);
     }
 
@@ -87,7 +87,7 @@ public class Vector3d {
      * @param z
      *            third element
      */
-    public Vector3d(double x, double y, double z) {
+    public QVector3d(double x, double y, double z) {
         set(x, y, z);
     }
 
@@ -154,7 +154,7 @@ public class Vector3d {
      * @param v1
      *            vector whose values are copied
      */
-    public void set(Vector3d v1) {
+    public void set(QVector3d v1) {
         x = v1.x;
         y = v1.y;
         z = v1.z;
@@ -168,7 +168,7 @@ public class Vector3d {
      * @param v2
      *            right-hand vector
      */
-    public void add(Vector3d v1, Vector3d v2) {
+    public void add(QVector3d v1, QVector3d v2) {
         x = v1.x + v2.x;
         y = v1.y + v2.y;
         z = v1.z + v2.z;
@@ -180,7 +180,7 @@ public class Vector3d {
      * @param v1
      *            right-hand vector
      */
-    public void add(Vector3d v1) {
+    public void add(QVector3d v1) {
         x += v1.x;
         y += v1.y;
         z += v1.z;
@@ -194,7 +194,7 @@ public class Vector3d {
      * @param v2
      *            right-hand vector
      */
-    public void sub(Vector3d v1, Vector3d v2) {
+    public void sub(QVector3d v1, QVector3d v2) {
         x = v1.x - v2.x;
         y = v1.y - v2.y;
         z = v1.z - v2.z;
@@ -206,7 +206,7 @@ public class Vector3d {
      * @param v1
      *            right-hand vector
      */
-    public void sub(Vector3d v1) {
+    public void sub(QVector3d v1) {
         x -= v1.x;
         y -= v1.y;
         z -= v1.z;
@@ -233,7 +233,7 @@ public class Vector3d {
      * @param v1
      *            vector to be scaled
      */
-    public void scale(double s, Vector3d v1) {
+    public void scale(double s, QVector3d v1) {
         x = s * v1.x;
         y = s * v1.y;
         z = s * v1.z;
@@ -264,7 +264,7 @@ public class Vector3d {
      * 
      * @return distance between this vector and v
      */
-    public double distance(Vector3d v) {
+    public double distance(QVector3d v) {
         double dx = x - v.x;
         double dy = y - v.y;
         double dz = z - v.z;
@@ -278,7 +278,7 @@ public class Vector3d {
      * 
      * @return squared distance between this vector and v
      */
-    public double distanceSquared(Vector3d v) {
+    public double distanceSquared(QVector3d v) {
         double dx = x - v.x;
         double dy = y - v.y;
         double dz = z - v.z;
@@ -293,7 +293,7 @@ public class Vector3d {
      *            right-hand vector
      * @return dot product
      */
-    public double dot(Vector3d v1) {
+    public double dot(QVector3d v1) {
         return x * v1.x + y * v1.y + z * v1.z;
     }
 
@@ -345,7 +345,7 @@ public class Vector3d {
      * @param v2
      *            right-hand vector
      */
-    public void cross(Vector3d v1, Vector3d v2) {
+    public void cross(QVector3d v1, QVector3d v2) {
         double tmpx = v1.y * v2.z - v1.z * v2.y;
         double tmpy = v1.z * v2.x - v1.x * v2.z;
         double tmpz = v1.x * v2.y - v1.y * v2.x;
