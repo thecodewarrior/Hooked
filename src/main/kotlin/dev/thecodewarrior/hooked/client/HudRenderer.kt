@@ -48,7 +48,7 @@ object HudRenderer {
         if (gamesettings.pointOfView.func_243192_a()) {
 
             // only render if the player isn't in spectator
-            // except we should actually render if they're in spectator and looking at a chest, furnace, etc.
+            // except we actually should render if they're in spectator and looking at a chest, furnace, etc.
             if (mc.playerController!!.currentGameType != GameType.SPECTATOR ||
                 this.isTargetNamedMenuProvider(mc.objectMouseOver)) {
 

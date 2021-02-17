@@ -10,6 +10,7 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.SoundEvent
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.vector.Vector3d
+import net.minecraft.world.GameType
 import net.minecraft.world.World
 import net.minecraftforge.api.distmarker.Dist
 import net.minecraftforge.api.distmarker.OnlyIn
@@ -76,7 +77,7 @@ object ClientHookProcessor: CommonHookProcessor() {
     }
 
     fun fireHook(data: HookedPlayerData, pos: Vector3d, direction: Vector3d, sneaking: Boolean) {
-        if (data.type != HookType.NONE) {
+        if (data.type != HookType.NONE && Client.minecraft.playerController!!.currentGameType != GameType.SPECTATOR) {
             val shouldSend = data.controller.fireHooks(Context(data), pos, direction, sneaking) { hookPos, hookDirection ->
                 val hook = Hook(
                     UUID.randomUUID(),

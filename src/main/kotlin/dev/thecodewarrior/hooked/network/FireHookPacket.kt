@@ -32,7 +32,7 @@ data class FireHookPacket @RefractConstructor constructor(
                                 "based on their ping of ${player.ping} is $maxDistance"
                     )
                 } else {
-                    ServerHookProcessor.fireHook(data, pos, direction.normalize(), sneaking)
+                    ServerHookProcessor.fireHook(player, data, pos, direction.normalize(), sneaking)
                 }
             }
         }
