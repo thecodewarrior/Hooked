@@ -35,8 +35,13 @@ class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHookTyp
         addHook: (pos: Vector3d, direction: Vector3d) -> Hook
     ): Boolean {
         if(delegate.cooldown == 0) {
+            val tag = if(sneaking) {
+                0
+            } else {
+                (delegate.hooks.maxOfOrNull { it.tag } ?: 0) + 1
+            }
             val hook = addHook(pos, direction)
-            hook.tag = if (sneaking) 0 else EXCLUSIVE_HOOK_TAG
+            hook.tag = tag
             delegate.triggerCooldown()
             return true
         } else {
@@ -46,14 +51,14 @@ class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHookTyp
 
     override fun onHookHit(delegate: HookControllerDelegate, hook: Hook) {
         super.onHookHit(delegate, hook)
-        if(hook.tag == EXCLUSIVE_HOOK_TAG) {
-            for(other in delegate.hooks) {
-                if(other !== hook && other.state == Hook.State.PLANTED) {
-                    other.state = Hook.State.RETRACTING
-                    delegate.markDirty(other)
-
-                    delegate.playWorldSound(Hook.hitSound(delegate.world, other.block), other.pos, 1f, 1f)
-                    delegate.playFeedbackSound(HookedModSounds.retractHook, 1f, 1f)
+        if(hook.tag > 0) {
+            if(delegate.hooks.any { it.tag > hook.tag }) { // a more recent "solo" hook exists, immediately retract
+                delegate.retractHook(hook, true)
+            } else {
+                for(other in delegate.hooks) {
+                    if(other !== hook && other.state == Hook.State.PLANTED && other.tag < hook.tag) {
+                        delegate.retractHook(other)
+                    }
                 }
             }
         }
@@ -70,12 +75,7 @@ class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHookTyp
         }
 
         for(hook in delegate.hooks) {
-            if(hook.state == Hook.State.PLANTED) {
-                delegate.playWorldSound(Hook.hitSound(delegate.world, hook.block), hook.pos, 1f, 1f)
-                delegate.playFeedbackSound(HookedModSounds.retractHook, 1f, 1f)
-            }
-            hook.state = Hook.State.RETRACTING
-            delegate.markDirty(hook)
+            delegate.retractHook(hook)
         }
     }
 
@@ -245,7 +245,5 @@ class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHookTyp
             vec(-boostTestRange, 0, 0),
             vec(0, 0, -boostTestRange),
         )
-
-        private val EXCLUSIVE_HOOK_TAG: Int = 1
     }
 }

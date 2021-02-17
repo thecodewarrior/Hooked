@@ -47,10 +47,7 @@ class FlightHookPlayerController(val player: PlayerEntity, val type: FlightHookT
         if(sneaking) {
             for (hook in delegate.hooks) {
                 if (isPointingAtHook(pos, direction, retractThreshold, hook)) {
-                    hook.state = Hook.State.RETRACTING
-                    delegate.markDirty(hook)
-                    delegate.playWorldSound(Hook.hitSound(delegate.world, hook.block), hook.pos, 1f, 1f)
-                    delegate.playFeedbackSound(HookedModSounds.retractHook, 1f, 1f)
+                    delegate.retractHook(hook)
                 }
             }
             return true
@@ -69,14 +66,8 @@ class FlightHookPlayerController(val player: PlayerEntity, val type: FlightHookT
         sneaking: Boolean
     ) {
         if(doubleJump && sneaking) {
-            if(delegate.hooks.any { it.state == Hook.State.PLANTED })
-                delegate.playFeedbackSound(HookedModSounds.retractHook, 1f, 1f)
             for(hook in delegate.hooks) {
-                if(hook.state == Hook.State.PLANTED) {
-                    delegate.playWorldSound(Hook.hitSound(delegate.world, hook.block), hook.pos, 1f, 1f)
-                }
-                hook.state = Hook.State.RETRACTING
-                delegate.markDirty(hook)
+                delegate.retractHook(hook)
             }
         }
 
