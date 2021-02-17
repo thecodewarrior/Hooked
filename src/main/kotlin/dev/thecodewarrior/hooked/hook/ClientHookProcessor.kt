@@ -128,11 +128,16 @@ object ClientHookProcessor: CommonHookProcessor() {
             if(data.type.cooldown == 0 || cooldownCounter > data.type.cooldown) {
                 cooldownCounter = 0
                 hudCooldown = 0.0
-            } else {
-                if(cooldownCounter > 0) {
-                    cooldownCounter--
+            } else if(cooldownCounter > 0) {
+                cooldownCounter--
+
+                if(cooldownCounter == 0) {
+                    hudCooldown = 0.01 // make sure there's one last frame with a full cooldown
+                } else {
+                    hudCooldown = cooldownCounter / data.type.cooldown.toDouble()
                 }
-                hudCooldown = cooldownCounter / data.type.cooldown.toDouble()
+            } else {
+                hudCooldown = 0.0
             }
         }
     }
