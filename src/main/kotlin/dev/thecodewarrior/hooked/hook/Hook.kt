@@ -26,9 +26,9 @@ data class Hook @RefractConstructor constructor(
      */
     @Refract var pos: Vector3d,
     /**
-     * The current state. It's an ordinal int for now, since Prism doesn't have enum support yet. Use [state] instead.
+     * The current state.
      */
-    @Refract var _state: Int,
+    @Refract var state: State,
     /**
      * The (normalized) direction the hook is pointing
      */
@@ -42,11 +42,6 @@ data class Hook @RefractConstructor constructor(
      */
     @Refract var tag: Int
 ) {
-    var state: State
-        get() = State.values()[_state]
-        set(value) {
-            _state = value.ordinal
-        }
     /**
      * The position of the tail of the hook last tick
      */

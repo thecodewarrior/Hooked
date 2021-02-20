@@ -83,7 +83,7 @@ object ClientHookProcessor: CommonHookProcessor() {
                     UUID.randomUUID(),
                     data.type,
                     hookPos,
-                    Hook.State.EXTENDING.ordinal,
+                    Hook.State.EXTENDING,
                     hookDirection,
                     BlockPos.ZERO,
                     0

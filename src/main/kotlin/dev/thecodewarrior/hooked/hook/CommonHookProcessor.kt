@@ -80,9 +80,9 @@ abstract class CommonHookProcessor {
         for(hook in context.hooks) {
             hook.posLastTick = hook.pos
         }
+        updateRetracting(context)
         updateExtending(context)
         updatePlanted(context)
-        updateRetracting(context)
     }
 
     private fun updateExtending(context: HookProcessorContext) {
