@@ -58,6 +58,18 @@ abstract class HookPlayerController: INBTSerializable<CompoundNBT> {
      */
     abstract fun update(delegate: HookControllerDelegate)
 
+    open fun triggerEvent(delegate: HookControllerDelegate, hook: Hook, hookEvent: HookEvent) {
+        when (hookEvent.type) {
+            HookEvent.EventType.HIT -> onHookHit(delegate, hook)
+            HookEvent.EventType.MISS -> onHookMiss(delegate, hook)
+            HookEvent.EventType.DISLODGE -> onHookDislodge(
+                delegate,
+                hook,
+                DislodgeReason.values().getOrElse(hookEvent.data) { DislodgeReason.EXPLICIT }
+            )
+        }
+    }
+
     /**
      * Called when a hook hits a block
      */
@@ -77,8 +89,16 @@ abstract class HookPlayerController: INBTSerializable<CompoundNBT> {
      * Called when a hook that was planted is dislodged
      */
     open fun onHookDislodge(delegate: HookControllerDelegate, hook: Hook, reason: DislodgeReason) {
-        if(reason != DislodgeReason.HOOK_COUNT)
-            delegate.playFeedbackSound(HookedModSounds.hookDislodge, 1f, 1f)
+        when(reason) {
+            DislodgeReason.BLOCK_BROKEN, DislodgeReason.DISTANCE -> {
+                delegate.playFeedbackSound(HookedModSounds.hookDislodge, 1f, 1f)
+            }
+            DislodgeReason.HOOK_COUNT -> {}
+            DislodgeReason.EXPLICIT -> {
+                delegate.playWorldSound(Hook.hitSound(delegate.world, hook.block), hook.pos, 1f, 1f)
+                delegate.playFeedbackSound(HookedModSounds.retractHook, 1f, 1f)
+            }
+        }
     }
 
     override fun serializeNBT(): CompoundNBT {
@@ -175,7 +195,12 @@ abstract class HookPlayerController: INBTSerializable<CompoundNBT> {
         /**
          * The hook was dislodged because of the hook count limit
          */
-        HOOK_COUNT
+        HOOK_COUNT,
+
+        /**
+         * The player explicitly retracted the hook
+         */
+        EXPLICIT,
     }
 
     companion object {

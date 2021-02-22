@@ -39,7 +39,7 @@ abstract class CommonHookProcessor {
 
         if (!e.entity.isOnGround) {
             e.entity.getCapability(HookedPlayerData.CAPABILITY).getOrNull()?.also { data ->
-                if(data.hooks.any { it.state == Hook.State.PLANTED }) {
+                if (data.hooks.any { it.state == Hook.State.PLANTED }) {
                     e.newSpeed *= 5
                 }
             }
@@ -69,6 +69,7 @@ abstract class CommonHookProcessor {
         for (hook in iter) {
             if (!(hook.pos.x.isFinite() && hook.pos.y.isFinite() && hook.pos.z.isFinite())) {
                 hook.state = Hook.State.REMOVED
+                context.data.syncStatus.recentHooks.add(hook)
                 iter.remove()
                 logger.error("Removing hook $hook that had an infinite or NaN position from player ${context.player.name}")
                 context.markDirty(hook)
@@ -77,7 +78,7 @@ abstract class CommonHookProcessor {
     }
 
     private fun updateHooks(context: HookProcessorContext) {
-        for(hook in context.hooks) {
+        for (hook in context.hooks) {
             hook.posLastTick = hook.pos
         }
         updateRetracting(context)
@@ -86,8 +87,8 @@ abstract class CommonHookProcessor {
     }
 
     private fun updateExtending(context: HookProcessorContext) {
-        for(hook in context.hooks) {
-            if(hook.state != Hook.State.EXTENDING)
+        for (hook in context.hooks) {
+            if (hook.state != Hook.State.EXTENDING)
                 continue
 
             val distanceLeft = context.type.range - (hook.pos - context.player.getWaistPos()).length()
@@ -111,6 +112,7 @@ abstract class CommonHookProcessor {
                     hook.state = Hook.State.PLANTED
                     hook.block = block(raycaster.blockX, raycaster.blockY, raycaster.blockZ)
                     context.markDirty(hook)
+                    context.fireEvent(HookEvent(HookEvent.EventType.HIT, hook.uuid, 0))
                     context.controller.onHookHit(context, hook)
                 }
                 Raycaster.HitType.NONE -> {
@@ -118,7 +120,7 @@ abstract class CommonHookProcessor {
                     if (distanceLeft <= context.type.speed) {
                         hook.state = Hook.State.RETRACTING
                         context.markDirty(hook)
-                        context.controller.onHookMiss(context, hook)
+                        context.fireEvent(HookEvent(HookEvent.EventType.MISS, hook.uuid, 0))
                     }
                 }
                 else -> {
@@ -136,28 +138,46 @@ abstract class CommonHookProcessor {
         val breakRangeSq = (context.type.range + breakEpsilon).pow(2)
 
         context.hooks.forEach { hook ->
-            if(hook.state != Hook.State.PLANTED) return@forEach
+            if (hook.state != Hook.State.PLANTED) return@forEach
 
             if (hook.pos.squareDistanceTo(context.player.getWaistPos()) > breakRangeSq) {
                 hook.state = Hook.State.RETRACTING
                 context.markDirty(hook)
-                context.controller.onHookDislodge(context, hook, HookPlayerController.DislodgeReason.DISTANCE)
-            } else if(context.world.isAirBlock(hook.block)) {
+                context.fireEvent(
+                    HookEvent(
+                        HookEvent.EventType.DISLODGE,
+                        hook.uuid,
+                        HookPlayerController.DislodgeReason.DISTANCE.ordinal
+                    )
+                )
+            } else if (context.world.isAirBlock(hook.block)) {
                 hook.state = Hook.State.RETRACTING
                 context.markDirty(hook)
-                context.controller.onHookDislodge(context, hook, HookPlayerController.DislodgeReason.BLOCK_BROKEN)
+                context.fireEvent(
+                    HookEvent(
+                        HookEvent.EventType.DISLODGE,
+                        hook.uuid,
+                        HookPlayerController.DislodgeReason.BLOCK_BROKEN.ordinal
+                    )
+                )
             }
 
         }
         var plantedCount = 0
         // count from the end of the list, retracting everything after the threshold
-        for(hook in context.hooks.asReversed()) {
+        for (hook in context.hooks.asReversed()) {
             if (hook.state == Hook.State.PLANTED) {
                 plantedCount++
-                if(plantedCount > context.type.count) {
+                if (plantedCount > context.type.count) {
                     hook.state = Hook.State.RETRACTING
                     context.markDirty(hook)
-                    context.controller.onHookDislodge(context, hook, HookPlayerController.DislodgeReason.HOOK_COUNT)
+                    context.fireEvent(
+                        HookEvent(
+                            HookEvent.EventType.DISLODGE,
+                            hook.uuid,
+                            HookPlayerController.DislodgeReason.HOOK_COUNT.ordinal
+                        )
+                    )
                 }
             }
         }
@@ -166,11 +186,12 @@ abstract class CommonHookProcessor {
     private fun updateRetracting(context: HookProcessorContext) {
         val iterator = context.hooks.iterator()
         for (hook in iterator) {
-            if(hook.state != Hook.State.RETRACTING) continue
+            if (hook.state != Hook.State.RETRACTING) continue
             val delta = hook.pos - context.player.getWaistPos()
             val distance = delta.length()
 
             if (distance < max(context.type.speed, 1.0)) {
+                context.data.syncStatus.recentHooks.add(hook)
                 iterator.remove()
                 hook.state = Hook.State.REMOVED
                 context.markDirty(hook)
@@ -186,10 +207,11 @@ abstract class CommonHookProcessor {
         val threshold = 1024
         val waist = context.player.getWaistPos()
         val iter = context.hooks.iterator()
-        for(hook in iter) {
+        for (hook in iter) {
             val distance = waist.distanceTo(hook.pos)
-            if(distance > threshold) {
+            if (distance > threshold) {
                 logger.warn("Hook was an absurd distance ($distance) from player. Removing $hook from ${context.player.name}")
+                context.data.syncStatus.recentHooks.add(hook)
                 iter.remove()
                 hook.state = Hook.State.REMOVED
                 context.markDirty(hook)

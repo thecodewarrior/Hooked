@@ -5,6 +5,7 @@ import dev.thecodewarrior.hooked.HookedMod
 import dev.thecodewarrior.hooked.HookedModStats
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.capability.IHookItem
+import dev.thecodewarrior.hooked.network.HookEventsPacket
 import dev.thecodewarrior.hooked.network.SyncHookDataPacket
 import dev.thecodewarrior.hooked.network.SyncIndividualHooksPacket
 import net.minecraft.entity.Entity
@@ -65,16 +66,38 @@ object ServerHookProcessor: CommonHookProcessor() {
         override fun playWorldSound(sound: SoundEvent, pos: Vector3d, volume: Float, pitch: Float) {
             data.player.world.playSound(null, pos.x, pos.y, pos.z, sound, SoundCategory.PLAYERS, volume, pitch)
         }
+
+        override fun fireEvent(event: HookEvent) {
+            data.syncStatus.queuedEvents.add(event)
+            val hook = hooks.find { it.uuid == event.uuid }
+                ?: return
+            controller.triggerEvent(this, hook, event)
+        }
     }
 
-    fun fireHook(player: ServerPlayerEntity, data: HookedPlayerData, pos: Vector3d, direction: Vector3d, sneaking: Boolean) {
+    fun fireHook(
+        player: ServerPlayerEntity,
+        data: HookedPlayerData,
+        pos: Vector3d,
+        direction: Vector3d,
+        sneaking: Boolean,
+        uuids: List<UUID>
+    ) {
         if (data.type == HookType.NONE || player.interactionManager.gameType == GameType.SPECTATOR) {
             // they seem to think they can fire hooks
             data.syncStatus.forceFullSyncToClient = true
         } else {
+            val iter = uuids.iterator()
             data.controller.fireHooks(Context(data), pos, direction, sneaking) { hookPos, hookDirection ->
+                val uuid = if (iter.hasNext()) {
+                    iter.next()
+                } else {
+                    logger.warn("Player ${player.name}'s fire hook packet sent too few UUIDs. This shouldn't cause " +
+                        "problems, but may indicate a desync.")
+                    UUID.randomUUID()
+                }
                 val hook = Hook(
-                    UUID.randomUUID(),
+                    uuid,
                     data.type,
                     hookPos,
                     Hook.State.EXTENDING,
@@ -88,6 +111,10 @@ object ServerHookProcessor: CommonHookProcessor() {
                 data.player.addStat(HookedModStats.hooksFired)
 
                 hook
+            }
+            if(iter.hasNext()) {
+                logger.warn("Player ${player.name}'s fire hook packet sent too many UUIDs. This shouldn't cause large" +
+                    "problems, but may indicate a desync.")
             }
         }
     }
@@ -122,6 +149,7 @@ object ServerHookProcessor: CommonHookProcessor() {
                 PacketDistributor.PLAYER.with { e.player as ServerPlayerEntity },
                 SyncHookDataPacket(
                     e.player.entityId,
+                    data.syncStatus.dirtyHooks.filterTo(ArrayList()) { it.state == Hook.State.REMOVED },
                     data.serializeNBT()
                 )
             )
@@ -131,6 +159,7 @@ object ServerHookProcessor: CommonHookProcessor() {
                 PacketDistributor.TRACKING_ENTITY.with { e.player },
                 SyncHookDataPacket(
                     e.player.entityId,
+                    data.syncStatus.dirtyHooks.filterTo(ArrayList()) { it.state == Hook.State.REMOVED },
                     data.serializeNBT()
                 )
             )
@@ -143,9 +172,21 @@ object ServerHookProcessor: CommonHookProcessor() {
                 )
             )
         }
+        if (data.syncStatus.queuedEvents.isNotEmpty()) {
+            HookedMod.courier.send(
+                PacketDistributor.TRACKING_ENTITY_AND_SELF.with { e.player },
+                HookEventsPacket(
+                    e.player.entityId,
+                    ArrayList(data.syncStatus.queuedEvents)
+                )
+            )
+            data.syncStatus.queuedEvents.clear()
+        }
+
         data.syncStatus.forceFullSyncToClient = false
         data.syncStatus.forceFullSyncToOthers = false
         data.syncStatus.dirtyHooks.clear()
+        data.syncStatus.queuedEvents.clear()
     }
 
     private fun getEquippedHook(player: PlayerEntity): IHookItem? {
@@ -166,6 +207,7 @@ object ServerHookProcessor: CommonHookProcessor() {
                 PacketDistributor.PLAYER.with { e.player as ServerPlayerEntity },
                 SyncHookDataPacket(
                     target.entityId,
+                    ArrayList(),
                     data.serializeNBT()
                 )
             )
@@ -180,6 +222,7 @@ object ServerHookProcessor: CommonHookProcessor() {
                 PacketDistributor.PLAYER.with { serverPlayer },
                 SyncHookDataPacket(
                     serverPlayer.entityId,
+                    ArrayList(),
                     data.serializeNBT()
                 )
             )

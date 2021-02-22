@@ -20,16 +20,20 @@ interface HookControllerDelegate {
     fun markDirty(hook: Hook)
     fun forceFullSyncToClient()
     fun forceFullSyncToOthers()
+    fun fireEvent(event: HookEvent)
 
     fun playFeedbackSound(sound: SoundEvent, volume: Float, pitch: Float)
     fun playWorldSound(sound: SoundEvent, pos: Vector3d, volume: Float, pitch: Float)
 
     fun retractHook(hook: Hook, silently: Boolean = false) {
+        retractHook(hook, HookPlayerController.DislodgeReason.EXPLICIT, silently)
+    }
+
+    fun retractHook(hook: Hook, reason: HookPlayerController.DislodgeReason, silently: Boolean = false) {
         if(hook.state == Hook.State.RETRACTING)
             return
         if(hook.state == Hook.State.PLANTED && !silently) {
-            playWorldSound(Hook.hitSound(world, hook.block), hook.pos, 1f, 1f)
-            playFeedbackSound(HookedModSounds.retractHook, 1f, 1f)
+            fireEvent(HookEvent(HookEvent.EventType.DISLODGE, hook.uuid, reason.ordinal))
         }
         hook.state = Hook.State.RETRACTING
         markDirty(hook)

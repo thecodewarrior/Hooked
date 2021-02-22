@@ -61,11 +61,26 @@ object ClientHookProcessor: CommonHookProcessor() {
         override fun playWorldSound(sound: SoundEvent, pos: Vector3d, volume: Float, pitch: Float) {
             // world sounds are played on the server
         }
+
+        override fun fireEvent(event: HookEvent) {
+            data.syncStatus.recentEvents.add(event)
+            val hook = hooks.find { it.uuid == event.uuid }
+                ?: data.syncStatus.recentHooks.find { it.uuid == event.uuid }
+                ?: return
+            controller.triggerEvent(this, hook, event)
+        }
+    }
+
+    fun triggerServerEvent(data: HookedPlayerData, event: HookEvent) {
+        if(data.syncStatus.recentEvents.contains(event))
+            return
+        Context(data).fireEvent(event)
     }
 
     fun syncHook(data: HookedPlayerData, hook: Hook) {
         if(hook.state == Hook.State.REMOVED) {
             data.hooks.removeIf { it.uuid == hook.uuid }
+            data.syncStatus.recentHooks.add(hook)
         } else {
             val existingIndex = data.hooks.indexOfFirst { it.uuid == hook.uuid }
             if (existingIndex == -1) {
@@ -78,9 +93,12 @@ object ClientHookProcessor: CommonHookProcessor() {
 
     fun fireHook(data: HookedPlayerData, pos: Vector3d, direction: Vector3d, sneaking: Boolean) {
         if (data.type != HookType.NONE && Client.minecraft.playerController!!.currentGameType != GameType.SPECTATOR) {
+            val uuids = arrayListOf<UUID>()
             val shouldSend = data.controller.fireHooks(Context(data), pos, direction, sneaking) { hookPos, hookDirection ->
+                val uuid = UUID.randomUUID()
+                uuids.add(uuid)
                 val hook = Hook(
-                    UUID.randomUUID(),
+                    uuid,
                     data.type,
                     hookPos,
                     Hook.State.EXTENDING,
@@ -98,7 +116,8 @@ object ClientHookProcessor: CommonHookProcessor() {
                     FireHookPacket(
                         pos,
                         direction,
-                        sneaking
+                        sneaking,
+                        uuids
                     )
                 )
             }
