@@ -7,6 +7,7 @@ import com.teamwizardry.librarianlib.glitter.bindings.ConstantBinding
 import com.teamwizardry.librarianlib.glitter.modules.BasicPhysicsUpdateModule
 import com.teamwizardry.librarianlib.glitter.modules.SetValueUpdateModule
 import com.teamwizardry.librarianlib.glitter.modules.SpriteRenderModule
+import com.teamwizardry.librarianlib.glitter.modules.SpriteRenderOptions
 import com.teamwizardry.librarianlib.math.Easing
 
 object EnderHookParticleSystem: ParticleSystem() {
@@ -53,7 +54,13 @@ object EnderHookParticleSystem: ParticleSystem() {
         )
 
         renderModules.add(
-            SpriteRenderModule.build(loc("hooked:textures/glitter/bar.png"), position)
+            SpriteRenderModule.build(
+                SpriteRenderOptions.build(loc("hooked:textures/glitter/bar.png"))
+                    .worldLight(true)
+                    .diffuseLight(true)
+                    .build(),
+                position
+            )
                 .previousPosition(previousPosition)
                 .color(color)
                 .size(size)
@@ -82,7 +89,7 @@ object EnderHookParticleSystem: ParticleSystem() {
         rotationAxisX: Double, rotationAxisY: Double, rotationAxisZ: Double,
         angleStart: Double, angleEnd: Double,
         length: Double,
-        color: Color,
+        red: Double, green: Double, blue: Double, alpha: Double,
     ) {
         addParticle(
             lifetime,
@@ -97,7 +104,7 @@ object EnderHookParticleSystem: ParticleSystem() {
             angleEnd, // angleEnd = bind(1)
 
             1/16.0, length, // size = bind(2)
-            color.red/255.0, color.green/255.0, color.blue/255.0, color.alpha/255.0, // color = bind(4)
+            red, green, blue, alpha, // color = bind(4)
 
             directionX, directionY, directionZ, // direction = bind(3)
             directionX, directionY, directionZ, // previousDirection = bind(3)

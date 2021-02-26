@@ -56,12 +56,20 @@ class EnderHookPlayerController(player: PlayerEntity, type: BasicHookType): Basi
         val up = (delta cross right).normalize()
 
         val burstVelocity = 0.1
+        val burstVelocityVariance = 0.02
         val axisShift = 0.2
+
+        // time in seconds
+        val startLifetime = 1.0
+        val endLifetime = 2.0
+        val lifetimeVariance = 0.5
 
         var segmentStart = 0.0
         while(segmentStart < length) {
             val segmentSize = min(length - segmentStart, 0.25 + Math.random() * 0.75)
             val segmentCenter = segmentStart + segmentSize / 2
+
+            val velocity = burstVelocity + (Math.random() * 2 - 1) * burstVelocityVariance
 
             var angle = Math.random() * 2 * Math.PI
             var sin = sin(angle)
@@ -79,19 +87,28 @@ class EnderHookPlayerController(player: PlayerEntity, type: BasicHookType): Basi
             sin = sin(angle)
             cos = cos(angle)
 
+            var lifetime = startLifetime + (endLifetime - startLifetime) * (segmentStart / length)
+            lifetime += Math.random() * lifetimeVariance // only randomly live longer, not shorter
+
+            // the same particle color range as portal particles
+            val colorRandom = Math.random() * 0.6 + 0.4
+            val red = colorRandom * 0.9
+            val green = colorRandom * 0.3
+            val blue = colorRandom
+
             EnderHookParticleSystem.spawn(
-                40,
+                (lifetime * 20).toInt(),
                 start.x + normal.x * segmentCenter,
                 start.y + normal.y * segmentCenter,
                 start.z + normal.z * segmentCenter,
-                (right.x * sin + up.x * cos) * burstVelocity,
-                (right.y * sin + up.y * cos) * burstVelocity,
-                (right.z * sin + up.z * cos) * burstVelocity,
+                (right.x * sin + up.x * cos) * velocity,
+                (right.y * sin + up.y * cos) * velocity,
+                (right.z * sin + up.z * cos) * velocity,
                 normal.x, normal.y, normal.z,
                 axisX, axisY, axisZ,
                 0.0, Math.random() * 4 * Math.PI,
                 segmentSize,
-                EnderHookParticleSystem.defaultColor
+                red, green, blue, 1.0
             )
 
             segmentStart += segmentSize
