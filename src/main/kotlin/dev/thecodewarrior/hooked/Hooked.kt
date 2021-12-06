@@ -5,11 +5,13 @@ import com.teamwizardry.librarianlib.courier.CourierClientPlayNetworking
 import com.teamwizardry.librarianlib.courier.CourierPacketType
 import com.teamwizardry.librarianlib.courier.CourierServerPlayNetworking
 import dev.thecodewarrior.hooked.bridge.hookData
+import dev.thecodewarrior.hooked.client.HookRenderManager
 import dev.thecodewarrior.hooked.client.Keybinds
 import dev.thecodewarrior.hooked.hook.ClientHookProcessor
 import dev.thecodewarrior.hooked.hook.HookType
 import dev.thecodewarrior.hooked.hook.ServerHookProcessor
 import dev.thecodewarrior.hooked.hooks.BasicHookType
+import dev.thecodewarrior.hooked.hooks.EnderHookPlayerController
 import dev.thecodewarrior.hooked.hooks.EnderHookType
 import dev.thecodewarrior.hooked.hooks.FlightHookType
 import dev.thecodewarrior.hooked.network.*
@@ -19,8 +21,10 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
 import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder
 import net.fabricmc.fabric.api.event.registry.RegistryAttribute
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper
 import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.resource.ResourceType
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundEvent
 import net.minecraft.stat.StatFormatter
@@ -116,6 +120,8 @@ object Hooked {
         override fun onInitializeClient() {
             registerNetworking()
             registerKeybinds()
+            EnderHookPlayerController.particleEffect = EnderHookPlayerController.ClientParticleEffect
+            ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(HookRenderManager)
         }
 
         private fun registerKeybinds() {

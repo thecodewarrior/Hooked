@@ -1,87 +1,103 @@
 package dev.thecodewarrior.hooked.client
 
 import com.mojang.blaze3d.systems.RenderSystem
+import com.teamwizardry.librarianlib.albedo.base.buffer.FlatLinesRenderBuffer
+import com.teamwizardry.librarianlib.albedo.buffer.Primitive
 import com.teamwizardry.librarianlib.core.util.Client
-import com.teamwizardry.librarianlib.core.util.DefaultRenderStates
 import com.teamwizardry.librarianlib.core.util.DistinctColors
-import com.teamwizardry.librarianlib.core.util.SimpleRenderTypes
 import com.teamwizardry.librarianlib.core.util.kotlin.color
 import com.teamwizardry.librarianlib.core.util.kotlin.getOrNull
-import com.teamwizardry.librarianlib.core.util.kotlin.pos
+import com.teamwizardry.librarianlib.core.util.kotlin.vertex
 import com.teamwizardry.librarianlib.core.util.vec
 import com.teamwizardry.librarianlib.math.*
+import dev.thecodewarrior.hooked.bridge.hookData
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.client.renderer.HookRenderer
 import dev.thecodewarrior.hooked.hook.Hook
 import dev.thecodewarrior.hooked.hook.HookPlayerController
 import dev.thecodewarrior.hooked.hook.HookType
 import dev.thecodewarrior.hooked.util.getWaistPos
-import net.minecraft.client.renderer.IRenderTypeBuffer
+import dev.thecodewarrior.hooked.util.toMc
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
+import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener
+import net.minecraft.client.render.VertexConsumerProvider
+import net.minecraft.client.render.VertexConsumers
 import net.minecraft.entity.player.PlayerEntity
-import net.minecraftforge.client.event.RenderWorldLastEvent
-import net.minecraftforge.common.MinecraftForge
-import net.minecraftforge.eventbus.api.SubscribeEvent
+import net.minecraft.resource.ResourceManager
+import net.minecraft.resource.ResourceReloader
+import net.minecraft.util.Identifier
+import net.minecraft.util.profiler.Profiler
 import org.lwjgl.opengl.GL11
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executor
 
-object HookRenderManager {
-    init {
-        MinecraftForge.EVENT_BUS.register(this)
-    }
-
+object HookRenderManager: IdentifiableResourceReloadListener, WorldRenderEvents.DebugRender {
     private val registry = mutableMapOf<HookType, HookRenderer<*>>()
 
     fun register(type: HookType, renderer: HookRenderer<*>) {
         registry[type] = renderer
     }
+    fun getRenderer(type: HookType): HookRenderer<in HookPlayerController>? {
+        @Suppress("UNCHECKED_CAST")
+        return registry[type] as HookRenderer<in HookPlayerController>?
+    }
 
-    @SubscribeEvent
-    fun playerRender(e: RenderWorldLastEvent) {
+    override fun getFabricId(): Identifier {
+        return Identifier("hooked:hook_render_manager")
+    }
 
-        e.matrixStack.push()
-        val viewPos = Client.minecraft.gameRenderer.activeRenderInfo.projectedView
-        e.matrixStack.translate(-viewPos.x, -viewPos.y, -viewPos.z)
+    override fun reload(
+        synchronizer: ResourceReloader.Synchronizer,
+        manager: ResourceManager,
+        prepareProfiler: Profiler,
+        applyProfiler: Profiler,
+        prepareExecutor: Executor,
+        applyExecutor: Executor
+    ): CompletableFuture<Void> {
+        return CompletableFuture.allOf(
+            *registry.map { (_, renderer) ->
+                renderer.reload(synchronizer, manager, prepareProfiler, applyProfiler, prepareExecutor, applyExecutor)
+            }.toTypedArray()
+        )
+    }
 
-        val matrix = Matrix4dStack()
-        matrix.set(e.matrixStack.last.matrix)
+    override fun beforeDebugRender(context: WorldRenderContext) {
 
-        // the CULL_ENABLED render state does literally nothing. it assumes culling is already enabled
-        RenderSystem.enableCull()
+        context.matrixStack().push()
+        val viewPos = Client.minecraft.gameRenderer.camera.pos
+        context.matrixStack().translate(-viewPos.x, -viewPos.y, -viewPos.z)
 
         val world = Client.minecraft.world ?: return
         world.players.forEach { player ->
-            player.getCapability(HookedPlayerData.CAPABILITY).getOrNull()?.also { data ->
-                if (data.type != HookType.NONE) {
-                    if (Client.minecraft.renderManager.isDebugBoundingBox) {
-                        drawDebugLines(e, matrix, player, data)
-                    }
-
-                    @Suppress("UNCHECKED_CAST")
-                    val renderer = registry[data.type] as HookRenderer<HookPlayerController>?
-                    matrix.assertEvenDepth {
-                        renderer?.render(player, matrix, e.partialTicks, data, data.controller)
-                    }
+            val data = player.hookData()
+            if (data.type != HookType.NONE) {
+                if (Client.minecraft.wireFrame) {
+                    drawDebugLines(context, player, data)
                 }
             }
         }
-
-        e.matrixStack.pop()
     }
 
-    fun drawDebugLines(e: RenderWorldLastEvent, matrix: Matrix4dStack, player: PlayerEntity, data: HookedPlayerData) {
+    fun drawDebugLines(context: WorldRenderContext, player: PlayerEntity, data: HookedPlayerData) {
         if (data.hooks.isEmpty())
             return
 
         RenderSystem.lineWidth(1f)
         RenderSystem.disableTexture()
 
-        val buffer = IRenderTypeBuffer.getImpl(Client.tessellator.buffer)
-        val vb = buffer.getBuffer(debugRenderType)
+        val vb = FlatLinesRenderBuffer.SHARED
 
-        val waistPos = player.getWaistPos(e.partialTicks)
+        val waistPos = player.getWaistPos(Client.worldTime.tickDelta)
+        val matrix = Matrix4dStack()
+        matrix.set(context.matrixStack().peek().model)
+
         data.hooks.forEach { hook ->
 
             vb.pos(matrix, waistPos).color(DistinctColors.white).endVertex()
+            vb.dupVertex()
             vb.pos(matrix, hook.pos).color(DistinctColors.white).endVertex()
+            vb.dupVertex()
 
             matrix.push()
             matrix.translate(hook.pos)
@@ -96,28 +112,36 @@ object HookRenderManager {
             val length = hook.type.hookLength
             val claw = length / 3
 
-            vb.pos(matrix, vec(0, 0, 0)).color(color).endVertex()
-            vb.pos(matrix, vec(0, length, 0)).color(color).endVertex()
+            vb.pos(matrix, 0, 0, 0).color(color).endVertex()
+            vb.dupVertex()
+            vb.pos(matrix, 0, length, 0).color(color).endVertex()
+            vb.dupVertex()
 
-            vb.pos(matrix, vec(-claw, length - claw, 0)).color(color).endVertex()
-            vb.pos(matrix, vec(0, length, 0)).color(color).endVertex()
-            vb.pos(matrix, vec(0, length, 0)).color(color).endVertex()
-            vb.pos(matrix, vec(claw, length - claw, 0)).color(color).endVertex()
+            vb.pos(matrix, -claw, length - claw, 0).color(color).endVertex()
+            vb.dupVertex()
+            vb.pos(matrix, 0, length, 0).color(color).endVertex()
+            vb.dupVertex()
 
-            vb.pos(matrix, vec(0, length - claw, -claw)).color(color).endVertex()
-            vb.pos(matrix, vec(0, length, 0)).color(color).endVertex()
-            vb.pos(matrix, vec(0, length, 0)).color(color).endVertex()
-            vb.pos(matrix, vec(0, length - claw, claw)).color(color).endVertex()
+            vb.dupVertex()
+            vb.dupVertex()
+            vb.pos(matrix, claw, length - claw, 0).color(color).endVertex()
+            vb.dupVertex()
+
+            vb.pos(matrix, 0, length - claw, -claw).color(color).endVertex()
+            vb.dupVertex()
+            vb.pos(matrix, 0, length, 0).color(color).endVertex()
+            vb.dupVertex()
+
+            vb.dupVertex()
+            vb.dupVertex()
+            vb.pos(matrix, 0, length - claw, claw).color(color).endVertex()
+            vb.dupVertex()
 
             matrix.pop()
         }
 
-        buffer.finish()
+        vb.draw(Primitive.LINES_ADJACENCY)
         RenderSystem.enableTexture()
     }
 
-    private val debugRenderType = SimpleRenderTypes.flat(GL11.GL_LINES) {
-        it.depthTest(DefaultRenderStates.DEPTH_ALWAYS)
-        it.writeMask(DefaultRenderStates.COLOR_WRITE)
-    }
 }

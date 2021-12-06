@@ -11,7 +11,7 @@ import dev.thecodewarrior.hooked.util.FadeTimer
 import dev.thecodewarrior.hooked.util.fromWaistPos
 import dev.thecodewarrior.hooked.util.getWaistPos
 import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.util.math.vector.Vec3d
+import net.minecraft.util.math.Vec3d
 import kotlin.math.cos
 
 open class FlightHookPlayerController(val player: PlayerEntity, val type: FlightHookType): HookPlayerController() {
@@ -73,7 +73,7 @@ open class FlightHookPlayerController(val player: PlayerEntity, val type: Flight
         if(doubleJump && delegate.hooks.any { it.state == Hook.State.PLANTED }) {
             val waist = player.getWaistPos()
             val constrained = hull.constrain(waist)
-            val allowFlight = waist.squareDistanceTo(constrained.position) < allowedFlightRange * allowedFlightRange
+            val allowFlight = waist.squaredDistanceTo(constrained.position) < allowedFlightRange * allowedFlightRange
 
             if(!allowFlight) {
                 showHullTimer.start(20)
@@ -112,8 +112,8 @@ open class FlightHookPlayerController(val player: PlayerEntity, val type: Flight
         val constrained = hull.constrain(waist)
 
         // if the player isn't flying, allow or disallow flight based upon whether they're inside the hull
-        if(!player.abilities.isFlying) {
-            val allowFlight = waist.squareDistanceTo(constrained.position) < allowedFlightRange * allowedFlightRange
+        if(!player.abilities.flying) {
+            val allowFlight = waist.squaredDistanceTo(constrained.position) < allowedFlightRange * allowedFlightRange
 
             if(allowFlight != isFlightActive) {
                 showHullTimer.start(10)
@@ -130,7 +130,7 @@ open class FlightHookPlayerController(val player: PlayerEntity, val type: Flight
         }
 
         // when flying, keep the player's position in check
-        if(player.abilities.isFlying && waist != constrained.position) {
+        if(player.abilities.flying && waist != constrained.position) {
             applyRestoringForce(
                 player,
                 target = player.fromWaistPos(constrained.position),
@@ -138,8 +138,8 @@ open class FlightHookPlayerController(val player: PlayerEntity, val type: Flight
                 enforcementForce = 2.0,
                 lockPlayer = false
             )
-            if (constrained.normal != Vec3d.ZERO && (constrained.position - player.positionVec).length() < 2.0) {
-                player.motion -= constrained.normal * (player.motion dot constrained.normal)
+            if (constrained.normal != Vec3d.ZERO && (constrained.position - player.pos).length() < 2.0) {
+                player.velocity -= constrained.normal * (player.velocity dot constrained.normal)
             }
             showHullTimer.start(10)
         }
@@ -161,7 +161,7 @@ open class FlightHookPlayerController(val player: PlayerEntity, val type: Flight
         if(!isFlightActive) return
 
         player.abilities.allowFlying = hasExternalFlight
-        player.abilities.isFlying = false
+        player.abilities.flying = false
         isFlightActive = false
     }
 
@@ -177,7 +177,7 @@ open class FlightHookPlayerController(val player: PlayerEntity, val type: Flight
         if(!player.abilities.allowFlying) {
             hasExternalFlight = false
             player.abilities.allowFlying = true
-            player.abilities.isFlying = true
+            player.abilities.flying = true
         }
     }
 }
