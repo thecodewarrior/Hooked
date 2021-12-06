@@ -1,0 +1,45 @@
+{
+  "fire_hook": {
+    "subtitle": "hooked.subtitle.fire_hook",
+    "sounds": [
+      "minecraft:random/bow"
+    ]
+  },
+  "retract_hook": {
+    "subtitle": "hooked.subtitle.retract_hook",
+    "sounds": [
+      {
+        "name": "minecraft:entity/bobber/retrieve1",
+        "pitch": 2.4
+      },
+      {
+        "name": "minecraft:entity/bobber/retrieve2",
+        "pitch": 2.4
+      }
+    ]
+  },
+  "hook_hit": {
+    "subtitle": "hooked.subtitle.hook_hit",
+    "sounds": [
+      "minecraft:random/bowhit1",
+      "minecraft:random/bowhit2",
+      "minecraft:random/bowhit3",
+      "minecraft:random/bowhit4"
+    ]
+  },
+  "hook_miss": {
+    "subtitle": "hooked.subtitle.hook_miss",
+    "sounds": [
+      "minecraft:entity/endereye/dead1",
+      "minecraft:entity/endereye/dead2"
+    ]
+  },
+  "hook_dislodge": {
+    "subtitle": "hooked.subtitle.hook_dislodge",
+    "sounds": [
+      "minecraft:entity/leashknot/break1",
+      "minecraft:entity/leashknot/break2",
+      "minecraft:entity/leashknot/break3"
+    ]
+  }
+}

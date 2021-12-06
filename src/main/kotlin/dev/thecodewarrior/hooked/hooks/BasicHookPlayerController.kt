@@ -3,36 +3,36 @@ package dev.thecodewarrior.hooked.hooks
 import com.teamwizardry.librarianlib.core.util.mixinCast
 import com.teamwizardry.librarianlib.core.util.vec
 import com.teamwizardry.librarianlib.math.*
-import dev.thecodewarrior.hooked.HookedModSounds
-import dev.thecodewarrior.hooked.bridge.HookPlayerFlags
+import dev.thecodewarrior.hooked.bridge.PlayerMixinBridge
 import dev.thecodewarrior.hooked.hook.Hook
 import dev.thecodewarrior.hooked.hook.HookControllerDelegate
 import dev.thecodewarrior.hooked.hook.HookPlayerController
 import dev.thecodewarrior.hooked.util.fromWaistPos
 import dev.thecodewarrior.hooked.util.getWaistPos
+import net.minecraft.block.ShapeContext
 import net.minecraft.entity.Entity
-import net.minecraft.entity.ai.attributes.ModifiableAttributeInstance
 import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.util.ReuseableStream
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.shapes.ISelectionContext
-import net.minecraft.util.math.vector.Vector3d
-import net.minecraftforge.common.ForgeMod
-import java.util.UUID
+import net.minecraft.util.collection.ReusableStream
+import net.minecraft.util.function.BooleanBiFunction
+import net.minecraft.util.math.Box
+import net.minecraft.util.math.Vec3d
+import net.minecraft.util.shape.VoxelShape
+import net.minecraft.util.shape.VoxelShapes
+import java.util.stream.Stream
 import kotlin.math.abs
 import kotlin.math.sqrt
 
 open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHookType): HookPlayerController() {
     override fun remove() {
-        mixinCast<HookPlayerFlags>(player).hookedTravelingByHookFlag = false
+        mixinCast<PlayerMixinBridge>(player).hookedTravelingByHookFlag = false
     }
 
     override fun fireHooks(
         delegate: HookControllerDelegate,
-        pos: Vector3d,
-        direction: Vector3d,
+        pos: Vec3d,
+        direction: Vec3d,
         sneaking: Boolean,
-        addHook: (pos: Vector3d, direction: Vector3d) -> Hook
+        addHook: (pos: Vec3d, direction: Vec3d) -> Hook
     ): Boolean {
         if(delegate.cooldown == 0) {
             val tag = if(sneaking) {
@@ -70,7 +70,7 @@ open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHo
         sneaking: Boolean
     ) {
         if (delegate.hooks.any { it.state == Hook.State.PLANTED }) {
-            mixinCast<HookPlayerFlags>(player).hookedShouldAbortElytraFlag = true
+            mixinCast<PlayerMixinBridge>(player).hookedShouldAbortElytraFlag = true
             performJump(delegate)
         }
 
@@ -88,13 +88,13 @@ open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHo
         val deltaLen = deltaPos.length()
         val deltaNormal = deltaPos / deltaLen
         val actualMotion = vec(
-            player.posX - player.prevPosX,
-            player.posY - player.prevPosY,
-            player.posZ - player.prevPosZ
+            player.x - player.prevX,
+            player.x - player.prevY,
+            player.x - player.prevZ
         )
-        val motionTowardTarget = if (deltaPos == Vector3d.ZERO) 0.0 else actualMotion dot deltaNormal
+        val motionTowardTarget = if (deltaPos == Vec3d.ZERO) 0.0 else actualMotion dot deltaNormal
 
-        var boostAABB: AxisAlignedBB? = null
+        var boostAABB: Box? = null
 
         if (deltaLen < type.pullStrength * 2) {
             boostAABB = player.boundingBox.offset(deltaPos) // the player's bounding box centered around the targetPos
@@ -109,15 +109,15 @@ open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHo
             // the absolute target height
             val targetHeight = boostAABB.minY + stepHeight
             // the height relative to the player's current position
-            val jumpHeight = targetHeight - player.posY
-            val gravity = getPlayerGravity(player)
+            val jumpHeight = targetHeight - player.y
+            val gravity = 0.08
 
             player.jump()
             if(jumpHeight > 0) {
-                player.motion = vec(
-                    player.motion.x,
+                player.velocity = vec(
+                    player.velocity.x,
                     sqrt(2 * gravity * jumpHeight),
-                    player.motion.z
+                    player.velocity.z
                 )
             }
 
@@ -125,26 +125,26 @@ open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHo
         }
 
         // if we don't do anything special, just give them a bit of a boost
-        player.motion += deltaNormal * (type.pullStrength * 0.2)
+        player.velocity += deltaNormal * (type.pullStrength * 0.2)
     }
 
     override fun update(delegate: HookControllerDelegate) {
         if (delegate.hooks.none { it.state == Hook.State.PLANTED }) {
-            mixinCast<HookPlayerFlags>(player).hookedTravelingByHookFlag = false
+            mixinCast<PlayerMixinBridge>(player).hookedTravelingByHookFlag = false
             return
         }
 
         // we have at least one planted hook
-        mixinCast<HookPlayerFlags>(player).hookedTravelingByHookFlag = true
+        mixinCast<PlayerMixinBridge>(player).hookedTravelingByHookFlag = true
         player.fallDistance = 0f
         clearFlyingKickTimer(player)
 
         applyRestoringForce(player, player.fromWaistPos(getTargetPoint(delegate.hooks)), type.pullStrength)
     }
 
-    protected fun getTargetPoint(hooks: List<Hook>): Vector3d {
+    protected fun getTargetPoint(hooks: List<Hook>): Vec3d {
         var plantedCount = 0
-        var targetPoint = Vector3d.ZERO
+        var targetPoint = Vec3d.ZERO
         hooks.forEach { hook ->
             if (hook.state == Hook.State.PLANTED) {
                 targetPoint += hook.pos
@@ -156,87 +156,82 @@ open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHo
     }
 
     /**
-     * Get the current gravity strength for the given player.
-     *
-     * Based on this code from `LivingEntity.travel(travelVector)`:
-     *
-     * ```java
-     * double d0 = 0.08D;
-     * ModifiableAttributeInstance gravity = this.getAttribute(net.minecraftforge.common.ForgeMod.ENTITY_GRAVITY.get());
-     * boolean flag = this.getMotion().y <= 0.0D;
-     * if (flag && this.isPotionActive(Effects.SLOW_FALLING)) {
-     *     if (!gravity.hasModifier(SLOW_FALLING)) gravity.applyNonPersistentModifier(SLOW_FALLING);
-     *     this.fallDistance = 0.0F;
-     * } else if (gravity.hasModifier(SLOW_FALLING)) {
-     *     gravity.removeModifier(SLOW_FALLING);
-     * }
-     * d0 = gravity.getValue();
-     * ```
-     */
-    protected fun getPlayerGravity(player: PlayerEntity): Double {
-        val playerAttribute = player.getAttribute(ForgeMod.ENTITY_GRAVITY.get()) ?: return 0.08
-        // the moment we start moving up the slow falling modifier will be removed. In order to properly reflect this
-        // in our output, we need to make a copy and remove that modifier
-        gravityAttribute.copyValuesFromInstance(playerAttribute)
-        gravityAttribute.removeModifier(SLOW_FALLING_ID)
-        return gravityAttribute.value
-    }
-
-    private val gravityAttribute = ModifiableAttributeInstance(ForgeMod.ENTITY_GRAVITY.get()) {}
-
-    /**
-     * Based on the step height code from `Entity.getAllowedMovement`.
+     * Based on the step height code from `Entity.adjustMovementForCollisions`.
      */
     protected fun computeStepHeight(
         player: PlayerEntity,
-        playerAABB: AxisAlignedBB,
-        offset: Vector3d,
+        box: Box,
+        movement: Vec3d,
         maxHeight: Double
     ): Double {
-        val selectionContext = ISelectionContext.forEntity(player)
-        val voxelStream = ReuseableStream(player.world.func_230318_c_(player, playerAABB.expand(offset)) { true })
-        val vector3d = if (offset.lengthSquared() == 0.0) offset else Entity.collideBoundingBoxHeuristically(
-            player, offset, playerAABB,
-            player.world, selectionContext, voxelStream
+        val shapeContext = ShapeContext.of(player)
+        val voxelShape: VoxelShape = player.world.getWorldBorder().asVoxelShape()
+        val stream = if (VoxelShapes.matchesAnywhere(
+                voxelShape,
+                VoxelShapes.cuboid(box.contract(1.0E-7)),
+                BooleanBiFunction.AND
+            )
+        ) Stream.empty() else Stream.of(voxelShape)
+        val stream2: Stream<VoxelShape> = player.world.getEntityCollisions(player, box.stretch(movement), { true })
+        val reusableStream: ReusableStream<VoxelShape> = ReusableStream(Stream.concat(stream2, stream))
+        val vec3d = if (movement.lengthSquared() == 0.0) movement else Entity.adjustMovementForCollisions(
+            player,
+            movement,
+            box,
+            player.world,
+            shapeContext,
+            reusableStream
         )
-
-        val collidedX = offset.x != vector3d.x
-        val collidedZ = offset.z != vector3d.z
-
-        if (maxHeight > 0.0f && (collidedX || collidedZ)) {
-            var vector3d1 = Entity.collideBoundingBoxHeuristically(
-                player, Vector3d(offset.x, maxHeight, offset.z), playerAABB,
-                player.world, selectionContext, voxelStream
+        val collidedX = movement.x != vec3d.x
+        val collidedZ = movement.z != vec3d.z
+        if (collidedX || collidedZ) {
+            var vec3d2 = Entity.adjustMovementForCollisions(
+                player,
+                Vec3d(movement.x, maxHeight, movement.z),
+                box,
+                player.world,
+                shapeContext,
+                reusableStream
             )
-            val vector3d2 = Entity.collideBoundingBoxHeuristically(
-                player, Vector3d(0.0, maxHeight, 0.0), playerAABB.expand(offset.x, 0.0, offset.z),
-                player.world, selectionContext, voxelStream
+            val vec3d3 = Entity.adjustMovementForCollisions(
+                player,
+                Vec3d(0.0, maxHeight, 0.0),
+                box.stretch(movement.x, 0.0, movement.z),
+                player.world,
+                shapeContext,
+                reusableStream
             )
-            if (vector3d2.y < maxHeight) {
-                val vector3d3 = Entity.collideBoundingBoxHeuristically(
-                    player, Vector3d(offset.x, 0.0, offset.z), playerAABB.offset(vector3d2),
-                    player.world, selectionContext, voxelStream
-                ).add(vector3d2)
-                if (Entity.horizontalMag(vector3d3) > Entity.horizontalMag(vector3d1)) {
-                    vector3d1 = vector3d3
+            if (vec3d3.y < maxHeight) {
+                val vec3d4 = Entity.adjustMovementForCollisions(
+                    player,
+                    Vec3d(movement.x, 0.0, movement.z),
+                    box.offset(vec3d3),
+                    player.world,
+                    shapeContext,
+                    reusableStream
+                ).add(vec3d3)
+                if (vec3d4.horizontalLengthSquared() > vec3d2.horizontalLengthSquared()) {
+                    vec3d2 = vec3d4
                 }
             }
-            if (Entity.horizontalMag(vector3d1) > Entity.horizontalMag(vector3d)) {
-                return vector3d1.add(
-                    Entity.collideBoundingBoxHeuristically(
-                        player, Vector3d(0.0, -vector3d1.y + offset.y, 0.0), playerAABB.offset(vector3d1),
-                        player.world, selectionContext, voxelStream
+            if (vec3d2.horizontalLengthSquared() > vec3d.horizontalLengthSquared()) {
+                return vec3d2.add(
+                    Entity.adjustMovementForCollisions(
+                        player,
+                        Vec3d(0.0, -vec3d2.y + movement.y, 0.0),
+                        box.offset(vec3d2),
+                        player.world,
+                        shapeContext,
+                        reusableStream
                     )
                 ).y
             }
         }
 
-        return vector3d.y
+        return vec3d.y
     }
 
     companion object {
-        // this is private in `LivingEntity`
-        private val SLOW_FALLING_ID = UUID.fromString("A5B6CF2A-2F7C-31EF-9022-7C3E7D5E6ABA")
 
         private val boostTestRange = 1.0
         private val boostTestOffsets = listOf(

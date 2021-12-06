@@ -1,9 +1,8 @@
 package dev.thecodewarrior.hooked.hook
 
-import dev.thecodewarrior.hooked.HookedModSounds
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.SoundEvent
-import net.minecraft.util.math.vector.Vector3d
+import net.minecraft.util.math.vector.Vec3d
 import net.minecraft.world.World
 
 /**
@@ -23,7 +22,7 @@ interface HookControllerDelegate {
     fun fireEvent(event: HookEvent)
 
     fun playFeedbackSound(sound: SoundEvent, volume: Float, pitch: Float)
-    fun playWorldSound(sound: SoundEvent, pos: Vector3d, volume: Float, pitch: Float)
+    fun playWorldSound(sound: SoundEvent, pos: Vec3d, volume: Float, pitch: Float)
 
     fun retractHook(hook: Hook, silently: Boolean = false) {
         retractHook(hook, HookPlayerController.DislodgeReason.EXPLICIT, silently)

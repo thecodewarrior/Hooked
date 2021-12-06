@@ -1,139 +1,94 @@
-buildscript {
-    repositories {
-        maven { url = 'https://files.minecraftforge.net/maven' }
-        maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
-        jcenter()
-        mavenCentral()
-        gradlePluginPortal()
-    }
-    dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
-        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_gradle_version"
-    }
-}
-apply plugin: 'net.minecraftforge.gradle'
-apply plugin: 'org.spongepowered.mixin'
-apply plugin: 'eclipse'
-apply plugin: 'idea'
-apply plugin: 'kotlin'
-
-version = mod_version
-group = 'dev.thecodewarrior.hooked'
-archivesBaseName = 'hooked'
-
-sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
-        freeCompilerArgs += [
-                "-java-parameters",
-                "-Xjvm-default=all"
-        ]
-    }
+plugins {
+    id 'fabric-loom' version '0.9.46'
+    id 'maven-publish'
+    id 'eclipse'
+    id 'idea'
+    id 'java'
+    id 'org.jetbrains.kotlin.jvm' version '1.6.0'
 }
 
-//Print out JVM information so that we know what version is running. Extreamly useful for people to know when helping you.
-println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
+sourceCompatibility = JavaVersion.VERSION_16
+targetCompatibility = JavaVersion.VERSION_16
 
-minecraft {
-    mappings channel: mc_mappings_channel, version: mc_mappings_version
-
-    runs {
-        client {
-            workingDirectory project.file('run')
-            singleInstance true
-
-            property 'forge.logging.markers', ''
-            property 'forge.logging.console.level', 'debug'
-
-            mods {
-                hooked {
-                    source sourceSets.main
-                }
-            }
-        }
-
-        server {
-            workingDirectory project.file('run')
-            singleInstance true
-
-            property 'forge.logging.markers', ''
-            property 'forge.logging.console.level', 'debug'
-
-            mods {
-                hooked {
-                    source sourceSets.main
-                }
-            }
-        }
-
-        data {
-            workingDirectory project.file('run')
-            jvmArg('-XstartOnFirstThread')
-            singleInstance true
-
-            property 'forge.logging.markers', ''
-            property 'forge.logging.console.level', 'debug'
-
-            args '--mod', 'hooked', '--all',
-                    '--existing', '"' + file('src/main/resources/') + '"',
-                    '--output', '"' + file('src/generated/resources/') + '"'
-
-            mods {
-                hooked {
-                    source sourceSets.main
-                }
-            }
-        }
-    }
-}
-
-sourceSets {
-    main {
-        ext.refMap = "dev.thecodewarrior.hooked-refmap.json"
-        resources.srcDir(file('src/generated/resources'))
-    }
-}
+archivesBaseName = project.archivesBaseName
+version = project.mod_version
+group = 'com.teamwizardry.wizardry'
 
 repositories {
     mavenLocal()
-    jcenter()
-    maven { url = 'https://oss.jfrog.org/artifactory/oss-snapshot-local' }
-    maven { url = 'https://jitpack.io' }
-    maven { url = 'https://minecraft.curseforge.com/api/maven/' }
-    maven { url = "https://maven.theillusivec4.top/" }
+    mavenCentral()
     maven {
-        name = 'kotlinforforge'
-        url = 'https://thedarkcolour.github.io/KotlinForForge/'
+        name = "TerraformersMC"
+        url = "https://maven.terraformersmc.com/"
+    }
+    maven {
+        name = "Ladysnake Libs"
+        url = "https://ladysnake.jfrog.io/artifactory/mods"
     }
 }
 
 dependencies {
-    minecraft "net.minecraftforge:forge:$mc_version-$forge_version"
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    modImplementation "net.fabricmc:fabric-language-kotlin:${project.fabric_kotlin_version}"
+    modImplementation "dev.emi:trinkets:${project.trinkets_version}"
 
     [
-            "foundation",
-            "etcetera",
-            "glitter"
+            "com.teamwizardry.librarianlib:scribe:${liblib_version}",
+            "com.teamwizardry.librarianlib:courier:${liblib_version}",
+            "com.teamwizardry.librarianlib:glitter:${liblib_version}",
+            "com.teamwizardry.librarianlib:etcetera:${liblib_version}"
     ].each {
-        compile("com.teamwizardry.librarianlib:librarianlib-$it:$librarianlib_version")
+        modImplementation(it)
     }
-    runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:${curios_version}")
-    compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:${curios_version}:api")
-    annotationProcessor "org.spongepowered:mixin:$mixin_version:processor"
-    testAnnotationProcessor "org.spongepowered:mixin:$mixin_version:processor"
-    implementation "thedarkcolour:kotlinforforge:$kotlinforforge_version"
+}
+
+processResources {
+    inputs.property "version", project.version
+
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.encoding = "UTF-8"
+    it.options.release = 16
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    it.kotlinOptions {
+        jvmTarget = 16
+        freeCompilerArgs = ['-Xjvm-default=enable']
+    }
+}
+
+java {
+    withSourcesJar()
 }
 
 jar {
-    manifest {
-        attributes([
-            "Implementation-Title": "Hooked",
-            "Implementation-Version": "${mod_version}",
-            "Implementation-Vendor" :"thecodewarrior",
-            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
-            "MixinConnector": "dev.thecodewarrior.hooked.MixinConnector"
-        ])
+    from("LICENSE") {
+        rename { "${it}_${project.archivesBaseName}" }
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifact(remapJar) {
+                builtBy remapJar
+            }
+            artifact(sourcesJar) {
+                builtBy remapSourcesJar
+            }
+        }
+    }
+
+    repositories {
+
     }
 }

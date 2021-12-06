@@ -3,7 +3,6 @@ package dev.thecodewarrior.hooked.hooks
 import com.teamwizardry.librarianlib.math.dot
 import com.teamwizardry.librarianlib.math.minus
 import com.teamwizardry.librarianlib.math.times
-import dev.thecodewarrior.hooked.HookedModSounds
 import dev.thecodewarrior.hooked.hook.Hook
 import dev.thecodewarrior.hooked.hook.HookControllerDelegate
 import dev.thecodewarrior.hooked.hook.HookPlayerController
@@ -12,7 +11,7 @@ import dev.thecodewarrior.hooked.util.FadeTimer
 import dev.thecodewarrior.hooked.util.fromWaistPos
 import dev.thecodewarrior.hooked.util.getWaistPos
 import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.util.math.vector.Vector3d
+import net.minecraft.util.math.vector.Vec3d
 import kotlin.math.cos
 
 open class FlightHookPlayerController(val player: PlayerEntity, val type: FlightHookType): HookPlayerController() {
@@ -33,16 +32,16 @@ open class FlightHookPlayerController(val player: PlayerEntity, val type: Flight
     }
 
     private val retractThreshold: Double = cos(Math.toRadians(15.0))
-    private fun isPointingAtHook(pos: Vector3d, direction: Vector3d, cosThreshold: Double, hook: Hook): Boolean {
+    private fun isPointingAtHook(pos: Vec3d, direction: Vec3d, cosThreshold: Double, hook: Hook): Boolean {
         return direction dot (hook.pos - pos).normalize() > cosThreshold
     }
 
     override fun fireHooks(
         delegate: HookControllerDelegate,
-        pos: Vector3d,
-        direction: Vector3d,
+        pos: Vec3d,
+        direction: Vec3d,
         sneaking: Boolean,
-        addHook: (pos: Vector3d, direction: Vector3d) -> Hook
+        addHook: (pos: Vec3d, direction: Vec3d) -> Hook
     ): Boolean {
         if(sneaking) {
             for (hook in delegate.hooks) {
@@ -139,7 +138,7 @@ open class FlightHookPlayerController(val player: PlayerEntity, val type: Flight
                 enforcementForce = 2.0,
                 lockPlayer = false
             )
-            if (constrained.normal != Vector3d.ZERO && (constrained.position - player.positionVec).length() < 2.0) {
+            if (constrained.normal != Vec3d.ZERO && (constrained.position - player.positionVec).length() < 2.0) {
                 player.motion -= constrained.normal * (player.motion dot constrained.normal)
             }
             showHullTimer.start(10)

@@ -20,9 +20,9 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.profiler.IProfiler
 import net.minecraft.resources.IResourceManager
-import net.minecraft.util.ResourceLocation
+import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.vector.Vector3d
+import net.minecraft.util.math.vector.Vec3d
 import net.minecraft.world.World
 import org.lwjgl.opengl.GL11
 import java.awt.Color
@@ -30,7 +30,7 @@ import java.io.IOException
 
 abstract class SimpleHookRenderer<C: HookPlayerController>(val type: HookType): HookRenderer<C>(),
     ISimpleReloadListener<SimpleHookRenderer.ReloadData> {
-    private val id: ResourceLocation = type.registryName!!
+    private val id: Identifier = type.registryName!!
 
     private var model: Obj = Objs.create()
     private var modelVertexIndices: IntArray = IntArray(0)
@@ -114,8 +114,8 @@ abstract class SimpleHookRenderer<C: HookPlayerController>(val type: HookType): 
         matrix: Matrix4d,
         renderType: RenderType,
         world: World,
-        waist: Vector3d,
-        chainDirection: Vector3d,
+        waist: Vec3d,
+        chainDirection: Vec3d,
         chainLength: Double,
         deltaX: Double,
         deltaZ: Double,
@@ -185,7 +185,7 @@ abstract class SimpleHookRenderer<C: HookPlayerController>(val type: HookType): 
         buffer.finish()
     }
 
-    private fun createHookRenderType(texture: ResourceLocation): RenderType {
+    private fun createHookRenderType(texture: Identifier): RenderType {
         val stateBuilder = RenderType.State.getBuilder()
             .texture(RenderState.TextureState(texture, false, false))
             .alpha(DefaultRenderStates.DEFAULT_ALPHA)
@@ -201,7 +201,7 @@ abstract class SimpleHookRenderer<C: HookPlayerController>(val type: HookType): 
         )
     }
 
-    private fun createChainRenderType(texture: ResourceLocation): RenderType {
+    private fun createChainRenderType(texture: Identifier): RenderType {
         val stateBuilder = RenderType.State.getBuilder()
             .texture(RenderState.TextureState(texture, false, false))
             .alpha(DefaultRenderStates.DEFAULT_ALPHA)

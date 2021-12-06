@@ -1,6 +1,6 @@
 package dev.thecodewarrior.hooked.mixin;
 
-import dev.thecodewarrior.hooked.bridge.HookPlayerFlags;
+import dev.thecodewarrior.hooked.bridge.PlayerMixinBridge;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ClientPlayerEntity.class)
-public abstract class ClientPlayerEntityMixin implements HookPlayerFlags {
+public abstract class ClientPlayerEntityMixin implements PlayerMixinBridge {
     private boolean hookedShouldAbortElytraFlag = false;
 
     @Override

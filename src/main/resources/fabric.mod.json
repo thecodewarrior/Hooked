@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "hooked",
+  "version": "${version}",
+
+  "name": "Hooked",
+  "description": "Hooked: Grappling hooks done simple, natural, and useful.",
+  "authors": [
+    "thecodewarrior"
+  ],
+  "contact": {
+    "homepage": "https://curseforge.com/minecraft/mc-mods/hooked",
+    "sources": "https://github.com/thecodewarrior/Hooked",
+    "issues": "https://github.com/thecodewarrior/Hooked/issues",
+    "discord": "https://discord.gg/wsk2PBR"
+  },
+
+  "license": "",
+  "icon": "hooked_logo.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      {
+        "adapter": "kotlin",
+        "value": "dev.thecodewarrior.hooked.Hooked$CommonInitializer"
+      }
+    ],
+    "client": [
+      {
+        "adapter": "kotlin",
+        "value": "dev.thecodewarrior.hooked.Hooked$ClientInitializer"
+      }
+    ]
+  },
+  "mixins": [
+    "hooked.mixins.json"
+  ],
+
+  "depends": {
+    "fabric": "*",
+    "fabric-language-kotlin": ">=1.6.4+kotlin.1.5.30",
+    "minecraft": "1.17.x",
+    "java": ">=16",
+    "liblib-core": ">=5.0.0-alpha.10",
+    "trinkets": "3.0.4",
+    "fabric-key-binding-api-v1": "*"
+  }
+}

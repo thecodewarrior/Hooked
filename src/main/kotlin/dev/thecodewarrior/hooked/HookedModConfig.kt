@@ -1,25 +1,25 @@
 package dev.thecodewarrior.hooked
 
-import com.teamwizardry.librarianlib.core.util.loc
-import dev.thecodewarrior.hooked.hook.HookType
-import dev.thecodewarrior.hooked.hooks.BasicHookType
-import dev.thecodewarrior.hooked.hooks.EnderHookType
-import dev.thecodewarrior.hooked.hooks.FlightHookType
-import net.minecraftforge.event.RegistryEvent
+import net.minecraftforge.common.ForgeConfigSpec
 import net.minecraftforge.eventbus.api.SubscribeEvent
+import net.minecraftforge.fml.ModLoadingContext
+import net.minecraftforge.fml.config.ModConfig
+import thedarkcolour.kotlinforforge.KotlinModLoadingContext
 
-object HookedModHookTypes {
+object HookedModConfig {
+    val woodHook = BasicHookConfig(
+        count = 1,
+        range = 8.0,
+        speed = 0.4,
+        hookLength = 0.5,
+        cooldown = 25,
+        pullStrength = 0.2,
+        boostHeight = 1.5
+    )
+
     val types: List<HookType> = listOf(
-        BasicHookType(
-            count = 1,
-            range = 8.0,
-            speed = 0.4,
-            hookLength = 0.5,
-            cooldown = 25,
-            pullStrength = 0.2,
-            boostHeight = 1.5
-        ).also { it.registryName = loc("hooked:wood_hook") },
-        BasicHookType(
+        .also { it.registryName = loc("hooked:wood_hook") },
+        BasicHookParameters(
             count = 2,
             range = 16.0,
             speed = 0.8,
@@ -28,7 +28,7 @@ object HookedModHookTypes {
             pullStrength = 0.4,
             boostHeight = 2.5
         ).also { it.registryName = loc("hooked:iron_hook") },
-        BasicHookType(
+        BasicHookParameters(
             count = 4,
             range = 24.0,
             speed = 1.2,
@@ -37,7 +37,7 @@ object HookedModHookTypes {
             pullStrength = 1.0,
             boostHeight = 2.5
         ).also { it.registryName = loc("hooked:diamond_hook") },
-        EnderHookType(
+        EnderHookParameters(
             count = 1,
             range = 64.0,
             speed = 64.0,
@@ -46,7 +46,7 @@ object HookedModHookTypes {
             pullStrength = 2.25,
             boostHeight = 2.5
         ).also { it.registryName = loc("hooked:ender_hook") },
-        FlightHookType(
+        FlightHookParameters(
             count = 8,
             range = 48.0,
             speed = 1.2,
@@ -56,11 +56,16 @@ object HookedModHookTypes {
         ).also { it.registryName = loc("hooked:red_hook") },
     )
 
-    @SubscribeEvent
-    fun registerTypes(e: RegistryEvent.Register<HookType>) {
-        e.registry.register(HookType.NONE)
-        types.forEach {
-            e.registry.register(it)
-        }
+    init {
+        KotlinModLoadingContext.get().getKEventBus().register(this)
+        ModLoadingContext.get().registerConfig(
+            ModConfig.Type.COMMON,
+            ForgeConfigSpec.Builder().also { spec ->
+                spec.define("", "")
+            }.build()
+        )
     }
+
+    @SubscribeEvent
+    fun loadConfig
 }

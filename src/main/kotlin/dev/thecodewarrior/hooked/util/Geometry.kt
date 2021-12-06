@@ -4,30 +4,30 @@ import com.teamwizardry.librarianlib.core.util.vec
 import com.teamwizardry.librarianlib.math.*
 import dev.thecodewarrior.hooked.shade.quickhull3d.Point3d
 import dev.thecodewarrior.hooked.shade.quickhull3d.QuickHull3D
-import net.minecraft.util.math.vector.Vector3d
+import net.minecraft.util.math.Vec3d
 import kotlin.math.max
 import kotlin.math.min
 
 interface BoundingShape {
     val wireframe: Set<WireframeEdge>
-    fun constrain(point: Vector3d): ConstraintResult
+    fun constrain(point: Vec3d): ConstraintResult
 }
 
 object NoBoundingShape: BoundingShape {
     override val wireframe: Set<WireframeEdge> = emptySet()
 
-    override fun constrain(point: Vector3d): ConstraintResult {
-        return ConstraintResult(point, Vector3d.ZERO)
+    override fun constrain(point: Vec3d): ConstraintResult {
+        return ConstraintResult(point, Vec3d.ZERO)
     }
 }
 
 class DynamicHull: BoundingShape {
-    var pointSet = setOf<Vector3d>()
+    var pointSet = setOf<Vec3d>()
         private set(value) {
             field = value
             points = value.toList()
         }
-    var points = listOf<Vector3d>()
+    var points = listOf<Vec3d>()
         private set
 
     var shape: BoundingShape = NoBoundingShape
@@ -36,7 +36,7 @@ class DynamicHull: BoundingShape {
     /**
      * Update the hull with the given points, if they have changed. Returns true if there was a change.
      */
-    fun update(newPoints: List<Vector3d>): Boolean {
+    fun update(newPoints: List<Vec3d>): Boolean {
         val uniquePoints = newPoints.toSet()
         if (uniquePoints == pointSet) return false
         pointSet = uniquePoints
@@ -70,7 +70,7 @@ class DynamicHull: BoundingShape {
     override val wireframe: Set<WireframeEdge>
         get() = shape.wireframe
 
-    override fun constrain(point: Vector3d): ConstraintResult {
+    override fun constrain(point: Vec3d): ConstraintResult {
         return shape.constrain(point)
     }
 
@@ -111,7 +111,7 @@ class DynamicHull: BoundingShape {
         if (points.size < 3) return null
         if (points.size == 3) return Polygon(listOf(points[0], points[1], points[2]))
 
-        var sum = Vector3d.ZERO
+        var sum = Vec3d.ZERO
         points.forEach {
             sum += it
         }
@@ -147,19 +147,19 @@ class DynamicHull: BoundingShape {
         // Pick path with best conditioning:
         val dir =
             if (det_max == det_x) {
-                Vector3d(
+                Vec3d(
                     det_x,
                     xz * yz - xy * zz,
                     xy * yz - xz * yy
                 )
             } else if (det_max == det_y) {
-                Vector3d(
+                Vec3d(
                     xz * yz - xy * zz,
                     det_y,
                     xy * xz - yz * xx
                 )
             } else {
-                Vector3d(
+                Vec3d(
                     xy * yz - xz * yy,
                     xy * xz - yz * xx,
                     det_z
@@ -194,7 +194,7 @@ class DynamicHull: BoundingShape {
         val face = faces.first { otherIndex !in it }
 
         return Polygon(face.map {
-            vertices[it].toVector3d() + centroid
+            vertices[it].toVec3d() + centroid
         })
     }
 
@@ -207,21 +207,21 @@ class DynamicHull: BoundingShape {
     }
 }
 
-data class Point(val point: Vector3d): BoundingShape {
+data class Point(val point: Vec3d): BoundingShape {
     override val wireframe: Set<WireframeEdge> = emptySet()
 
-    override fun constrain(point: Vector3d): ConstraintResult {
+    override fun constrain(point: Vec3d): ConstraintResult {
         return ConstraintResult(this.point, (point - this.point).normalize())
     }
 }
 
-data class LineSegment(val a: Vector3d, val b: Vector3d): BoundingShape {
+data class LineSegment(val a: Vec3d, val b: Vec3d): BoundingShape {
     private val length = (b - a).length()
     private val normalized = if (length == 0.0) vec(0.0, 1.0, 0.0) else (b - a) / length
 
     override val wireframe: Set<WireframeEdge> = setOf(WireframeEdge(a, b))
 
-    override fun constrain(point: Vector3d): ConstraintResult {
+    override fun constrain(point: Vec3d): ConstraintResult {
         val dot = (point - a) dot normalized
         return ConstraintResult(
             a + normalized * dot.clamp(0.0, length),
@@ -230,7 +230,7 @@ data class LineSegment(val a: Vector3d, val b: Vector3d): BoundingShape {
     }
 }
 
-data class Polygon(val points: List<Vector3d>): BoundingShape {
+data class Polygon(val points: List<Vec3d>): BoundingShape {
     /**
      * The list of edges in 3d world space
      */
@@ -258,25 +258,25 @@ data class Polygon(val points: List<Vector3d>): BoundingShape {
     /**
      * points[0], used as the "origin" for 2d space and when calculating the normal
      */
-    val a: Vector3d
+    val a: Vec3d
 
     /**
      * points[[bIndex]], used as the first point when calculating the normal
      */
-    val b: Vector3d
+    val b: Vec3d
     val bIndex: Int
 
     /**
      * points[[cIndex]], used as the second point when calculating the normal
      */
-    val c: Vector3d
+    val c: Vec3d
     val cIndex: Int
 
     /**
      * The normal vector, pointing out of the clockwise side of the face. defined as
      * `((b - a) cross (c - a)).normalize()`
      */
-    val normal: Vector3d
+    val normal: Vec3d
 
     init {
         a = points[0]
@@ -310,16 +310,16 @@ data class Polygon(val points: List<Vector3d>): BoundingShape {
         edges.map { WireframeEdge(it.a, it.b) }.toSet()
     }
 
-    private fun pointToPlane(point: Vector3d): Vec2d {
+    private fun pointToPlane(point: Vec3d): Vec2d {
         val transformed = pointToPlane * point
         return Vec2d(transformed.x, transformed.y)
     }
 
-    private fun planeToPoint(point: Vec2d): Vector3d {
-        return planeToPoint * Vector3d(point.x, point.y, 0.0)
+    private fun planeToPoint(point: Vec2d): Vec3d {
+        return planeToPoint * Vec3d(point.x, point.y, 0.0)
     }
 
-    override fun constrain(point: Vector3d): ConstraintResult {
+    override fun constrain(point: Vec3d): ConstraintResult {
         val point2d = pointToPlane(point)
         if (point2d in this) {
             val constrainedPoint = planeToPoint(point2d)
@@ -345,7 +345,7 @@ data class Polygon(val points: List<Vector3d>): BoundingShape {
     }
 }
 
-data class Hull(val points: List<Vector3d>, val threshold: Double): BoundingShape {
+data class Hull(val points: List<Vec3d>, val threshold: Double): BoundingShape {
     val faces: List<Polygon>
 
     init {
@@ -353,15 +353,15 @@ data class Hull(val points: List<Vector3d>, val threshold: Double): BoundingShap
         val quickHull = QuickHull3D()
         quickHull.explicitDistanceTolerance = threshold / 100.0
         quickHull.build(points.map { (it - origin).toPoint3d() }.toTypedArray())
-        val vertices = quickHull.vertices.map { it.toVector3d() + origin }
+        val vertices = quickHull.vertices.map { it.toVec3d() + origin }
         faces = quickHull.faces.map { indices ->
             Polygon(indices.map { vertices[it] })
         }
     }
 
-    override fun constrain(point: Vector3d): ConstraintResult {
+    override fun constrain(point: Vec3d): ConstraintResult {
         if (faces.all { (point - it.a) dot it.normal <= 0 }) // point is inside the hull
-            return ConstraintResult(point, Vector3d.ZERO)
+            return ConstraintResult(point, Vec3d.ZERO)
         return faces.map { it.constrain(point) }.minByOrNull { (point - it.position).lengthSquared() }!!
     }
 
@@ -372,13 +372,13 @@ data class Hull(val points: List<Vector3d>, val threshold: Double): BoundingShap
     }
 }
 
-private fun Vector3d.toPoint3d() = Point3d(x, y, z)
-private fun Point3d.toVector3d() = Vector3d(x, y, z)
+private fun Vec3d.toPoint3d() = Point3d(x, y, z)
+private fun Point3d.toVec3d() = Vec3d(x, y, z)
 
 /**
  * An order-independent line. Both equals and hashCode ignore the order of the arguments
  */
-class WireframeEdge(val a: Vector3d, val b: Vector3d) {
+class WireframeEdge(val a: Vec3d, val b: Vec3d) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is WireframeEdge) return false
@@ -402,4 +402,4 @@ class WireframeEdge(val a: Vector3d, val b: Vector3d) {
     }
 }
 
-class ConstraintResult(val position: Vector3d, val normal: Vector3d)
+class ConstraintResult(val position: Vec3d, val normal: Vec3d)

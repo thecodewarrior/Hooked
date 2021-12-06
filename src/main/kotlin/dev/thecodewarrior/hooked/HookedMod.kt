@@ -1,7 +1,6 @@
 package dev.thecodewarrior.hooked
 
 import com.teamwizardry.librarianlib.core.util.loc
-import com.teamwizardry.librarianlib.core.util.sided.SidedRunnable
 import com.teamwizardry.librarianlib.foundation.BaseMod
 import com.teamwizardry.librarianlib.foundation.util.TagWrappers
 import dev.thecodewarrior.hooked.client.HookRenderManager
@@ -55,7 +54,7 @@ object HookedMod: BaseMod(true) {
     }
 
     override fun clientSetup(e: FMLClientSetupEvent) {
-        ClientRegistry.registerKeyBinding(Keybinds.fireKey)
+        ClientRegistry.registerKeyBinding(Keybinds.FIRE)
         HookRenderManager // registers itself for events
         ClientHookProcessor // registers itself for events
         HudRenderer // registers itself for events

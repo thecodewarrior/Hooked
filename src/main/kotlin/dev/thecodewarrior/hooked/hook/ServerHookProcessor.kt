@@ -14,7 +14,7 @@ import net.minecraft.entity.player.ServerPlayerEntity
 import net.minecraft.util.SoundCategory
 import net.minecraft.util.SoundEvent
 import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.vector.Vector3d
+import net.minecraft.util.math.vector.Vec3d
 import net.minecraft.world.GameType
 import net.minecraft.world.World
 import net.minecraftforge.common.MinecraftForge
@@ -63,7 +63,7 @@ object ServerHookProcessor: CommonHookProcessor() {
             // feedback sounds are played on the client
         }
 
-        override fun playWorldSound(sound: SoundEvent, pos: Vector3d, volume: Float, pitch: Float) {
+        override fun playWorldSound(sound: SoundEvent, pos: Vec3d, volume: Float, pitch: Float) {
             data.player.world.playSound(null, pos.x, pos.y, pos.z, sound, SoundCategory.PLAYERS, volume, pitch)
         }
 
@@ -78,8 +78,8 @@ object ServerHookProcessor: CommonHookProcessor() {
     fun fireHook(
         player: ServerPlayerEntity,
         data: HookedPlayerData,
-        pos: Vector3d,
-        direction: Vector3d,
+        pos: Vec3d,
+        direction: Vec3d,
         sneaking: Boolean,
         uuids: List<UUID>
     ) {
@@ -131,7 +131,7 @@ object ServerHookProcessor: CommonHookProcessor() {
         if (e.phase != TickEvent.Phase.END) return
         val data = getHookData(e.player) ?: return
 
-        val equippedType = getEquippedHook(e.player)?.type ?: HookType.NONE
+        val equippedType = getEquippedHook(e.player)?.hookType ?: HookType.NONE
         if (data.type != equippedType) {
             data.hooks.clear()
             data.type = equippedType

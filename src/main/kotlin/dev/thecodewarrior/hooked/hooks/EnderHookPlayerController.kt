@@ -11,7 +11,7 @@ import com.teamwizardry.librarianlib.math.div
 import dev.thecodewarrior.hooked.client.glitter.EnderHookParticleSystem
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.math.MathHelper
-import net.minecraft.util.math.vector.Vector3d
+import net.minecraft.util.math.vector.Vec3d
 import net.minecraftforge.api.distmarker.Dist
 import net.minecraftforge.api.distmarker.OnlyIn
 import kotlin.math.cos
@@ -41,7 +41,7 @@ class EnderHookPlayerController(player: PlayerEntity, type: BasicHookType): Basi
     }
 
     @OnlyIn(Dist.CLIENT)
-    private fun spawnBurst(start: Vector3d, end: Vector3d) {
+    private fun spawnBurst(start: Vec3d, end: Vec3d) {
         val delta = end - start
         val length = delta.length()
         val normal = delta / length

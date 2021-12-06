@@ -12,7 +12,7 @@ import net.minecraft.client.settings.AttackIndicatorStatus
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.inventory.container.INamedContainerProvider
 import net.minecraft.util.HandSide
-import net.minecraft.util.ResourceLocation
+import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockRayTraceResult
 import net.minecraft.util.math.EntityRayTraceResult
 import net.minecraft.util.math.RayTraceResult
@@ -23,7 +23,7 @@ import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.eventbus.api.SubscribeEvent
 
 object HudRenderer {
-    private val HUD_TEXTURE = ResourceLocation("hooked:textures/gui/cooldown.png")
+    private val HUD_TEXTURE = Identifier("hooked:textures/gui/cooldown.png")
 
     init {
         MinecraftForge.EVENT_BUS.register(this)

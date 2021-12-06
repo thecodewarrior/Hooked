@@ -1,7 +1,7 @@
 package dev.thecodewarrior.hooked.network
 
 import com.teamwizardry.librarianlib.math.clamp
-import net.minecraft.entity.player.ServerPlayerEntity
+import net.minecraft.server.network.ServerPlayerEntity
 
 /**
  * Various constants for use in mitigating cheats. Because of the way Hooked is designed it has to give the client a lot
@@ -27,7 +27,7 @@ object CheatMitigation {
      * Creates a 0-1 value based on the player's current ping.
      */
     fun pingFactor(player: ServerPlayerEntity): Double {
-        val ping = player.ping.clamp(minimumPing, maximumPing)
+        val ping = player.pingMilliseconds.clamp(minimumPing, maximumPing)
         return (ping.toDouble() - minimumPing) / (maximumPing - minimumPing)
     }
 

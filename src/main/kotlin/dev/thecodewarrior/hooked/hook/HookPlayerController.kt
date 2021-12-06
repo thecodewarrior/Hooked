@@ -7,14 +7,13 @@ import com.teamwizardry.librarianlib.math.plus
 import com.teamwizardry.librarianlib.math.times
 import com.teamwizardry.librarianlib.prism.SimpleSerializer
 import com.teamwizardry.librarianlib.prism.Sync
-import dev.thecodewarrior.hooked.HookedModSounds
 import ll.dev.thecodewarrior.mirror.Mirror
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.ServerPlayerEntity
 import net.minecraft.nbt.CompoundNBT
 import net.minecraft.network.play.ServerPlayNetHandler
-import net.minecraft.util.math.vector.Vector3d
+import net.minecraft.util.math.vector.Vec3d
 import net.minecraftforge.common.util.INBTSerializable
 import kotlin.math.abs
 import kotlin.math.sign
@@ -44,8 +43,8 @@ abstract class HookPlayerController: INBTSerializable<CompoundNBT> {
      */
     abstract fun fireHooks(
         delegate: HookControllerDelegate,
-        pos: Vector3d, direction: Vector3d, sneaking: Boolean,
-        addHook: (pos: Vector3d, direction: Vector3d) -> Hook
+        pos: Vec3d, direction: Vec3d, sneaking: Boolean,
+        addHook: (pos: Vec3d, direction: Vec3d) -> Hook
     ): Boolean
 
     /**
@@ -128,7 +127,7 @@ abstract class HookPlayerController: INBTSerializable<CompoundNBT> {
      * @param lockPlayer Whether to reset the player's motion when snapping using the [enforcementForce]
      */
     protected fun applyRestoringForce(
-        player: PlayerEntity, target: Vector3d,
+        player: PlayerEntity, target: Vec3d,
         pullForce: Double,
         enforcementForce: Double = pullForce,
         accelerationFactor: Double = 0.5,
@@ -175,8 +174,8 @@ abstract class HookPlayerController: INBTSerializable<CompoundNBT> {
         return result
     }
 
-    protected fun movePlayer(player: PlayerEntity, offset: Vector3d) {
-        val allowedOffset = getAllowedMovement.callFast<Vector3d>(player, offset)
+    protected fun movePlayer(player: PlayerEntity, offset: Vec3d) {
+        val allowedOffset = getAllowedMovement.callFast<Vec3d>(player, offset)
         val newPos = player.positionVec + allowedOffset
         player.setPosition(newPos.x, newPos.y, newPos.z)
     }
@@ -208,8 +207,8 @@ abstract class HookPlayerController: INBTSerializable<CompoundNBT> {
             override fun jump(delegate: HookControllerDelegate, doubleJump: Boolean, sneaking: Boolean) {}
             override fun fireHooks(
                 delegate: HookControllerDelegate,
-                pos: Vector3d, direction: Vector3d, sneaking: Boolean,
-                addHook: (pos: Vector3d, direction: Vector3d) -> Hook
+                pos: Vec3d, direction: Vec3d, sneaking: Boolean,
+                addHook: (pos: Vec3d, direction: Vec3d) -> Hook
             ): Boolean {
                 return false
             }
@@ -220,6 +219,6 @@ abstract class HookPlayerController: INBTSerializable<CompoundNBT> {
         private val floatingTickCount = Mirror.reflectClass<ServerPlayNetHandler>()
             .getDeclaredField(mapSrgName("field_147365_f"))
         private val getAllowedMovement = Mirror.reflectClass<Entity>().declaredMethods
-            .get(mapSrgName("func_213306_e"), Mirror.reflect<Vector3d>())
+            .get(mapSrgName("func_213306_e"), Mirror.reflect<Vec3d>())
     }
 }

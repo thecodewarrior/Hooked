@@ -1,10 +1,6 @@
 package dev.thecodewarrior.hooked.hook
 
-import com.teamwizardry.librarianlib.core.util.loc
 import net.minecraft.entity.player.PlayerEntity
-import net.minecraftforge.registries.ForgeRegistryEntry
-import net.minecraftforge.registries.IForgeRegistry
-import net.minecraftforge.registries.RegistryManager
 
 abstract class HookType(
     /**
@@ -24,7 +20,7 @@ abstract class HookType(
      */
     val hookLength: Double,
     val cooldown: Int,
-): ForgeRegistryEntry<HookType>() {
+) {
 
     abstract val translationBase: String
 
@@ -40,18 +36,10 @@ abstract class HookType(
 
     companion object {
         val NONE: HookType = object: HookType(0, 0.0, 0.0, 0.0, 0) {
-            init {
-                registryName = loc("hooked:none")
-            }
-
             override val translationBase: String = "hooked.controller.none"
             override val controlLangKeys: List<String> = emptyList()
 
             override fun createController(player: PlayerEntity): HookPlayerController = HookPlayerController.NONE
-        }
-
-        val REGISTRY: IForgeRegistry<HookType> by lazy {
-            RegistryManager.ACTIVE.getRegistry(HookType::class.java)
         }
     }
 }

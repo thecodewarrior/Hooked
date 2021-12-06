@@ -8,7 +8,7 @@ import net.minecraft.data.IFinishedRecipe
 import net.minecraft.item.Item
 import net.minecraft.item.Items
 import net.minecraft.tags.ItemTags
-import net.minecraft.util.ResourceLocation
+import net.minecraft.util.Identifier
 import net.minecraftforge.common.Tags
 import net.minecraftforge.registries.ForgeRegistries
 import java.util.function.Consumer
@@ -97,7 +97,7 @@ object HookedModRecipes: RecipeGenerator() {
         }
     }
 
-    private fun item(id: ResourceLocation): Item {
+    private fun item(id: Identifier): Item {
         return ForgeRegistries.ITEMS.getValue(id)!!
     }
 }

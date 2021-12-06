@@ -7,7 +7,7 @@ import ll.dev.thecodewarrior.prism.annotation.RefractClass
 import ll.dev.thecodewarrior.prism.annotation.RefractConstructor
 import net.minecraft.util.SoundEvent
 import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.vector.Vector3d
+import net.minecraft.util.math.vector.Vec3d
 import net.minecraft.world.World
 import java.util.*
 
@@ -24,7 +24,7 @@ data class Hook @RefractConstructor constructor(
     /**
      * The position of the tail of the hook
      */
-    @Refract var pos: Vector3d,
+    @Refract var pos: Vec3d,
     /**
      * The current state.
      */
@@ -32,7 +32,7 @@ data class Hook @RefractConstructor constructor(
     /**
      * The (normalized) direction the hook is pointing
      */
-    @Refract var direction: Vector3d,
+    @Refract var direction: Vec3d,
     /**
      * The block the hook is attached to. Should be (0,0,0) unless [state] is [State.PLANTED]
      */
@@ -45,12 +45,12 @@ data class Hook @RefractConstructor constructor(
     /**
      * The position of the tail of the hook last tick
      */
-    var posLastTick: Vector3d = pos
+    var posLastTick: Vec3d = pos
 
     /**
      * The position of the tip of the hook, as computed from the pos and direction
      */
-    val tipPos: Vector3d
+    val tipPos: Vec3d
         get() = pos + direction * type.hookLength
 
     enum class State {

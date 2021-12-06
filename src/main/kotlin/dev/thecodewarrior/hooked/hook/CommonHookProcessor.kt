@@ -9,7 +9,7 @@ import dev.thecodewarrior.hooked.HookedMod
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.util.getWaistPos
 import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.util.math.vector.Vector3d
+import net.minecraft.util.math.vector.Vec3d
 import net.minecraftforge.event.entity.player.PlayerEvent
 import java.util.*
 import kotlin.math.cos
@@ -50,7 +50,7 @@ abstract class CommonHookProcessor {
         return player.getCapability(HookedPlayerData.CAPABILITY).getOrNull()
     }
 
-    protected fun isPointingAtHook(pos: Vector3d, direction: Vector3d, cosThreshold: Double, hook: Hook): Boolean {
+    protected fun isPointingAtHook(pos: Vec3d, direction: Vec3d, cosThreshold: Double, hook: Hook): Boolean {
         return direction dot (hook.pos - pos).normalize() > cosThreshold
     }
 

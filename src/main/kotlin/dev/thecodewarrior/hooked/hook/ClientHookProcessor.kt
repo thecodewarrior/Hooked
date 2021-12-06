@@ -9,7 +9,7 @@ import net.minecraft.entity.Entity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.SoundEvent
 import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.vector.Vector3d
+import net.minecraft.util.math.vector.Vec3d
 import net.minecraft.world.GameType
 import net.minecraft.world.World
 import net.minecraftforge.api.distmarker.Dist
@@ -58,7 +58,7 @@ object ClientHookProcessor: CommonHookProcessor() {
             player.playSound(sound, volume, pitch)
         }
 
-        override fun playWorldSound(sound: SoundEvent, pos: Vector3d, volume: Float, pitch: Float) {
+        override fun playWorldSound(sound: SoundEvent, pos: Vec3d, volume: Float, pitch: Float) {
             // world sounds are played on the server
         }
 
@@ -91,7 +91,7 @@ object ClientHookProcessor: CommonHookProcessor() {
         }
     }
 
-    fun fireHook(data: HookedPlayerData, pos: Vector3d, direction: Vector3d, sneaking: Boolean) {
+    fun fireHook(data: HookedPlayerData, pos: Vec3d, direction: Vec3d, sneaking: Boolean) {
         if (data.type != HookType.NONE && Client.minecraft.playerController!!.currentGameType != GameType.SPECTATOR) {
             val uuids = arrayListOf<UUID>()
             val shouldSend = data.controller.fireHooks(Context(data), pos, direction, sneaking) { hookPos, hookDirection ->
