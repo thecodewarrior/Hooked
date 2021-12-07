@@ -62,6 +62,7 @@ tasks.withType(JavaCompile).configureEach {
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
     it.kotlinOptions {
         jvmTarget = 16
+        javaParameters = true
         freeCompilerArgs = ['-Xjvm-default=enable']
     }
 }

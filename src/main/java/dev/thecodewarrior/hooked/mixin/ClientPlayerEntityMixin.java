@@ -1,7 +1,8 @@
 package dev.thecodewarrior.hooked.mixin;
 
 import dev.thecodewarrior.hooked.bridge.PlayerMixinBridge;
-import net.minecraft.client.entity.player.ClientPlayerEntity;
+import dev.thecodewarrior.hooked.hook.ClientHookProcessor;
+import net.minecraft.client.network.ClientPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -21,8 +22,9 @@ public abstract class ClientPlayerEntityMixin implements PlayerMixinBridge {
         this.hookedShouldAbortElytraFlag = hookedShouldAbortElytraFlag;
     }
 
-    @Inject(method = "livingTick", at = @At("RETURN"))
-    private void livingTickMixin(CallbackInfo ci) {
+    @Inject(method = "tickMovement", at = @At("RETURN"))
+    private void tickHooks(CallbackInfo ci) {
         hookedShouldAbortElytraFlag = false;
+        ClientHookProcessor.INSTANCE.tick((ClientPlayerEntity) (Object) this);
     }
 }

@@ -7,9 +7,9 @@ import java.util.UUID
 
 @RefractClass
 data class HookEvent @RefractConstructor constructor(
-    @Refract val type: EventType,
-    @Refract val uuid: UUID,
-    @Refract val data: Int,
+    @Refract("type") val type: EventType,
+    @Refract("uuid") val uuid: UUID,
+    @Refract("data") val data: Int,
 ) {
 
     enum class EventType {

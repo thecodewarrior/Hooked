@@ -1,18 +1,11 @@
 package dev.thecodewarrior.hooked.hook
 
 import com.teamwizardry.librarianlib.core.util.block
-import com.teamwizardry.librarianlib.core.util.kotlin.getOrNull
 import com.teamwizardry.librarianlib.core.util.kotlin.inconceivable
 import com.teamwizardry.librarianlib.etcetera.Raycaster
 import com.teamwizardry.librarianlib.math.*
-import dev.thecodewarrior.hooked.HookedMod
-import dev.thecodewarrior.hooked.capability.HookedPlayerData
+import dev.thecodewarrior.hooked.Hooked
 import dev.thecodewarrior.hooked.util.getWaistPos
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.util.math.vector.Vec3d
-import net.minecraftforge.event.entity.player.PlayerEvent
-import java.util.*
-import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
@@ -29,30 +22,6 @@ import kotlin.math.pow
  */
 abstract class CommonHookProcessor {
     protected val raycaster: Raycaster = Raycaster()
-    protected val retractThreshold: Double = cos(Math.toRadians(15.0))
-
-    fun fixSpeed(e: PlayerEvent.BreakSpeed) {
-//        From `PlayerEntity.getDigSpeed`:
-//        if (!this.onGround) {
-//            f /= 5.0f
-//        }
-
-        if (!e.entity.isOnGround) {
-            e.entity.getCapability(HookedPlayerData.CAPABILITY).getOrNull()?.also { data ->
-                if (data.hooks.any { it.state == Hook.State.PLANTED }) {
-                    e.newSpeed *= 5
-                }
-            }
-        }
-    }
-
-    protected fun getHookData(player: PlayerEntity): HookedPlayerData? {
-        return player.getCapability(HookedPlayerData.CAPABILITY).getOrNull()
-    }
-
-    protected fun isPointingAtHook(pos: Vec3d, direction: Vec3d, cosThreshold: Double, hook: Hook): Boolean {
-        return direction dot (hook.pos - pos).normalize() > cosThreshold
-    }
 
     /**
      * Ticks the hooks, applying motion, raycasting, etc.
@@ -140,7 +109,7 @@ abstract class CommonHookProcessor {
         context.hooks.forEach { hook ->
             if (hook.state != Hook.State.PLANTED) return@forEach
 
-            if (hook.pos.squareDistanceTo(context.player.getWaistPos()) > breakRangeSq) {
+            if (hook.pos.squaredDistanceTo(context.player.getWaistPos()) > breakRangeSq) {
                 hook.state = Hook.State.RETRACTING
                 context.markDirty(hook)
                 context.fireEvent(
@@ -150,7 +119,7 @@ abstract class CommonHookProcessor {
                         HookPlayerController.DislodgeReason.DISTANCE.ordinal
                     )
                 )
-            } else if (context.world.isAirBlock(hook.block)) {
+            } else if (context.world.isAir(hook.block)) {
                 hook.state = Hook.State.RETRACTING
                 context.markDirty(hook)
                 context.fireEvent(
@@ -219,5 +188,5 @@ abstract class CommonHookProcessor {
         }
     }
 
-    private val logger = HookedMod.makeLogger<CommonHookProcessor>()
+    private val logger = Hooked.logManager.makeLogger<CommonHookProcessor>()
 }

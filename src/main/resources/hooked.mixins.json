@@ -5,7 +5,10 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "hooked.refmap.json",
   "mixins": [
-    "PlayerEntityMixin"
+    "EntityAccessMixin",
+    "FloatingTicksAccess",
+    "PlayerEntityMixin",
+    "ServerPlayerEntityMixin"
   ],
   "client": [
     "ClientPlayerEntityMixin",

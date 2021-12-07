@@ -4,16 +4,15 @@ import com.teamwizardry.librarianlib.core.util.ModLogManager
 import com.teamwizardry.librarianlib.courier.CourierClientPlayNetworking
 import com.teamwizardry.librarianlib.courier.CourierPacketType
 import com.teamwizardry.librarianlib.courier.CourierServerPlayNetworking
+import com.teamwizardry.librarianlib.glitter.ParticleSystemManager
 import dev.thecodewarrior.hooked.bridge.hookData
 import dev.thecodewarrior.hooked.client.HookRenderManager
 import dev.thecodewarrior.hooked.client.Keybinds
+import dev.thecodewarrior.hooked.client.glitter.EnderHookParticleSystem
 import dev.thecodewarrior.hooked.hook.ClientHookProcessor
 import dev.thecodewarrior.hooked.hook.HookType
 import dev.thecodewarrior.hooked.hook.ServerHookProcessor
-import dev.thecodewarrior.hooked.hooks.BasicHookType
-import dev.thecodewarrior.hooked.hooks.EnderHookPlayerController
-import dev.thecodewarrior.hooked.hooks.EnderHookType
-import dev.thecodewarrior.hooked.hooks.FlightHookType
+import dev.thecodewarrior.hooked.hooks.*
 import dev.thecodewarrior.hooked.network.*
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.api.ModInitializer
@@ -49,6 +48,7 @@ object Hooked {
             registerStats()
             registerSounds()
             registerNetworking()
+            ServerHookProcessor.registerEvents()
         }
 
         private fun createRegistry() {
@@ -118,10 +118,23 @@ object Hooked {
         private val logger = logManager.makeLogger<ClientInitializer>()
 
         override fun onInitializeClient() {
+            registerHookRenderers()
             registerNetworking()
             registerKeybinds()
             EnderHookPlayerController.particleEffect = EnderHookPlayerController.ClientParticleEffect
             ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(HookRenderManager)
+        }
+
+        private fun registerHookRenderers() {
+            ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(HookRenderManager)
+            HookTypes.types.forEach {
+                when(it) {
+                    is FlightHookType -> HookRenderManager.register(it, FlightHookRenderer(it))
+                    is BasicHookType -> HookRenderManager.register(it, BasicHookRenderer(it))
+                }
+            }
+            //HudRenderer
+            ParticleSystemManager.add(EnderHookParticleSystem)
         }
 
         private fun registerKeybinds() {
@@ -132,17 +145,17 @@ object Hooked {
         private fun registerNetworking() {
             CourierClientPlayNetworking.registerGlobalReceiver(Packets.HOOK_EVENTS) { packet, context ->
                 context.execute {
-                    processHookEventsPacket(packet, context.client.player)
+                    processHookEventsPacket(packet, context.client.player!!)
                 }
             }
             CourierClientPlayNetworking.registerGlobalReceiver(Packets.SYNC_HOOK_DATA) { packet, context ->
                 context.execute {
-                    processSyncHookDataPacket(packet, context.client.player)
+                    processSyncHookDataPacket(packet, context.client.player!!)
                 }
             }
             CourierClientPlayNetworking.registerGlobalReceiver(Packets.SYNC_INDIVIDUAL_HOOKS) { packet, context ->
                 context.execute {
-                    processSyncIndividualHooksPacket(packet, context.client.player)
+                    processSyncIndividualHooksPacket(packet, context.client.player!!)
                 }
             }
         }
@@ -210,7 +223,9 @@ object Hooked {
     }
 
     object HookStats {
+        @JvmField
         val HOOK_ONE_CM = Identifier("hooked:hook_one_cm")
+        @JvmField
         val HOOKS_FIRED = Identifier("hooked:hooks_fired")
     }
 }

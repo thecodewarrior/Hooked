@@ -1,20 +1,19 @@
 package dev.thecodewarrior.hooked.hook
 
-import com.teamwizardry.librarianlib.core.util.mapSrgName
+import com.teamwizardry.librarianlib.core.util.mixinCast
 import com.teamwizardry.librarianlib.core.util.vec
 import com.teamwizardry.librarianlib.math.minus
 import com.teamwizardry.librarianlib.math.plus
 import com.teamwizardry.librarianlib.math.times
-import com.teamwizardry.librarianlib.prism.SimpleSerializer
-import com.teamwizardry.librarianlib.prism.Sync
-import ll.dev.thecodewarrior.mirror.Mirror
-import net.minecraft.entity.Entity
+import com.teamwizardry.librarianlib.scribe.Save
+import com.teamwizardry.librarianlib.scribe.SimpleSerializer
+import dev.thecodewarrior.hooked.Hooked
+import dev.thecodewarrior.hooked.mixin.EntityAccessMixin
+import dev.thecodewarrior.hooked.mixin.FloatingTicksAccess
 import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.entity.player.ServerPlayerEntity
-import net.minecraft.nbt.CompoundNBT
-import net.minecraft.network.play.ServerPlayNetHandler
-import net.minecraft.util.math.vector.Vec3d
-import net.minecraftforge.common.util.INBTSerializable
+import net.minecraft.nbt.NbtCompound
+import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.util.math.Vec3d
 import kotlin.math.abs
 import kotlin.math.sign
 
@@ -24,9 +23,9 @@ import kotlin.math.sign
  * - Hook controllers will only be changed on the server and synced from on high.
  * - Hook controllers don't manage the movement of hooks, that's up to the hook processor.
  *
- * Hook controllers should have important data serialized using [@Sync][Sync]
+ * Hook controllers should have important data serialized using [@Save][Save]
  */
-abstract class HookPlayerController: INBTSerializable<CompoundNBT> {
+abstract class HookPlayerController {
     private val serializer = SimpleSerializer.get(this.javaClass)
 
     /**
@@ -74,14 +73,14 @@ abstract class HookPlayerController: INBTSerializable<CompoundNBT> {
      */
     open fun onHookHit(delegate: HookControllerDelegate, hook: Hook) {
         delegate.playWorldSound(Hook.hitSound(delegate.world, hook.block), hook.pos, 1f, 1f)
-        delegate.playFeedbackSound(HookedModSounds.hookHit, 1f, 1f)
+        delegate.playFeedbackSound(Hooked.Sounds.HOOK_HIT_EVENT, 1f, 1f)
     }
 
     /**
      * Called when a hook starts retracting because it reached full extension without hitting anything
      */
     open fun onHookMiss(delegate: HookControllerDelegate, hook: Hook) {
-        delegate.playFeedbackSound(HookedModSounds.hookMiss, 1f, 1f)
+        delegate.playFeedbackSound(Hooked.Sounds.HOOK_MISS_EVENT, 1f, 1f)
     }
 
     /**
@@ -90,22 +89,22 @@ abstract class HookPlayerController: INBTSerializable<CompoundNBT> {
     open fun onHookDislodge(delegate: HookControllerDelegate, hook: Hook, reason: DislodgeReason) {
         when(reason) {
             DislodgeReason.BLOCK_BROKEN, DislodgeReason.DISTANCE -> {
-                delegate.playFeedbackSound(HookedModSounds.hookDislodge, 1f, 1f)
+                delegate.playFeedbackSound(Hooked.Sounds.HOOK_DISLODGE_EVENT, 1f, 1f)
             }
             DislodgeReason.HOOK_COUNT -> {}
             DislodgeReason.EXPLICIT -> {
                 delegate.playWorldSound(Hook.hitSound(delegate.world, hook.block), hook.pos, 1f, 1f)
-                delegate.playFeedbackSound(HookedModSounds.retractHook, 1f, 1f)
+                delegate.playFeedbackSound(Hooked.Sounds.RETRACT_HOOK_EVENT, 1f, 1f)
             }
         }
     }
 
-    override fun serializeNBT(): CompoundNBT {
-        return serializer.createTag(this, Sync::class.java)
+    fun serializeNBT(): NbtCompound {
+        return serializer.createTag(this, Save::class.java)
     }
 
-    override fun deserializeNBT(nbt: CompoundNBT) {
-        serializer.applyTag(nbt, this, Sync::class.java)
+    fun deserializeNBT(nbt: NbtCompound) {
+        serializer.applyTag(nbt, this, Save::class.java)
     }
 
     /**
@@ -114,7 +113,7 @@ abstract class HookPlayerController: INBTSerializable<CompoundNBT> {
     protected fun clearFlyingKickTimer(player: PlayerEntity) {
         if (player !is ServerPlayerEntity)
             return
-        floatingTickCount.setFast(player.connection, 0)
+        mixinCast<FloatingTicksAccess>(player).floatingTicks = 0
     }
 
     /**
@@ -134,20 +133,20 @@ abstract class HookPlayerController: INBTSerializable<CompoundNBT> {
         arrestingFactor: Double = 1.0,
         lockPlayer: Boolean = true
     ) {
-        val deltaPos = target - player.positionVec
+        val deltaPos = target - player.pos
         val deltaLen = deltaPos.length()
 
         if (deltaLen <= enforcementForce) { // close enough that we should set to avoid oscillations
             movePlayer(player, deltaPos)
             if (lockPlayer)
-                player.motion = vec(0, 0, 0)
+                player.velocity = vec(0, 0, 0)
         } else {
             val pull = deltaPos * (pullForce / deltaLen)
 
-            player.motion = vec(
-                applyRestoringComponentForce(player.motion.x, pull.x, accelerationFactor, arrestingFactor),
-                applyRestoringComponentForce(player.motion.y, pull.y, accelerationFactor, arrestingFactor),
-                applyRestoringComponentForce(player.motion.z, pull.z, accelerationFactor, arrestingFactor)
+            player.velocity = vec(
+                applyRestoringComponentForce(player.velocity.x, pull.x, accelerationFactor, arrestingFactor),
+                applyRestoringComponentForce(player.velocity.y, pull.y, accelerationFactor, arrestingFactor),
+                applyRestoringComponentForce(player.velocity.z, pull.z, accelerationFactor, arrestingFactor)
             )
         }
     }
@@ -175,8 +174,8 @@ abstract class HookPlayerController: INBTSerializable<CompoundNBT> {
     }
 
     protected fun movePlayer(player: PlayerEntity, offset: Vec3d) {
-        val allowedOffset = getAllowedMovement.callFast<Vec3d>(player, offset)
-        val newPos = player.positionVec + allowedOffset
+        val allowedOffset = mixinCast<EntityAccessMixin>(player).invokeAdjustMovementForCollisions(offset)
+        val newPos = player.pos + allowedOffset
         player.setPosition(newPos.x, newPos.y, newPos.z)
     }
 
@@ -203,7 +202,8 @@ abstract class HookPlayerController: INBTSerializable<CompoundNBT> {
     }
 
     companion object {
-        val NONE: HookPlayerController = object: HookPlayerController() {
+        val NONE: HookPlayerController = None
+        private object None: HookPlayerController() {
             override fun jump(delegate: HookControllerDelegate, doubleJump: Boolean, sneaking: Boolean) {}
             override fun fireHooks(
                 delegate: HookControllerDelegate,
@@ -215,10 +215,5 @@ abstract class HookPlayerController: INBTSerializable<CompoundNBT> {
 
             override fun update(delegate: HookControllerDelegate) {}
         }
-
-        private val floatingTickCount = Mirror.reflectClass<ServerPlayNetHandler>()
-            .getDeclaredField(mapSrgName("field_147365_f"))
-        private val getAllowedMovement = Mirror.reflectClass<Entity>().declaredMethods
-            .get(mapSrgName("func_213306_e"), Mirror.reflect<Vec3d>())
     }
 }

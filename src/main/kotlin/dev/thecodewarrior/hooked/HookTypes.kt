@@ -73,6 +73,8 @@ object HookTypes {
     )
     val RED_ITEM = createItem(RED_TYPE)
 
+    val types = listOf(WOOD_TYPE, IRON_TYPE, DIAMOND_TYPE, ENDER_TYPE, RED_TYPE)
+
     fun registerTypes() {
         Registry.register(Hooked.hookRegistry, WOOD_ID, WOOD_TYPE)
         Registry.register(Hooked.hookRegistry, IRON_ID, IRON_TYPE)

@@ -1,34 +1,25 @@
 package dev.thecodewarrior.hooked.hook
 
 import com.teamwizardry.librarianlib.core.util.Client
-import dev.thecodewarrior.hooked.HookedMod
+import com.teamwizardry.librarianlib.courier.CourierClientPlayNetworking
+import dev.thecodewarrior.hooked.Hooked
+import dev.thecodewarrior.hooked.bridge.hookData
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.network.FireHookPacket
 import dev.thecodewarrior.hooked.network.HookJumpPacket
-import net.minecraft.entity.Entity
+import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.util.SoundEvent
+import net.minecraft.sound.SoundEvent
 import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.vector.Vec3d
-import net.minecraft.world.GameType
+import net.minecraft.util.math.Vec3d
+import net.minecraft.world.GameMode
 import net.minecraft.world.World
-import net.minecraftforge.api.distmarker.Dist
-import net.minecraftforge.api.distmarker.OnlyIn
-import net.minecraftforge.common.MinecraftForge
-import net.minecraftforge.event.TickEvent
-import net.minecraftforge.event.entity.player.PlayerEvent
-import net.minecraftforge.eventbus.api.EventPriority
-import net.minecraftforge.eventbus.api.SubscribeEvent
 import java.util.*
 
 /**
  * Processes hooks on the *logical* client.
  */
-@OnlyIn(Dist.CLIENT)
 object ClientHookProcessor: CommonHookProcessor() {
-    init {
-        MinecraftForge.EVENT_BUS.register(this)
-    }
 
     @JvmStatic var hudCooldown: Double = 0.0
     private var cooldownCounter: Int = 0
@@ -92,7 +83,7 @@ object ClientHookProcessor: CommonHookProcessor() {
     }
 
     fun fireHook(data: HookedPlayerData, pos: Vec3d, direction: Vec3d, sneaking: Boolean) {
-        if (data.type != HookType.NONE && Client.minecraft.playerController!!.currentGameType != GameType.SPECTATOR) {
+        if (data.type != HookType.NONE && Client.minecraft.interactionManager?.currentGameMode != GameMode.SPECTATOR) {
             val uuids = arrayListOf<UUID>()
             val shouldSend = data.controller.fireHooks(Context(data), pos, direction, sneaking) { hookPos, hookDirection ->
                 val uuid = UUID.randomUUID()
@@ -103,7 +94,7 @@ object ClientHookProcessor: CommonHookProcessor() {
                     hookPos,
                     Hook.State.EXTENDING,
                     hookDirection,
-                    BlockPos.ZERO,
+                    BlockPos(0, 0, 0),
                     0
                 )
                 data.hooks.add(hook)
@@ -112,7 +103,8 @@ object ClientHookProcessor: CommonHookProcessor() {
             }
 
             if(shouldSend) {
-                HookedMod.courier.sendToServer(
+                CourierClientPlayNetworking.send(
+                    Hooked.Packets.FIRE_HOOK,
                     FireHookPacket(
                         pos,
                         direction,
@@ -128,21 +120,19 @@ object ClientHookProcessor: CommonHookProcessor() {
         if (data.type != HookType.NONE) {
             data.controller.jump(Context(data), doubleJump, sneaking)
 
-            HookedMod.courier.sendToServer(
+            CourierClientPlayNetworking.send(
+                Hooked.Packets.HOOK_JUMP,
                 HookJumpPacket(doubleJump, sneaking)
             )
         }
     }
 
-    @SubscribeEvent
-    fun playerPostTick(e: TickEvent.PlayerTickEvent) {
-        if (!isClient(e.player)) return
-        if (e.phase != TickEvent.Phase.END) return
-        val data = getHookData(e.player) ?: return
+    fun tick(player: ClientPlayerEntity) {
+        val data = player.hookData()
 
         applyHookMotion(Context(data))
 
-        if(e.player == Client.player) {
+        if(player == Client.player) {
             data.controller.update(Context(data))
             if(data.type.cooldown == 0 || cooldownCounter > data.type.cooldown) {
                 cooldownCounter = 0
@@ -161,18 +151,5 @@ object ClientHookProcessor: CommonHookProcessor() {
         }
     }
 
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
-    fun breakSpeed(e: PlayerEvent.BreakSpeed) {
-        if(!isClient(e.entity)) return
-        fixSpeed(e)
-    }
-
-    /**
-     * Returns true if the passed player is from the logical client.
-     */
-    private fun isClient(entity: Entity): Boolean {
-        return entity.world.isRemote
-    }
-
-    private val logger = HookedMod.makeLogger<ClientHookProcessor>()
+    private val logger = Hooked.logManager.makeLogger<ClientHookProcessor>()
 }

@@ -1,11 +1,20 @@
 package dev.thecodewarrior.hooked.mixin;
 
-import dev.thecodewarrior.hooked.HookedModStats;
+import com.mojang.authlib.GameProfile;
+import dev.thecodewarrior.hooked.Hooked;
 import dev.thecodewarrior.hooked.bridge.PlayerMixinBridge;
 import dev.thecodewarrior.hooked.capability.HookedPlayerData;
+import dev.thecodewarrior.hooked.hook.Hook;
+import net.minecraft.block.BlockState;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.tag.FluidTags;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -15,9 +24,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(PlayerEntity.class)
-public abstract class PlayerEntityMixin implements PlayerMixinBridge {
+public abstract class PlayerEntityMixin extends LivingEntity implements PlayerMixinBridge {
     private HookedPlayerData hookedPlayerData;
     private boolean hookedTravelingByHookFlag = false;
+
+    protected PlayerEntityMixin(EntityType<? extends LivingEntity> entityType, World world) {
+        super(entityType, world);
+    }
 
     @NotNull
     @Override
@@ -53,7 +66,7 @@ public abstract class PlayerEntityMixin implements PlayerMixinBridge {
     @Shadow public abstract void increaseStat(Identifier stat, int amount);
 
     @Inject(method = "<init>", at = @At("RETURN"))
-    private void initializeHookedData() {
+    private void initializeHookedData(World world, BlockPos pos, float yaw, GameProfile profile, CallbackInfo ci) {
         //noinspection ConstantConditions
         hookedPlayerData = new HookedPlayerData((PlayerEntity) (Object) this);
     }
@@ -63,7 +76,7 @@ public abstract class PlayerEntityMixin implements PlayerMixinBridge {
         if(hookedTravelingByHookFlag) {
             int cm = Math.round(MathHelper.sqrt((float) (dx * dx + dy * dy + dz * dz)) * 100.0F);
             if (cm > 0) {
-                this.increaseStat(HookedModStats.INSTANCE.getHookOneCm(), cm);
+                this.increaseStat(Hooked.HookStats.HOOK_ONE_CM, cm);
             }
             ci.cancel();
         }
@@ -76,4 +89,22 @@ public abstract class PlayerEntityMixin implements PlayerMixinBridge {
         }
     }
 
+
+
+    @Inject(method = "getBlockBreakingSpeed", at = @At("RETURN"))
+    private void fixBreakSpeed(BlockState block, CallbackInfoReturnable<Float> cir) {
+        if(hookedPlayerData.getHooks().stream().anyMatch(hook -> hook.getState() == Hook.State.PLANTED)) {
+            var f = cir.getReturnValueF();
+
+            if (this.isSubmergedIn(FluidTags.WATER) && !EnchantmentHelper.hasAquaAffinity(this)) {
+                f *= 5.0F;
+            }
+
+            if (!this.onGround) {
+                f *= 5.0F;
+            }
+
+            cir.setReturnValue(f);
+        }
+    }
 }

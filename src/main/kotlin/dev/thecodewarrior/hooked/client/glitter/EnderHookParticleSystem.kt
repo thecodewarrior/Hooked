@@ -1,6 +1,5 @@
 package dev.thecodewarrior.hooked.client.glitter
 
-import com.teamwizardry.librarianlib.core.util.loc
 import java.awt.Color
 import com.teamwizardry.librarianlib.glitter.ParticleSystem
 import com.teamwizardry.librarianlib.glitter.bindings.ConstantBinding
@@ -9,8 +8,9 @@ import com.teamwizardry.librarianlib.glitter.modules.SetValueUpdateModule
 import com.teamwizardry.librarianlib.glitter.modules.SpriteRenderModule
 import com.teamwizardry.librarianlib.glitter.modules.SpriteRenderOptions
 import com.teamwizardry.librarianlib.math.Easing
+import net.minecraft.util.Identifier
 
-object EnderHookParticleSystem: ParticleSystem() {
+object EnderHookParticleSystem: ParticleSystem(Identifier("hooked:ender_hook")) {
     val defaultColor: Color = Color(0.9f, 0.3f, 1.0f, 1.0f)
 
     override fun configure() {
@@ -55,7 +55,7 @@ object EnderHookParticleSystem: ParticleSystem() {
 
         renderModules.add(
             SpriteRenderModule.build(
-                SpriteRenderOptions.build(loc("hooked:textures/glitter/bar.png"))
+                SpriteRenderOptions.build(Identifier("hooked:textures/glitter/bar.png"))
                     .worldLight(true)
                     .diffuseLight(true)
                     .build(),

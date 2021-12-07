@@ -1,27 +1,13 @@
 package dev.thecodewarrior.hooked.client
 
-import com.mojang.blaze3d.matrix.MatrixStack
 import com.mojang.blaze3d.systems.RenderSystem
 import com.teamwizardry.librarianlib.core.util.Client
-import com.teamwizardry.librarianlib.core.util.mapSrgName
 import dev.thecodewarrior.hooked.hook.ClientHookProcessor
 import ll.dev.thecodewarrior.mirror.Mirror
-import net.minecraft.client.GameSettings
-import net.minecraft.client.gui.AbstractGui
-import net.minecraft.client.settings.AttackIndicatorStatus
 import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.inventory.container.INamedContainerProvider
-import net.minecraft.util.HandSide
 import net.minecraft.util.Identifier
-import net.minecraft.util.math.BlockRayTraceResult
-import net.minecraft.util.math.EntityRayTraceResult
-import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.GameType
 import net.minecraft.world.World
-import net.minecraftforge.client.event.RenderGameOverlayEvent
-import net.minecraftforge.common.MinecraftForge
-import net.minecraftforge.eventbus.api.SubscribeEvent
-
+/*
 object HudRenderer {
     private val HUD_TEXTURE = Identifier("hooked:textures/gui/cooldown.png")
 
@@ -188,3 +174,4 @@ object HudRenderer {
 
     private val blitOffset = Mirror.reflectClass<AbstractGui>().getDeclaredField(mapSrgName("field_230662_a_"))
 }
+ */

@@ -39,10 +39,6 @@ abstract class SimpleHookRenderer<C: HookPlayerController>(val type: HookType): 
     private val chain1Texture = Identifier(id.namespace, "textures/hook/${id.path}/chain1.png")
     private val chain2Texture = Identifier(id.namespace, "textures/hook/${id.path}/chain2.png")
 
-    init {
-        applyData(loadModel(Client.resourceManager))
-    }
-
     protected fun renderHooks(
         matrices: MatrixStack,
         vertexConsumers: VertexConsumerProvider,

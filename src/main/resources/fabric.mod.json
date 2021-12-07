@@ -23,13 +23,13 @@
     "main": [
       {
         "adapter": "kotlin",
-        "value": "dev.thecodewarrior.hooked.Hooked$CommonInitializer"
+        "value": "dev.thecodewarrior.hooked.Hooked\$CommonInitializer"
       }
     ],
     "client": [
       {
         "adapter": "kotlin",
-        "value": "dev.thecodewarrior.hooked.Hooked$ClientInitializer"
+        "value": "dev.thecodewarrior.hooked.Hooked\$ClientInitializer"
       }
     ]
   },

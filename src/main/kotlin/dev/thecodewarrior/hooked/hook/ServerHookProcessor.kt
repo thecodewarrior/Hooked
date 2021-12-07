@@ -1,40 +1,32 @@
 package dev.thecodewarrior.hooked.hook
 
 import com.teamwizardry.librarianlib.core.util.kotlin.getOrNull
-import dev.thecodewarrior.hooked.HookedMod
-import dev.thecodewarrior.hooked.HookedModStats
+import com.teamwizardry.librarianlib.courier.CourierServerPlayNetworking
+import dev.emi.trinkets.api.TrinketsApi
+import dev.thecodewarrior.hooked.Hooked
+import dev.thecodewarrior.hooked.bridge.hookData
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.capability.IHookItem
 import dev.thecodewarrior.hooked.network.HookEventsPacket
 import dev.thecodewarrior.hooked.network.SyncHookDataPacket
 import dev.thecodewarrior.hooked.network.SyncIndividualHooksPacket
-import net.minecraft.entity.Entity
+import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents
+import net.fabricmc.fabric.api.networking.v1.EntityTrackingEvents
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup
 import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.entity.player.ServerPlayerEntity
-import net.minecraft.util.SoundCategory
-import net.minecraft.util.SoundEvent
+import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.sound.SoundCategory
+import net.minecraft.sound.SoundEvent
 import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.vector.Vec3d
-import net.minecraft.world.GameType
+import net.minecraft.util.math.Vec3d
+import net.minecraft.world.GameMode
 import net.minecraft.world.World
-import net.minecraftforge.common.MinecraftForge
-import net.minecraftforge.event.TickEvent
-import net.minecraftforge.event.entity.EntityJoinWorldEvent
-import net.minecraftforge.event.entity.player.PlayerEvent
-import net.minecraftforge.eventbus.api.EventPriority
-import net.minecraftforge.eventbus.api.SubscribeEvent
-import net.minecraftforge.fml.network.PacketDistributor
-import top.theillusivec4.curios.api.CuriosApi
 import java.util.*
 
 /**
  * Processes hooks on the *logical* server. This is present in both the client and dedicated server environments.
  */
 object ServerHookProcessor: CommonHookProcessor() {
-    init {
-        MinecraftForge.EVENT_BUS.register(this)
-    }
-
     class Context(override val data: HookedPlayerData): HookProcessorContext {
         override val type: HookType get() = data.type
         override val controller: HookPlayerController get() = data.controller
@@ -75,6 +67,33 @@ object ServerHookProcessor: CommonHookProcessor() {
         }
     }
 
+    fun registerEvents() {
+        EntityTrackingEvents.START_TRACKING.register { target, player ->
+            if(target is PlayerEntity) {
+                CourierServerPlayNetworking.send(
+                    player,
+                    Hooked.Packets.SYNC_HOOK_DATA,
+                    SyncHookDataPacket(
+                        target.id,
+                        ArrayList(),
+                        target.hookData().serializeNBT()
+                    )
+                )
+            }
+        }
+        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register { player, _, _ ->
+            CourierServerPlayNetworking.send(
+                player,
+                Hooked.Packets.SYNC_HOOK_DATA,
+                SyncHookDataPacket(
+                    player.id,
+                    ArrayList(),
+                    player.hookData().serializeNBT()
+                )
+            )
+        }
+    }
+
     fun fireHook(
         player: ServerPlayerEntity,
         data: HookedPlayerData,
@@ -83,7 +102,7 @@ object ServerHookProcessor: CommonHookProcessor() {
         sneaking: Boolean,
         uuids: List<UUID>
     ) {
-        if (data.type == HookType.NONE || player.interactionManager.gameType == GameType.SPECTATOR) {
+        if (data.type == HookType.NONE || player.interactionManager.gameMode == GameMode.SPECTATOR) {
             // they seem to think they can fire hooks
             data.syncStatus.forceFullSyncToClient = true
         } else {
@@ -102,13 +121,13 @@ object ServerHookProcessor: CommonHookProcessor() {
                     hookPos,
                     Hook.State.EXTENDING,
                     hookDirection,
-                    BlockPos.ZERO,
+                    BlockPos(0, 0, 0),
                     0
                 )
                 data.hooks.add(hook)
                 // this will cause a full sync to the client, and a single-hook sync to other clients
                 data.syncStatus.dirtyHooks.add(hook)
-                data.player.addStat(HookedModStats.hooksFired)
+                data.player.incrementStat(Hooked.HookStats.HOOKS_FIRED)
 
                 hook
             }
@@ -125,13 +144,10 @@ object ServerHookProcessor: CommonHookProcessor() {
         }
     }
 
-    @SubscribeEvent
-    fun playerPostTick(e: TickEvent.PlayerTickEvent) {
-        if (!isServer(e.player)) return
-        if (e.phase != TickEvent.Phase.END) return
-        val data = getHookData(e.player) ?: return
+    fun tick(player: ServerPlayerEntity) {
+        val data = player.hookData()
 
-        val equippedType = getEquippedHook(e.player)?.hookType ?: HookType.NONE
+        val equippedType = getEquippedHook(player)?.hookType ?: HookType.NONE
         if (data.type != equippedType) {
             data.hooks.clear()
             data.type = equippedType
@@ -145,42 +161,37 @@ object ServerHookProcessor: CommonHookProcessor() {
 
 
         if (data.syncStatus.forceFullSyncToClient || data.syncStatus.dirtyHooks.isNotEmpty()) {
-            HookedMod.courier.send(
-                PacketDistributor.PLAYER.with { e.player as ServerPlayerEntity },
+            CourierServerPlayNetworking.send(
+                player,
+                Hooked.Packets.SYNC_HOOK_DATA,
                 SyncHookDataPacket(
-                    e.player.entityId,
+                    player.id,
                     data.syncStatus.dirtyHooks.filterTo(ArrayList()) { it.state == Hook.State.REMOVED },
                     data.serializeNBT()
                 )
             )
         }
         if (data.syncStatus.forceFullSyncToOthers) {
-            HookedMod.courier.send(
-                PacketDistributor.TRACKING_ENTITY.with { e.player },
-                SyncHookDataPacket(
-                    e.player.entityId,
-                    data.syncStatus.dirtyHooks.filterTo(ArrayList()) { it.state == Hook.State.REMOVED },
-                    data.serializeNBT()
-                )
+            val packet = SyncHookDataPacket(
+                player.id,
+                data.syncStatus.dirtyHooks.filterTo(ArrayList()) { it.state == Hook.State.REMOVED },
+                data.serializeNBT()
             )
+            PlayerLookup.tracking(player).forEach {
+                CourierServerPlayNetworking.send(it, Hooked.Packets.SYNC_HOOK_DATA, packet)
+            }
         } else if (data.syncStatus.dirtyHooks.isNotEmpty()) {
-            HookedMod.courier.send(
-                PacketDistributor.TRACKING_ENTITY.with { e.player },
-                SyncIndividualHooksPacket(
-                    e.player.entityId,
-                    ArrayList(data.syncStatus.dirtyHooks)
-                )
-            )
+            val packet = SyncIndividualHooksPacket(player.id, ArrayList(data.syncStatus.dirtyHooks))
+            PlayerLookup.tracking(player).forEach {
+                CourierServerPlayNetworking.send(it, Hooked.Packets.SYNC_INDIVIDUAL_HOOKS, packet)
+            }
         }
         if (data.syncStatus.queuedEvents.isNotEmpty()) {
-            HookedMod.courier.send(
-                PacketDistributor.TRACKING_ENTITY_AND_SELF.with { e.player },
-                HookEventsPacket(
-                    e.player.entityId,
-                    ArrayList(data.syncStatus.queuedEvents)
-                )
-            )
-            data.syncStatus.queuedEvents.clear()
+            val packet = HookEventsPacket(player.id, ArrayList(data.syncStatus.queuedEvents))
+            CourierServerPlayNetworking.send(player, Hooked.Packets.HOOK_EVENTS, packet)
+            PlayerLookup.tracking(player).forEach {
+                CourierServerPlayNetworking.send(it, Hooked.Packets.HOOK_EVENTS, packet)
+            }
         }
 
         data.syncStatus.forceFullSyncToClient = false
@@ -190,57 +201,10 @@ object ServerHookProcessor: CommonHookProcessor() {
     }
 
     private fun getEquippedHook(player: PlayerEntity): IHookItem? {
-        return CuriosApi.getCuriosHelper()
-            .getCuriosHandler(player).getOrNull()
-            ?.getStacksHandler("hooked")?.getOrNull()
-            ?.stacks?.getStackInSlot(0)
-            ?.getCapability(IHookItem.CAPABILITY)
-            ?.getOrNull()
+        val component = TrinketsApi.getTrinketComponent(player).getOrNull() ?: return null
+        val stack = component.getEquipped { it.item is IHookItem }.firstOrNull()?.right
+        return stack?.item as? IHookItem
     }
 
-    @SubscribeEvent
-    fun track(e: PlayerEvent.StartTracking) {
-        if (!isServer(e.player)) return
-        val target = e.target
-        target.getCapability(HookedPlayerData.CAPABILITY).getOrNull()?.also { data ->
-            HookedMod.courier.send(
-                PacketDistributor.PLAYER.with { e.player as ServerPlayerEntity },
-                SyncHookDataPacket(
-                    target.entityId,
-                    ArrayList(),
-                    data.serializeNBT()
-                )
-            )
-        }
-    }
-
-    @SubscribeEvent
-    fun join(e: EntityJoinWorldEvent) {
-        val serverPlayer = e.entity as? ServerPlayerEntity ?: return
-        serverPlayer.getCapability(HookedPlayerData.CAPABILITY).getOrNull()?.also { data ->
-            HookedMod.courier.send(
-                PacketDistributor.PLAYER.with { serverPlayer },
-                SyncHookDataPacket(
-                    serverPlayer.entityId,
-                    ArrayList(),
-                    data.serializeNBT()
-                )
-            )
-        }
-    }
-
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
-    fun breakSpeed(e: PlayerEvent.BreakSpeed) {
-        if (!isServer(e.entity)) return
-        fixSpeed(e)
-    }
-
-    /**
-     * Returns true if the passed player is from the logical server.
-     */
-    private fun isServer(entity: Entity): Boolean {
-        return !entity.world.isRemote
-    }
-
-    private val logger = HookedMod.makeLogger<ServerHookProcessor>()
+    private val logger = Hooked.logManager.makeLogger<ServerHookProcessor>()
 }
