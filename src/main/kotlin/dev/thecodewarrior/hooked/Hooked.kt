@@ -5,6 +5,8 @@ import com.teamwizardry.librarianlib.courier.CourierClientPlayNetworking
 import com.teamwizardry.librarianlib.courier.CourierPacketType
 import com.teamwizardry.librarianlib.courier.CourierServerPlayNetworking
 import com.teamwizardry.librarianlib.glitter.ParticleSystemManager
+import com.teamwizardry.librarianlib.scribe.Scribe
+import com.teamwizardry.librarianlib.scribe.nbt.RegistryEntrySerializer
 import dev.thecodewarrior.hooked.bridge.hookData
 import dev.thecodewarrior.hooked.client.HookRenderManager
 import dev.thecodewarrior.hooked.client.Keybinds
@@ -14,6 +16,7 @@ import dev.thecodewarrior.hooked.hook.HookType
 import dev.thecodewarrior.hooked.hook.ServerHookProcessor
 import dev.thecodewarrior.hooked.hooks.*
 import dev.thecodewarrior.hooked.network.*
+import ll.dev.thecodewarrior.mirror.Mirror
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
@@ -122,7 +125,7 @@ object Hooked {
             registerNetworking()
             registerKeybinds()
             EnderHookPlayerController.particleEffect = EnderHookPlayerController.ClientParticleEffect
-            ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(HookRenderManager)
+            Scribe.nbt.register(RegistryEntrySerializer(hookRegistry, Mirror.reflect<HookType>()))
         }
 
         private fun registerHookRenderers() {

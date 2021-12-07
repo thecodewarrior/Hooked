@@ -17,7 +17,7 @@ import java.util.*
 class HookedPlayerData(val player: PlayerEntity) {
     val serializer = SimpleSerializer.get(javaClass)
 
-    @Save
+    @Save("type")
     var type: HookType = HookType.NONE
         set(value) {
             if (value != field) {
@@ -27,8 +27,8 @@ class HookedPlayerData(val player: PlayerEntity) {
             field = value
         }
 
-    @Save
-    val hooks: LinkedList<Hook> = LinkedList()
+    @Save("hooks")
+    var hooks: LinkedList<Hook> = LinkedList()
 
     var controller: HookPlayerController = HookPlayerController.NONE
 
