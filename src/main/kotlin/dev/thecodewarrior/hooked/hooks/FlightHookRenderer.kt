@@ -6,6 +6,7 @@ import com.teamwizardry.librarianlib.albedo.buffer.Primitive
 import com.teamwizardry.librarianlib.math.Matrix4dStack
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.client.renderer.SimpleHookRenderer
+import dev.thecodewarrior.hooked.util.getWaistPos
 import dev.thecodewarrior.hooked.util.withAlpha
 import net.minecraft.client.render.RenderLayer
 import net.minecraft.client.render.VertexConsumerProvider
@@ -18,45 +19,48 @@ import java.awt.Color
 open class FlightHookRenderer(type: FlightHookType): SimpleHookRenderer<FlightHookPlayerController>(type) {
     override fun render(
         matrices: MatrixStack,
-        vertexConsumers: VertexConsumerProvider,
         player: PlayerEntity,
-        style: RenderStyle,
-        partialTicks: Float,
+        ghost: Boolean,
+        tickDelta: Float,
         data: HookedPlayerData,
         controller: FlightHookPlayerController
     ) {
-        renderHooks(matrices, vertexConsumers, player, style, partialTicks, data, 0.0)
+        val waist = player.getWaistPos(tickDelta)
+        matrices.translate(waist.x, waist.y, waist.z)
+        renderHooks(matrices, player, ghost, tickDelta, data, 2.5)
 
         if (controller.showHullTimer.value != 0.0) {
-            val frontColor = Color(1f, 0f, 0f)
-            val backColor = Color(0.5f, 0f, 0f)
             val alpha = controller.showHullTimer.value.toFloat()
+            val frontColor = Color(1f, 0f, 0f, alpha)
+            val backColor = Color(0.5f, 0f, 0f, alpha)
+
+            matrices.translate(-waist.x, -waist.y, -waist.z)
+            RenderSystem.enableBlend()
             RenderSystem.depthFunc(GL11.GL_GREATER)
             RenderSystem.depthMask(false)
-            drawWireframe(matrices, vertexConsumers, controller, backColor.withAlpha(alpha))
+            drawWireframe(matrices, controller, backColor)
 
             RenderSystem.depthFunc(GL11.GL_LEQUAL)
             RenderSystem.depthMask(true)
-            drawWireframe(matrices, vertexConsumers, controller, frontColor.withAlpha(alpha))
+            drawWireframe(matrices, controller, frontColor)
+            RenderSystem.disableBlend()
         }
     }
 
     fun drawWireframe(
         matrices: MatrixStack,
-        vertexConsumers: VertexConsumerProvider,
         controller: FlightHookPlayerController,
         color: Color
     ) {
-//        val vb = FlatLinesRenderBuffer.SHARED
-//        vb.width(1f)
-//
-//        for(edge in controller.hull.shape.wireframe) {
-//            vb.pos(matrix, edge.a.x, edge.a.y, edge.a.z).color(color).endVertex()
-//            vb.dupVertex()
-//            vb.pos(matrix, edge.b.x, edge.b.y, edge.b.z).color(color).endVertex()
-//            vb.dupVertex()
-//        }
-//
-//        vb.draw(Primitive.LINES_ADJACENCY)
+        val vb = FlatLinesRenderBuffer.SHARED
+
+        for(edge in controller.hull.shape.wireframe) {
+            vb.pos(matrices, edge.a.x, edge.a.y, edge.a.z).width(2f).color(color).endVertex()
+            vb.pos(matrices, edge.a.x, edge.a.y, edge.a.z).width(2f).color(color).endVertex()
+            vb.pos(matrices, edge.b.x, edge.b.y, edge.b.z).width(2f).color(color).endVertex()
+            vb.pos(matrices, edge.b.x, edge.b.y, edge.b.z).width(2f).color(color).endVertex()
+        }
+
+        vb.draw(Primitive.LINES_ADJACENCY)
     }
 }

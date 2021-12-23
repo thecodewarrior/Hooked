@@ -12,34 +12,10 @@ import net.minecraft.util.Identifier
 abstract class HookRenderer<C: HookPlayerController> : ResourceReloader {
     abstract fun render(
         matrices: MatrixStack,
-        vertexConsumers: VertexConsumerProvider,
         player: PlayerEntity,
-        style: RenderStyle,
-        partialTicks: Float,
+        ghost: Boolean,
+        tickDelta: Float,
         data: HookedPlayerData,
         controller: C
     )
-
-    enum class RenderStyle(val alpha: Float) {
-        /**
-         * Translucent, e.g. invisible players on your team
-         */
-        TRANSLUCENT(0.15f),
-
-        /**
-         * Normal
-         */
-        NORMAL(1f),
-
-        /**
-         * Outline. Use [RenderLayer.getOutline] for this
-         */
-        OUTLINE(1f);
-
-        fun getLayer(texture: Identifier): RenderLayer = when (this) {
-            TRANSLUCENT -> RenderLayer.getItemEntityTranslucentCull(texture)
-            NORMAL -> RenderLayer.getEntityCutout(texture)
-            OUTLINE -> RenderLayer.getOutline(texture)
-        }
-    }
 }

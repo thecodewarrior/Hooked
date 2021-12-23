@@ -29,21 +29,6 @@ class HookFeatureRenderer<T: PlayerEntity, M: EntityModel<T>>(context: FeatureRe
         headYaw: Float,
         headPitch: Float
     ) {
-        val showBody = !entity.isInvisible
-        val translucent = !showBody && !entity.isInvisibleTo(Client.player);
-        val showOutline = Client.minecraft.hasOutline(entity)
-        val style = when {
-            translucent -> HookRenderer.RenderStyle.TRANSLUCENT
-            showBody -> HookRenderer.RenderStyle.NORMAL
-            showOutline -> HookRenderer.RenderStyle.OUTLINE
-            else -> return
-        }
-
-        val data = entity.hookData()
-        if(data.type != HookType.NONE) {
-            val renderer = HookRenderManager.getRenderer(data.type) ?: return
-            renderer.render(matrices, vertexConsumers, entity, style, tickDelta, data, data.controller)
-        }
     }
 
 }

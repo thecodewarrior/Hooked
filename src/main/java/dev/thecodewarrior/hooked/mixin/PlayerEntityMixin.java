@@ -91,7 +91,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerMi
 
 
 
-    @Inject(method = "getBlockBreakingSpeed", at = @At("RETURN"))
+    @Inject(method = "getBlockBreakingSpeed", at = @At("RETURN"), cancellable = true)
     private void fixBreakSpeed(BlockState block, CallbackInfoReturnable<Float> cir) {
         if(hookedPlayerData.getHooks().stream().anyMatch(hook -> hook.getState() == Hook.State.PLANTED)) {
             var f = cir.getReturnValueF();

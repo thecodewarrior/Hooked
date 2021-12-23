@@ -23,6 +23,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener
 import net.minecraft.client.render.VertexConsumerProvider
 import net.minecraft.client.render.VertexConsumers
+import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.resource.ResourceManager
 import net.minecraft.resource.ResourceReloader
@@ -32,7 +33,7 @@ import org.lwjgl.opengl.GL11
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 
-object HookRenderManager: IdentifiableResourceReloadListener, WorldRenderEvents.DebugRender {
+object HookRenderManager: IdentifiableResourceReloadListener, WorldRenderEvents.Last {
     private val registry = mutableMapOf<HookType, HookRenderer<*>>()
 
     fun register(type: HookType, renderer: HookRenderer<*>) {
@@ -45,6 +46,10 @@ object HookRenderManager: IdentifiableResourceReloadListener, WorldRenderEvents.
 
     override fun getFabricId(): Identifier {
         return Identifier("hooked:hook_render_manager")
+    }
+
+    fun registerEvents() {
+        WorldRenderEvents.LAST.register(this)
     }
 
     override fun reload(
@@ -62,16 +67,28 @@ object HookRenderManager: IdentifiableResourceReloadListener, WorldRenderEvents.
         )
     }
 
-    override fun beforeDebugRender(context: WorldRenderContext) {
-
-        context.matrixStack().push()
+    override fun onLast(context: WorldRenderContext) {
+        val stack = MatrixStack()
         val viewPos = Client.minecraft.gameRenderer.camera.pos
-        context.matrixStack().translate(-viewPos.x, -viewPos.y, -viewPos.z)
+        stack.translate(-viewPos.x, -viewPos.y, -viewPos.z)
 
         val world = Client.minecraft.world ?: return
         world.players.forEach { player ->
             val data = player.hookData()
             if (data.type != HookType.NONE) {
+                val visibleToTeam = !player.isInvisibleTo(Client.player)
+                if(!player.isInvisible || visibleToTeam) {
+                    stack.push()
+                    getRenderer(data.type)?.render(
+                        stack,
+                        player,
+                        player.isInvisible && visibleToTeam,
+                        context.tickDelta(),
+                        data,
+                        data.controller
+                    )
+                    stack.pop()
+                }
                 if (Client.minecraft.wireFrame) {
                     drawDebugLines(context, player, data)
                 }
@@ -83,9 +100,6 @@ object HookRenderManager: IdentifiableResourceReloadListener, WorldRenderEvents.
         if (data.hooks.isEmpty())
             return
 
-        RenderSystem.lineWidth(1f)
-        RenderSystem.disableTexture()
-
         val vb = FlatLinesRenderBuffer.SHARED
 
         val waistPos = player.getWaistPos(Client.worldTime.tickDelta)
@@ -94,9 +108,9 @@ object HookRenderManager: IdentifiableResourceReloadListener, WorldRenderEvents.
 
         data.hooks.forEach { hook ->
 
-            vb.pos(matrix, waistPos).color(DistinctColors.white).endVertex()
+            vb.pos(matrix, waistPos).color(DistinctColors.white).width(3f).endVertex()
             vb.dupVertex()
-            vb.pos(matrix, hook.pos).color(DistinctColors.white).endVertex()
+            vb.pos(matrix, hook.pos).color(DistinctColors.white).width(3f).endVertex()
             vb.dupVertex()
 
             matrix.push()
@@ -112,36 +126,35 @@ object HookRenderManager: IdentifiableResourceReloadListener, WorldRenderEvents.
             val length = hook.type.hookLength
             val claw = length / 3
 
-            vb.pos(matrix, 0, 0, 0).color(color).endVertex()
+            vb.pos(matrix, 0, 0, 0).color(color).width(3f).endVertex()
             vb.dupVertex()
-            vb.pos(matrix, 0, length, 0).color(color).endVertex()
-            vb.dupVertex()
-
-            vb.pos(matrix, -claw, length - claw, 0).color(color).endVertex()
-            vb.dupVertex()
-            vb.pos(matrix, 0, length, 0).color(color).endVertex()
+            vb.pos(matrix, 0, length, 0).color(color).width(3f).endVertex()
             vb.dupVertex()
 
+            vb.pos(matrix, -claw, length - claw, 0).color(color).width(3f).endVertex()
             vb.dupVertex()
-            vb.dupVertex()
-            vb.pos(matrix, claw, length - claw, 0).color(color).endVertex()
-            vb.dupVertex()
-
-            vb.pos(matrix, 0, length - claw, -claw).color(color).endVertex()
-            vb.dupVertex()
-            vb.pos(matrix, 0, length, 0).color(color).endVertex()
+            vb.pos(matrix, 0, length, 0).color(color).width(3f).endVertex()
             vb.dupVertex()
 
             vb.dupVertex()
             vb.dupVertex()
-            vb.pos(matrix, 0, length - claw, claw).color(color).endVertex()
+            vb.pos(matrix, claw, length - claw, 0).color(color).width(3f).endVertex()
+            vb.dupVertex()
+
+            vb.pos(matrix, 0, length - claw, -claw).color(color).width(3f).endVertex()
+            vb.dupVertex()
+            vb.pos(matrix, 0, length, 0).color(color).width(3f).endVertex()
+            vb.dupVertex()
+
+            vb.dupVertex()
+            vb.dupVertex()
+            vb.pos(matrix, 0, length - claw, claw).color(color).width(3f).endVertex()
             vb.dupVertex()
 
             matrix.pop()
         }
 
         vb.draw(Primitive.LINES_ADJACENCY)
-        RenderSystem.enableTexture()
     }
 
 }

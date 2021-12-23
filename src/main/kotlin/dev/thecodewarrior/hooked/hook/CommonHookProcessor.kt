@@ -6,6 +6,7 @@ import com.teamwizardry.librarianlib.etcetera.Raycaster
 import com.teamwizardry.librarianlib.math.*
 import dev.thecodewarrior.hooked.Hooked
 import dev.thecodewarrior.hooked.util.getWaistPos
+import net.minecraft.block.ShapeContext
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
@@ -67,6 +68,7 @@ abstract class CommonHookProcessor {
             raycaster.cast(
                 context.world,
                 Raycaster.BlockMode.COLLISION,
+                ShapeContext.of(context.player),
                 hook.pos.x, hook.pos.y, hook.pos.z,
                 hook.pos.x + hook.direction.x * castDistance,
                 hook.pos.y + hook.direction.y * castDistance,

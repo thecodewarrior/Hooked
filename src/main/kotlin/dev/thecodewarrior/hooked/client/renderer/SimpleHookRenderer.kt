@@ -1,7 +1,8 @@
 package dev.thecodewarrior.hooked.client.renderer
 
+import com.teamwizardry.librarianlib.albedo.base.buffer.ShadedTextureRenderBuffer
+import com.teamwizardry.librarianlib.albedo.buffer.Primitive
 import com.teamwizardry.librarianlib.core.util.*
-import com.teamwizardry.librarianlib.core.util.kotlin.vertex
 import com.teamwizardry.librarianlib.math.*
 import dev.thecodewarrior.hooked.Hooked
 import dev.thecodewarrior.hooked.shade.obj.*
@@ -12,8 +13,6 @@ import dev.thecodewarrior.hooked.hook.HookType
 import dev.thecodewarrior.hooked.util.getWaistPos
 import dev.thecodewarrior.hooked.util.toMc
 import net.fabricmc.fabric.api.resource.SimpleResourceReloadListener
-import net.minecraft.client.render.RenderLayer
-import net.minecraft.client.render.VertexConsumerProvider
 import net.minecraft.client.render.WorldRenderer
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.entity.player.PlayerEntity
@@ -23,7 +22,6 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
 import net.minecraft.util.profiler.Profiler
 import net.minecraft.world.World
-import java.awt.Color
 import java.io.IOException
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
@@ -41,29 +39,28 @@ abstract class SimpleHookRenderer<C: HookPlayerController>(val type: HookType): 
 
     protected fun renderHooks(
         matrices: MatrixStack,
-        vertexConsumers: VertexConsumerProvider,
         player: PlayerEntity,
-        style: RenderStyle,
-        partialTicks: Float,
+        ghost: Boolean,
+        tickDelta: Float,
         data: HookedPlayerData,
         chainMargin: Double
     ) {
         data.hooks.forEach {
-            renderHook(player, vertexConsumers, matrices, style, partialTicks, it, chainMargin)
+            renderHook(matrices, player, ghost, tickDelta, it, chainMargin)
         }
     }
 
     private fun renderHook(
-        player: PlayerEntity,
-        vertexConsumers: VertexConsumerProvider,
         matrices: MatrixStack,
-        style: RenderStyle,
-        partialTicks: Float,
+        player: PlayerEntity,
+        ghost: Boolean,
+        tickDelta: Float,
         hook: Hook,
         chainMargin: Double
     ) {
-        val waist = player.getWaistPos(partialTicks)
-        val hookPos = hook.posLastTick + (hook.pos - hook.posLastTick) * partialTicks
+        val ghostAlpha = if(ghost) 0.15f else 1.0f
+        val waist = player.getWaistPos(tickDelta)
+        val hookPos = hook.posLastTick + (hook.pos - hook.posLastTick) * tickDelta
         val chainLength = waist.distanceTo(hookPos)
         val chainDirection = (hookPos - waist) / chainLength
 
@@ -71,35 +68,36 @@ abstract class SimpleHookRenderer<C: HookPlayerController>(val type: HookType): 
         matrices.multiply(Quaternion.fromRotationTo(vec(0, 1, 0), hookPos - waist).toMc())
         matrices.translate(0.0, chainMargin, 0.0)
 
-
         val actualLength = chainLength - chainMargin
 
-
-        drawHalfChain(vertexConsumers, matrices, style.getLayer(chain1Texture), player.world, waist, chainDirection, actualLength, 0.5, 0.0, 0.0, 1.0, style.alpha)
-        drawHalfChain(vertexConsumers, matrices, style.getLayer(chain2Texture), player.world, waist, chainDirection, actualLength, 0.0, 0.5, -1.0, 0.0, style.alpha)
+        drawHalfChain(matrices, chain1Texture, player.world, waist, chainDirection, actualLength, 0.5, 0.0, 0.0, 1.0, ghostAlpha)
+        drawHalfChain(matrices, chain2Texture, player.world, waist, chainDirection, actualLength, 0.0, 0.5, -1.0, 0.0, ghostAlpha)
 
         matrices.pop()
 
         matrices.push()
+        matrices.translate(hookPos.x - waist.x, hookPos.y - waist.y, hookPos.z - waist.z)
+        if(hook.direction.x == 0.0 && hook.direction.z == 0.0 && hook.direction.y < 0.0) {
+            matrices.multiply(Quaternion.fromAngleDegAxis(180.0, 1.0, 0.0, 0.0).toMc())
+        } else {
+            matrices.multiply(Quaternion.fromRotationTo(vec(0, 1, 0), hook.direction).toMc())
+        }
 
-        matrices.multiply(Quaternion.fromRotationTo(vec(0, 1, 0), hook.direction).toMc())
-
-        val vb = vertexConsumers.getBuffer(style.getLayer(hookTexture))
+        val vb = ShadedTextureRenderBuffer.SHARED
+        vb.texture.set(hookTexture)
         val lightmap = getBrightnessForRender(player.world, BlockPos(hookPos))
-        modelVertexIndices.forEachIndexed { i, vertexIndex ->
+        modelVertexIndices.forEach { vertexIndex ->
             val vertex = model.getVertex(vertexIndex)
             val tex = model.getTexCoord(vertexIndex)
             val normal = model.getNormal(vertexIndex)
-            repeat(if(i % 3 == 0) 2 else 1) {
-                vb.vertex(matrices.peek().model, vertex.x, vertex.y, vertex.z)
-                    .color(1f, 1f, 1f, style.alpha)
-                    .texture(tex.x, 1 - tex.y)
-                    .overlay(0, 0)
-                    .light(lightmap)
-                    .normal(matrices.peek().normal, normal.x, normal.y, normal.z)
-                    .next()
-            }
+            vb.pos(matrices.peek().model, vertex.x, vertex.y, vertex.z)
+                .color(1f, 1f, 1f, ghostAlpha)
+                .tex(tex.x, 1 - tex.y)
+                .light(lightmap)
+                .normal(matrices.peek().normal, normal.x, normal.y, normal.z)
+                .endVertex()
         }
+        vb.draw(Primitive.TRIANGLES)
 
         matrices.pop()
     }
@@ -108,9 +106,8 @@ abstract class SimpleHookRenderer<C: HookPlayerController>(val type: HookType): 
      * Draws half of a chain. The deltaX and deltaZ parameters dictate whether to draw the ±X or ±Z part of the chain.
      */
     fun drawHalfChain(
-        vertexConsumers: VertexConsumerProvider,
         matrices: MatrixStack,
-        renderLayer: RenderLayer,
+        texture: Identifier,
         world: World,
         waist: Vec3d,
         chainDirection: Vec3d,
@@ -119,7 +116,7 @@ abstract class SimpleHookRenderer<C: HookPlayerController>(val type: HookType): 
         deltaZ: Double,
         normalX: Double,
         normalZ: Double,
-        alpha: Float
+        ghostAlpha: Float
     ) {
         if (chainLength < 0) // this can happen when the chain is shorter than the chain margin
             return
@@ -130,7 +127,9 @@ abstract class SimpleHookRenderer<C: HookPlayerController>(val type: HookType): 
         val normal = normalMatrix.transform(vec(normalX, 0, normalZ))
         val rnormal = -normal
 
-        val vb = vertexConsumers.getBuffer(renderLayer)
+        val vb = ShadedTextureRenderBuffer.SHARED
+        vb.texture.set(texture)
+
         if (firstSegmentLength > chainLengthEpsilon) {
             val lightPos = BlockPos(waist + chainDirection * (firstSegmentLength / 2))
             val lightmap = getBrightnessForRender(world, lightPos)
@@ -138,23 +137,23 @@ abstract class SimpleHookRenderer<C: HookPlayerController>(val type: HookType): 
             val minV = 1 - firstSegmentLength.toFloat()
             val len = firstSegmentLength
 
-            vb.vertex(matrices.peek().model, -deltaX, 0, -deltaZ).color(1f, 1f, 1f, alpha).texture(0f, minV)
-                .light(lightmap).normal(matrices.peek().normal, normal.x.toFloat(), normal.y.toFloat(), normal.z.toFloat()).next()
-            vb.vertex(matrices.peek().model, deltaX, 0, deltaZ).color(1f, 1f, 1f, alpha).texture(1f, minV)
-                .light(lightmap).normal(matrices.peek().normal, normal.x.toFloat(), normal.y.toFloat(), normal.z.toFloat()).next()
-            vb.vertex(matrices.peek().model, deltaX, len, deltaZ).color(1f, 1f, 1f, alpha).texture(1f, 1f)
-                .light(lightmap).normal(matrices.peek().normal, normal.x.toFloat(), normal.y.toFloat(), normal.z.toFloat()).next()
-            vb.vertex(matrices.peek().model, -deltaX, len, -deltaZ).color(1f, 1f, 1f, alpha).texture(0f, 1f)
-                .light(lightmap).normal(matrices.peek().normal, normal.x.toFloat(), normal.y.toFloat(), normal.z.toFloat()).next()
+            vb.pos(matrices.peek().model, -deltaX, 0, -deltaZ).color(1f, 1f, 1f, ghostAlpha).tex(0f, minV)
+                .light(lightmap).normal(matrices.peek().normal, normal.x.toFloat(), normal.y.toFloat(), normal.z.toFloat()).endVertex()
+            vb.pos(matrices.peek().model, deltaX, 0, deltaZ).color(1f, 1f, 1f, ghostAlpha).tex(1f, minV)
+                .light(lightmap).normal(matrices.peek().normal, normal.x.toFloat(), normal.y.toFloat(), normal.z.toFloat()).endVertex()
+            vb.pos(matrices.peek().model, deltaX, len, deltaZ).color(1f, 1f, 1f, ghostAlpha).tex(1f, 1f)
+                .light(lightmap).normal(matrices.peek().normal, normal.x.toFloat(), normal.y.toFloat(), normal.z.toFloat()).endVertex()
+            vb.pos(matrices.peek().model, -deltaX, len, -deltaZ).color(1f, 1f, 1f, ghostAlpha).tex(0f, 1f)
+                .light(lightmap).normal(matrices.peek().normal, normal.x.toFloat(), normal.y.toFloat(), normal.z.toFloat()).endVertex()
 
-            vb.vertex(matrices.peek().model, -deltaX, len, -deltaZ).color(1f, 1f, 1f, alpha).texture(0f, 1f)
-                .light(lightmap).normal(matrices.peek().normal, rnormal.x.toFloat(), rnormal.y.toFloat(), rnormal.z.toFloat()).next()
-            vb.vertex(matrices.peek().model, deltaX, len, deltaZ).color(1f, 1f, 1f, alpha).texture(1f, 1f)
-                .light(lightmap).normal(matrices.peek().normal, rnormal.x.toFloat(), rnormal.y.toFloat(), rnormal.z.toFloat()).next()
-            vb.vertex(matrices.peek().model, deltaX, 0, deltaZ).color(1f, 1f, 1f, alpha).texture(1f, minV)
-                .light(lightmap).normal(matrices.peek().normal, rnormal.x.toFloat(), rnormal.y.toFloat(), rnormal.z.toFloat()).next()
-            vb.vertex(matrices.peek().model, -deltaX, 0, -deltaZ).color(1f, 1f, 1f, alpha).texture(0f, minV)
-                .light(lightmap).normal(matrices.peek().normal, rnormal.x.toFloat(), rnormal.y.toFloat(), rnormal.z.toFloat()).next()
+            vb.pos(matrices.peek().model, -deltaX, len, -deltaZ).color(1f, 1f, 1f, ghostAlpha).tex(0f, 1f)
+                .light(lightmap).normal(matrices.peek().normal, rnormal.x.toFloat(), rnormal.y.toFloat(), rnormal.z.toFloat()).endVertex()
+            vb.pos(matrices.peek().model, deltaX, len, deltaZ).color(1f, 1f, 1f, ghostAlpha).tex(1f, 1f)
+                .light(lightmap).normal(matrices.peek().normal, rnormal.x.toFloat(), rnormal.y.toFloat(), rnormal.z.toFloat()).endVertex()
+            vb.pos(matrices.peek().model, deltaX, 0, deltaZ).color(1f, 1f, 1f, ghostAlpha).tex(1f, minV)
+                .light(lightmap).normal(matrices.peek().normal, rnormal.x.toFloat(), rnormal.y.toFloat(), rnormal.z.toFloat()).endVertex()
+            vb.pos(matrices.peek().model, -deltaX, 0, -deltaZ).color(1f, 1f, 1f, ghostAlpha).tex(0f, minV)
+                .light(lightmap).normal(matrices.peek().normal, rnormal.x.toFloat(), rnormal.y.toFloat(), rnormal.z.toFloat()).endVertex()
         }
         for (i in 0 until chainSegments) {
             val yPos = firstSegmentLength + i
@@ -162,24 +161,26 @@ abstract class SimpleHookRenderer<C: HookPlayerController>(val type: HookType): 
             val lightPos = BlockPos(waist + chainDirection * (yPos + 0.5))
             val lightmap = getBrightnessForRender(world, lightPos)
 
-            vb.vertex(matrices.peek().model, -deltaX, yPos, -deltaZ).color(1f, 1f, 1f, alpha).texture(0f, 0f)
-                .light(lightmap).normal(matrices.peek().normal, normal.x.toFloat(), normal.y.toFloat(), normal.z.toFloat()).next()
-            vb.vertex(matrices.peek().model, deltaX, yPos, deltaZ).color(1f, 1f, 1f, alpha).texture(1f, 0f)
-                .light(lightmap).normal(matrices.peek().normal, normal.x.toFloat(), normal.y.toFloat(), normal.z.toFloat()).next()
-            vb.vertex(matrices.peek().model, deltaX, yPos + 1, deltaZ).color(1f, 1f, 1f, alpha).texture(1f, 1f)
-                .light(lightmap).normal(matrices.peek().normal, normal.x.toFloat(), normal.y.toFloat(), normal.z.toFloat()).next()
-            vb.vertex(matrices.peek().model, -deltaX, yPos + 1, -deltaZ).color(1f, 1f, 1f, alpha).texture(0f, 1f)
-                .light(lightmap).normal(matrices.peek().normal, normal.x.toFloat(), normal.y.toFloat(), normal.z.toFloat()).next()
+            vb.pos(matrices.peek().model, -deltaX, yPos, -deltaZ).color(1f, 1f, 1f, ghostAlpha).tex(0f, 0f)
+                .light(lightmap).normal(matrices.peek().normal, normal.x.toFloat(), normal.y.toFloat(), normal.z.toFloat()).endVertex()
+            vb.pos(matrices.peek().model, deltaX, yPos, deltaZ).color(1f, 1f, 1f, ghostAlpha).tex(1f, 0f)
+                .light(lightmap).normal(matrices.peek().normal, normal.x.toFloat(), normal.y.toFloat(), normal.z.toFloat()).endVertex()
+            vb.pos(matrices.peek().model, deltaX, yPos + 1, deltaZ).color(1f, 1f, 1f, ghostAlpha).tex(1f, 1f)
+                .light(lightmap).normal(matrices.peek().normal, normal.x.toFloat(), normal.y.toFloat(), normal.z.toFloat()).endVertex()
+            vb.pos(matrices.peek().model, -deltaX, yPos + 1, -deltaZ).color(1f, 1f, 1f, ghostAlpha).tex(0f, 1f)
+                .light(lightmap).normal(matrices.peek().normal, normal.x.toFloat(), normal.y.toFloat(), normal.z.toFloat()).endVertex()
 
-            vb.vertex(matrices.peek().model, -deltaX, yPos + 1, -deltaZ).color(1f, 1f, 1f, alpha).texture(0f, 1f)
-                .light(lightmap).normal(matrices.peek().normal, rnormal.x.toFloat(), rnormal.y.toFloat(), rnormal.z.toFloat()).next()
-            vb.vertex(matrices.peek().model, deltaX, yPos + 1, deltaZ).color(1f, 1f, 1f, alpha).texture(1f, 1f)
-                .light(lightmap).normal(matrices.peek().normal, rnormal.x.toFloat(), rnormal.y.toFloat(), rnormal.z.toFloat()).next()
-            vb.vertex(matrices.peek().model, deltaX, yPos, deltaZ).color(1f, 1f, 1f, alpha).texture(1f, 0f)
-                .light(lightmap).normal(matrices.peek().normal, rnormal.x.toFloat(), rnormal.y.toFloat(), rnormal.z.toFloat()).next()
-            vb.vertex(matrices.peek().model, -deltaX, yPos, -deltaZ).color(1f, 1f, 1f, alpha).texture(0f, 0f)
-                .light(lightmap).normal(matrices.peek().normal, rnormal.x.toFloat(), rnormal.y.toFloat(), rnormal.z.toFloat()).next()
+            vb.pos(matrices.peek().model, -deltaX, yPos + 1, -deltaZ).color(1f, 1f, 1f, ghostAlpha).tex(0f, 1f)
+                .light(lightmap).normal(matrices.peek().normal, rnormal.x.toFloat(), rnormal.y.toFloat(), rnormal.z.toFloat()).endVertex()
+            vb.pos(matrices.peek().model, deltaX, yPos + 1, deltaZ).color(1f, 1f, 1f, ghostAlpha).tex(1f, 1f)
+                .light(lightmap).normal(matrices.peek().normal, rnormal.x.toFloat(), rnormal.y.toFloat(), rnormal.z.toFloat()).endVertex()
+            vb.pos(matrices.peek().model, deltaX, yPos, deltaZ).color(1f, 1f, 1f, ghostAlpha).tex(1f, 0f)
+                .light(lightmap).normal(matrices.peek().normal, rnormal.x.toFloat(), rnormal.y.toFloat(), rnormal.z.toFloat()).endVertex()
+            vb.pos(matrices.peek().model, -deltaX, yPos, -deltaZ).color(1f, 1f, 1f, ghostAlpha).tex(0f, 0f)
+                .light(lightmap).normal(matrices.peek().normal, rnormal.x.toFloat(), rnormal.y.toFloat(), rnormal.z.toFloat()).endVertex()
         }
+
+        vb.draw(Primitive.QUADS)
     }
 
     private fun getBrightnessForRender(world: World, pos: BlockPos): Int {

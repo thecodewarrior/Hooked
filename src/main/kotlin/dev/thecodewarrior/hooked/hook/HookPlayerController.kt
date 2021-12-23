@@ -113,7 +113,7 @@ abstract class HookPlayerController {
     protected fun clearFlyingKickTimer(player: PlayerEntity) {
         if (player !is ServerPlayerEntity)
             return
-        mixinCast<FloatingTicksAccess>(player).floatingTicks = 0
+        mixinCast<FloatingTicksAccess>(player.networkHandler).floatingTicks = 0
     }
 
     /**
