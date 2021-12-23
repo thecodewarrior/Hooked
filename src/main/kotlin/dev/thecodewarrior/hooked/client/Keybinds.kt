@@ -13,7 +13,7 @@ object Keybinds {
     val FIRE = KeyBinding(
         "key.hooked.fire",
         InputUtil.Type.KEYSYM,
-        GLFW.GLFW_KEY_C,
+        GLFW.GLFW_KEY_R,
         "key.category.hooked"
     )
     var jumpWasDown = false
@@ -29,7 +29,7 @@ object Keybinds {
 
         if(data.type != HookType.NONE) {
             val sneakPressed = Client.minecraft.options.keySneak.isPressed
-            if (FIRE.isPressed) {
+            if (FIRE.wasPressed()) {
                 val pos = player.eyePos
                 val direction = player.rotationVecClient
                 ClientHookProcessor.fireHook(data, pos, direction, sneakPressed)
