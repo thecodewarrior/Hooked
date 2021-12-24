@@ -10,6 +10,7 @@ import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.tag.FluidTags;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -105,6 +106,18 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerMi
             }
 
             cir.setReturnValue(f);
+        }
+    }
+
+    @Inject(method = "writeCustomDataToNbt", at = @At("RETURN"))
+    private void writeHookedData(NbtCompound nbt, CallbackInfo ci) {
+        nbt.put("HookedPlayerData", hookedPlayerData.serializeNBT());
+    }
+
+    @Inject(method = "readCustomDataFromNbt", at = @At("RETURN"))
+    private void readHookedData(NbtCompound nbt, CallbackInfo ci) {
+        if(nbt.contains("HookedPlayerData")) {
+            hookedPlayerData.deserializeNBT(nbt.getCompound("HookedPlayerData"));
         }
     }
 }

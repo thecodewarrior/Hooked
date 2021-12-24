@@ -61,12 +61,23 @@ class HookedPlayerData(val player: PlayerEntity) {
     fun deserializeNBT(nbt: NbtCompound) {
         val oldType = type
         serializer.applyTag(nbt, this, Save::class.java)
+        @Suppress("SENSELESS_COMPARISON")
+        if(type == null) {
+            type = HookType.NONE
+        }
+        @Suppress("SENSELESS_COMPARISON")
+        if(hooks == null) {
+            hooks = LinkedList()
+        }
+
         // SimpleSerializer doesn't use the setter, so we have to update it here
         if (type != oldType) {
             controller.remove()
             controller = type.createController(player)
         }
         controller.deserializeNBT(nbt.getCompound("controller"))
+        syncStatus.forceFullSyncToClient = true
+        syncStatus.forceFullSyncToOthers = true
     }
 
     fun serializeNBT(): NbtCompound {

@@ -60,6 +60,7 @@ object Hooked {
                 Identifier("hooked:hook_type"),
                 Identifier("hooked:none")
             ).attribute(RegistryAttribute.PERSISTED).buildAndRegister()
+            Scribe.nbt.register(RegistryEntrySerializer(hookRegistry, Mirror.reflect<HookType>()))
         }
 
         private fun registerStats() {
@@ -125,7 +126,6 @@ object Hooked {
             registerNetworking()
             registerKeybinds()
             EnderHookPlayerController.particleEffect = EnderHookPlayerController.ClientParticleEffect
-            Scribe.nbt.register(RegistryEntrySerializer(hookRegistry, Mirror.reflect<HookType>()))
         }
 
         private fun registerHookRenderers() {
