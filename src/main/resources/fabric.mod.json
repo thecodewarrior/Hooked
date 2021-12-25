@@ -31,6 +31,12 @@
         "adapter": "kotlin",
         "value": "dev.thecodewarrior.hooked.Hooked\$ClientInitializer"
       }
+    ],
+    "cardinal-components": [
+      {
+        "adapter": "kotlin",
+        "value": "dev.thecodewarrior.hooked.Hooked\$Components"
+      }
     ]
   },
   "mixins": [
@@ -45,5 +51,10 @@
     "liblib-core": ">=5.0.0-alpha.10",
     "trinkets": "3.0.4",
     "fabric-key-binding-api-v1": "*"
+  },
+  "custom": {
+    "cardinal-components": [
+      "hooked:hook_data"
+    ]
   }
 }

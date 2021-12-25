@@ -29,7 +29,7 @@ object ClientHookProcessor: CommonHookProcessor() {
         override val controller: HookPlayerController get() = data.controller
         override val player: PlayerEntity get() = data.player
         override val world: World get() = data.player.world
-        override val hooks: MutableList<Hook> get() = data.hooks
+        override val hooks: Collection<Hook> get() = data.hooks.values
 
         // Note: in the interest of being resistant server-side lag, cooldowns are entirely on the client side.
         override val cooldown: Int get() = cooldownCounter
@@ -55,8 +55,8 @@ object ClientHookProcessor: CommonHookProcessor() {
 
         override fun fireEvent(event: HookEvent) {
             data.syncStatus.recentEvents.add(event)
-            val hook = hooks.find { it.uuid == event.uuid }
-                ?: data.syncStatus.recentHooks.find { it.uuid == event.uuid }
+            val hook = data.hooks[event.id]
+                ?: data.syncStatus.recentHooks[event.id]
                 ?: return
             controller.triggerEvent(this, hook, event)
         }
@@ -68,28 +68,14 @@ object ClientHookProcessor: CommonHookProcessor() {
         Context(data).fireEvent(event)
     }
 
-    fun syncHook(data: HookedPlayerData, hook: Hook) {
-        if(hook.state == Hook.State.REMOVED) {
-            data.hooks.removeIf { it.uuid == hook.uuid }
-            data.syncStatus.recentHooks.add(hook)
-        } else {
-            val existingIndex = data.hooks.indexOfFirst { it.uuid == hook.uuid }
-            if (existingIndex == -1) {
-                data.hooks.add(hook)
-            } else {
-                data.hooks[existingIndex] = hook
-            }
-        }
-    }
-
     fun fireHook(data: HookedPlayerData, pos: Vec3d, direction: Vec3d, sneaking: Boolean) {
         if (data.type != HookType.NONE && Client.minecraft.interactionManager?.currentGameMode != GameMode.SPECTATOR) {
-            val uuids = arrayListOf<UUID>()
+            val ids = arrayListOf<Int>()
             val shouldSend = data.controller.fireHooks(Context(data), pos, direction, sneaking) { hookPos, hookDirection ->
-                val uuid = UUID.randomUUID()
-                uuids.add(uuid)
+                val id = data.nextId()
+                ids.add(id)
                 val hook = Hook(
-                    uuid,
+                    id,
                     data.type,
                     hookPos,
                     Hook.State.EXTENDING,
@@ -97,7 +83,7 @@ object ClientHookProcessor: CommonHookProcessor() {
                     BlockPos(0, 0, 0),
                     0
                 )
-                data.hooks.add(hook)
+                data.hooks[id] = hook
 
                 hook
             }
@@ -109,7 +95,7 @@ object ClientHookProcessor: CommonHookProcessor() {
                         pos,
                         direction,
                         sneaking,
-                        uuids
+                        ids
                     )
                 )
             }

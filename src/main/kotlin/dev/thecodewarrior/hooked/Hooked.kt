@@ -7,7 +7,11 @@ import com.teamwizardry.librarianlib.courier.CourierServerPlayNetworking
 import com.teamwizardry.librarianlib.glitter.ParticleSystemManager
 import com.teamwizardry.librarianlib.scribe.Scribe
 import com.teamwizardry.librarianlib.scribe.nbt.RegistryEntrySerializer
+import dev.onyxstudios.cca.api.v3.component.ComponentRegistry
+import dev.onyxstudios.cca.api.v3.entity.EntityComponentFactoryRegistry
+import dev.onyxstudios.cca.api.v3.entity.EntityComponentInitializer
 import dev.thecodewarrior.hooked.bridge.hookData
+import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.client.HookRenderManager
 import dev.thecodewarrior.hooked.client.Keybinds
 import dev.thecodewarrior.hooked.client.glitter.EnderHookParticleSystem
@@ -51,7 +55,6 @@ object Hooked {
             registerStats()
             registerSounds()
             registerNetworking()
-            ServerHookProcessor.registerEvents()
         }
 
         private fun createRegistry() {
@@ -108,7 +111,7 @@ object Hooked {
                     packet.pos,
                     packet.direction.normalize(),
                     packet.sneaking,
-                    packet.uuids
+                    packet.ids
                 )
             }
         }
@@ -152,16 +155,6 @@ object Hooked {
                     processHookEventsPacket(packet, context.client.player!!)
                 }
             }
-            CourierClientPlayNetworking.registerGlobalReceiver(Packets.SYNC_HOOK_DATA) { packet, context ->
-                context.execute {
-                    processSyncHookDataPacket(packet, context.client.player!!)
-                }
-            }
-            CourierClientPlayNetworking.registerGlobalReceiver(Packets.SYNC_INDIVIDUAL_HOOKS) { packet, context ->
-                context.execute {
-                    processSyncIndividualHooksPacket(packet, context.client.player!!)
-                }
-            }
         }
 
         private fun processHookEventsPacket(packet: HookEventsPacket, player: ClientPlayerEntity) {
@@ -175,39 +168,19 @@ object Hooked {
                 ClientHookProcessor.triggerServerEvent(entity.hookData(), it)
             }
         }
+    }
 
-        private fun processSyncHookDataPacket(packet: SyncHookDataPacket, player: ClientPlayerEntity) {
-            val entity = player.world.getEntityById(packet.entityId) ?: return
-            if (entity !is PlayerEntity) {
-                logger.warn("sync_hook_data - Entity ${packet.entityId} is not a player, so it has no HookedPlayerData")
-                return
-            }
+    object Components : EntityComponentInitializer {
+        @JvmField
+        val HOOK_DATA = ComponentRegistry.getOrCreate(Identifier("hooked:hook_data"), HookedPlayerData::class.java)
 
-            val data = player.hookData()
-            data.deserializeNBT(packet.tag)
-            for (removedHook in packet.removed) {
-                data.syncStatus.recentHooks.add(removedHook)
-            }
-        }
-
-        private fun processSyncIndividualHooksPacket(packet: SyncIndividualHooksPacket, player: ClientPlayerEntity) {
-            val entity = player.world.getEntityById(packet.entityId) ?: return
-            if (entity !is PlayerEntity) {
-                logger.warn("sync_individual_hooks - Entity ${packet.entityId} is not a player, so it has no HookedPlayerData")
-                return
-            }
-            val data = entity.hookData()
-            packet.hooks.forEach {
-                ClientHookProcessor.syncHook(data, it)
-            }
+        override fun registerEntityComponentFactories(registry: EntityComponentFactoryRegistry) {
+            registry.registerFor(PlayerEntity::class.java, HOOK_DATA) { HookedPlayerData(it) }
         }
     }
 
     object Packets {
         val HOOK_EVENTS = CourierPacketType(Identifier("hooked:hook_events"), HookEventsPacket::class.java)
-        val SYNC_HOOK_DATA = CourierPacketType(Identifier("hooked:sync_hook_data"), SyncHookDataPacket::class.java)
-        val SYNC_INDIVIDUAL_HOOKS =
-            CourierPacketType(Identifier("hooked:sync_individual_hooks"), SyncIndividualHooksPacket::class.java)
 
         val FIRE_HOOK = CourierPacketType(Identifier("hooked:fire_hook"), FireHookPacket::class.java)
         val HOOK_JUMP = CourierPacketType(Identifier("hooked:hook_jump"), HookJumpPacket::class.java)

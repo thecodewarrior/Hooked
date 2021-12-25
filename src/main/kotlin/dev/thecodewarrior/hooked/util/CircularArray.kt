@@ -44,6 +44,10 @@ class CircularArray<T> : Iterable<T>, Cloneable {
         if (_size < arr.size) _size++
     }
 
+    fun addAll(items: Collection<T>) {
+        items.forEach { add(it) }
+    }
+
     /**
      * Get an element from the array.
      */

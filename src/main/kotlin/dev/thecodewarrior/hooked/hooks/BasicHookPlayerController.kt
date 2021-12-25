@@ -142,7 +142,7 @@ open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHo
         applyRestoringForce(player, player.fromWaistPos(getTargetPoint(delegate.hooks)), type.pullStrength)
     }
 
-    protected fun getTargetPoint(hooks: List<Hook>): Vec3d {
+    protected fun getTargetPoint(hooks: Collection<Hook>): Vec3d {
         var plantedCount = 0
         var targetPoint = Vec3d.ZERO
         hooks.forEach { hook ->

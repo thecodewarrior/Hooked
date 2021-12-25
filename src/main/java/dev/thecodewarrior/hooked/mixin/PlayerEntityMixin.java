@@ -26,22 +26,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(PlayerEntity.class)
 public abstract class PlayerEntityMixin extends LivingEntity implements PlayerMixinBridge {
-    private HookedPlayerData hookedPlayerData;
     private boolean hookedTravelingByHookFlag = false;
 
     protected PlayerEntityMixin(EntityType<? extends LivingEntity> entityType, World world) {
         super(entityType, world);
-    }
-
-    @NotNull
-    @Override
-    public HookedPlayerData getHookedPlayerData() {
-        return hookedPlayerData;
-    }
-
-    @Override
-    public void setHookedPlayerData(@NotNull HookedPlayerData hookedPlayerData) {
-        this.hookedPlayerData = hookedPlayerData;
     }
 
     @Override
@@ -66,12 +54,6 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerMi
 
     @Shadow public abstract void increaseStat(Identifier stat, int amount);
 
-    @Inject(method = "<init>", at = @At("RETURN"))
-    private void initializeHookedData(World world, BlockPos pos, float yaw, GameProfile profile, CallbackInfo ci) {
-        //noinspection ConstantConditions
-        hookedPlayerData = new HookedPlayerData((PlayerEntity) (Object) this);
-    }
-
     @Inject(method = "increaseTravelMotionStats(DDD)V", at = @At("HEAD"), cancellable = true)
     private void increaseTravelMotionStatsHookedMixin(double dx, double dy, double dz, CallbackInfo ci) {
         if(hookedTravelingByHookFlag) {
@@ -90,11 +72,10 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerMi
         }
     }
 
-
-
     @Inject(method = "getBlockBreakingSpeed", at = @At("RETURN"), cancellable = true)
     private void fixBreakSpeed(BlockState block, CallbackInfoReturnable<Float> cir) {
-        if(hookedPlayerData.getHooks().stream().anyMatch(hook -> hook.getState() == Hook.State.PLANTED)) {
+        var hookData = Hooked.Components.HOOK_DATA.get(this);
+        if(hookData.getHooks().values().stream().anyMatch(hook -> hook.getState() == Hook.State.PLANTED)) {
             var f = cir.getReturnValueF();
 
             if (this.isSubmergedIn(FluidTags.WATER) && !EnchantmentHelper.hasAquaAffinity(this)) {
@@ -106,18 +87,6 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerMi
             }
 
             cir.setReturnValue(f);
-        }
-    }
-
-    @Inject(method = "writeCustomDataToNbt", at = @At("RETURN"))
-    private void writeHookedData(NbtCompound nbt, CallbackInfo ci) {
-        nbt.put("HookedPlayerData", hookedPlayerData.serializeNBT());
-    }
-
-    @Inject(method = "readCustomDataFromNbt", at = @At("RETURN"))
-    private void readHookedData(NbtCompound nbt, CallbackInfo ci) {
-        if(nbt.contains("HookedPlayerData")) {
-            hookedPlayerData.deserializeNBT(nbt.getCompound("HookedPlayerData"));
         }
     }
 }

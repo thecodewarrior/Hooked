@@ -1,23 +1,34 @@
 package dev.thecodewarrior.hooked.capability
 
+import com.teamwizardry.librarianlib.core.util.kotlin.NbtBuilder
+import com.teamwizardry.librarianlib.core.util.vec
+import com.teamwizardry.librarianlib.math.Quaternion
 import com.teamwizardry.librarianlib.scribe.Save
 import com.teamwizardry.librarianlib.scribe.SimpleSerializer
+import dev.onyxstudios.cca.api.v3.component.Component
+import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent
+import dev.thecodewarrior.hooked.Hooked
 import dev.thecodewarrior.hooked.hook.Hook
 import dev.thecodewarrior.hooked.hook.HookEvent
 import dev.thecodewarrior.hooked.hook.HookPlayerController
 import dev.thecodewarrior.hooked.hook.HookType
 import dev.thecodewarrior.hooked.util.CircularArray
+import dev.thecodewarrior.hooked.util.CircularMap
+import it.unimi.dsi.fastutil.ints.Int2ObjectRBTreeMap
+import it.unimi.dsi.fastutil.ints.Int2ObjectSortedMap
+import it.unimi.dsi.fastutil.ints.Int2ObjectSortedMaps
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.nbt.NbtCompound
+import net.minecraft.network.PacketByteBuf
+import net.minecraft.server.network.ServerPlayerEntity
 import java.util.*
+import kotlin.collections.LinkedHashMap
+import kotlin.math.max
 
 /**
  * A capability holding all the data and logic required for actually running the hooks.
  */
-class HookedPlayerData(val player: PlayerEntity) {
-    val serializer = SimpleSerializer.get(javaClass)
-
-    @Save("type")
+class HookedPlayerData(val player: PlayerEntity) : Component, AutoSyncedComponent {
     var type: HookType = HookType.NONE
         set(value) {
             if (value != field) {
@@ -27,10 +38,28 @@ class HookedPlayerData(val player: PlayerEntity) {
             field = value
         }
 
-    @Save("hooks")
-    var hooks: LinkedList<Hook> = LinkedList()
+    /**
+     * The hooks mapped by ID and sorted by the order they were fired.
+     *
+     * Ordering note: New hook IDs are sent by the client, and if there are conflicts the hooks will wind up out of
+     * order. ID conflicts won't occur unless something breaks or the client is hacked, so it's not an issue.
+     */
+    var hooks: NavigableMap<Int, Hook> = TreeMap()
 
     var controller: HookPlayerController = HookPlayerController.NONE
+
+    /**
+     * The highest ID, used when generating new IDs. Updated in [nextId] to ensure it's >= the max id in [hooks].
+     *
+     * We track this separately because if the client is spamming new hooks, the server might send an update in the
+     * middle. If we just used the last key in the map, it would start spamming id conflicts.
+     */
+    private var lastId: Int = 0
+
+    fun nextId(): Int {
+        lastId = max(lastId, hooks.lastKey())
+        return ++lastId
+    }
 
     class SyncStatus {
         /**
@@ -40,7 +69,7 @@ class HookedPlayerData(val player: PlayerEntity) {
         /**
          * Hooks queued to be synced to clients
          */
-        val dirtyHooks: MutableSet<Hook> = mutableSetOf()
+        val dirtyHooks: MutableMap<Int, Hook> = mutableMapOf()
         var forceFullSyncToClient: Boolean = false
         var forceFullSyncToOthers: Boolean = false
 
@@ -53,36 +82,121 @@ class HookedPlayerData(val player: PlayerEntity) {
         /**
          * Used on the client to store references to recently removed hooks in case an event references them
          */
-        val recentHooks: CircularArray<Hook> = CircularArray(25)
+        val recentHooks: MutableMap<Int, Hook> = CircularMap(25)
+
+        fun addRecentHook(hook: Hook) {
+            recentHooks[hook.id] = hook
+        }
+        fun addRecentHooks(hooks: Collection<Hook>) {
+            hooks.forEach { addRecentHook(it) }
+        }
     }
 
     var syncStatus: SyncStatus = SyncStatus()
 
-    fun deserializeNBT(nbt: NbtCompound) {
-        val oldType = type
-        serializer.applyTag(nbt, this, Save::class.java)
-        @Suppress("SENSELESS_COMPARISON")
-        if(type == null) {
-            type = HookType.NONE
-        }
-        @Suppress("SENSELESS_COMPARISON")
-        if(hooks == null) {
-            hooks = LinkedList()
-        }
-
-        // SimpleSerializer doesn't use the setter, so we have to update it here
-        if (type != oldType) {
-            controller.remove()
-            controller = type.createController(player)
-        }
-        controller.deserializeNBT(nbt.getCompound("controller"))
-        syncStatus.forceFullSyncToClient = true
-        syncStatus.forceFullSyncToOthers = true
+    override fun writeToNbt(tag: NbtCompound) {
     }
 
-    fun serializeNBT(): NbtCompound {
-        val nbt = serializer.createTag(this, Save::class.java)
-        nbt.put("controller", controller.serializeNBT())
-        return nbt
+    override fun readFromNbt(tag: NbtCompound) {
+    }
+
+    fun updateSync() {
+        Hooked.Components.HOOK_DATA.sync(player, ::writeUpdatePacket)
+    }
+
+    override fun shouldSyncWith(player: ServerPlayerEntity): Boolean {
+        return if(player == this.player) {
+            syncStatus.forceFullSyncToClient || syncStatus.dirtyHooks.isNotEmpty()
+        } else {
+            syncStatus.forceFullSyncToOthers || syncStatus.dirtyHooks.isNotEmpty()
+        }
+    }
+
+    private enum class SyncType {
+        FULL, DIRTY
+    }
+
+    override fun writeSyncPacket(buf: PacketByteBuf, recipient: ServerPlayerEntity) {
+        writeFullPacket(buf)
+    }
+
+    private fun writeUpdatePacket(buf: PacketByteBuf, recipient: ServerPlayerEntity) {
+        if(recipient == this.player || syncStatus.forceFullSyncToOthers) {
+            writeFullPacket(buf)
+        } else {
+            writeDirtyPacket(buf)
+        }
+    }
+
+    override fun applySyncPacket(buf: PacketByteBuf) {
+        when(SyncType.values()[buf.readVarInt()]) {
+            SyncType.FULL -> applyFullPacket(buf)
+            SyncType.DIRTY -> applyDirtyPacket(buf)
+        }
+    }
+
+    private fun writeFullPacket(buf: PacketByteBuf) {
+        buf.writeVarInt(SyncType.FULL.ordinal)
+
+        // type
+        buf.writeIdentifier(Hooked.hookRegistry.getId(type))
+
+        // hooks
+        buf.writeCollection(hooks.values, ::writeHook)
+    }
+
+    private fun applyFullPacket(buf: PacketByteBuf) {
+        // type
+        type = Hooked.hookRegistry.get(buf.readIdentifier())
+
+        // hooks
+        val newHooks = buf.readMap({ TreeMap() }, PacketByteBuf::readVarInt, ::readHook)
+        syncStatus.recentHooks.putAll(hooks.filterKeys { it !in newHooks })
+        hooks = newHooks
+        lastId = max(lastId, hooks.lastKey())
+    }
+
+    private fun writeDirtyPacket(buf: PacketByteBuf) {
+        buf.writeVarInt(SyncType.DIRTY.ordinal)
+        buf.writeMap(syncStatus.dirtyHooks, PacketByteBuf::writeVarInt, ::writeHook)
+    }
+
+    private fun applyDirtyPacket(buf: PacketByteBuf) {
+        val dirtyHooks = buf.readMap({ mutableMapOf() }, PacketByteBuf::readVarInt, ::readHook)
+        for((id, hook) in dirtyHooks) {
+            if (hook.state == Hook.State.REMOVED) {
+                hooks.remove(id)
+                syncStatus.addRecentHook(hook)
+            } else {
+                hooks[id] = hook
+            }
+        }
+        lastId = max(lastId, hooks.lastKey())
+    }
+
+    private fun writeHook(buf: PacketByteBuf, hook: Hook) {
+        buf.writeVarInt(hook.id)
+        // no hook.type - this set to this.type when reading
+        buf.writeDouble(hook.pos.x)
+        buf.writeDouble(hook.pos.y)
+        buf.writeDouble(hook.pos.z)
+        buf.writeVarInt(hook.state.ordinal)
+        buf.writeDouble(hook.direction.x)
+        buf.writeDouble(hook.direction.y)
+        buf.writeDouble(hook.direction.z)
+        buf.writeBlockPos(hook.block)
+        buf.writeVarInt(hook.tag)
+    }
+
+    private fun readHook(buf: PacketByteBuf): Hook {
+        return Hook(
+            buf.readVarInt(),
+            this.type,
+            vec(buf.readDouble(), buf.readDouble(), buf.readDouble()),
+            Hook.State.values()[buf.readVarInt()],
+            vec(buf.readDouble(), buf.readDouble(), buf.readDouble()),
+            buf.readBlockPos(),
+            buf.readVarInt()
+        )
     }
 }

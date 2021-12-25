@@ -8,10 +8,6 @@ import dev.thecodewarrior.hooked.bridge.hookData
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.capability.IHookItem
 import dev.thecodewarrior.hooked.network.HookEventsPacket
-import dev.thecodewarrior.hooked.network.SyncHookDataPacket
-import dev.thecodewarrior.hooked.network.SyncIndividualHooksPacket
-import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents
-import net.fabricmc.fabric.api.networking.v1.EntityTrackingEvents
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.server.network.ServerPlayerEntity
@@ -32,7 +28,7 @@ object ServerHookProcessor: CommonHookProcessor() {
         override val controller: HookPlayerController get() = data.controller
         override val player: PlayerEntity get() = data.player
         override val world: World get() = data.player.world
-        override val hooks: MutableList<Hook> get() = data.hooks
+        override val hooks: Collection<Hook> get() = data.hooks.values
 
         // Hooked is designed to be resistant to server-side lag, so we only process the cooldown on the client.
         // Sure, this means it can be exploited, but it doesn't really affect balance, it mostly affects feel.
@@ -40,7 +36,7 @@ object ServerHookProcessor: CommonHookProcessor() {
         override fun triggerCooldown() {}
 
         override fun markDirty(hook: Hook) {
-            data.syncStatus.dirtyHooks.add(hook)
+            data.syncStatus.dirtyHooks[hook.id] = hook
         }
 
         override fun forceFullSyncToClient() {
@@ -61,36 +57,8 @@ object ServerHookProcessor: CommonHookProcessor() {
 
         override fun fireEvent(event: HookEvent) {
             data.syncStatus.queuedEvents.add(event)
-            val hook = hooks.find { it.uuid == event.uuid }
-                ?: return
+            val hook = data.hooks[event.id] ?: return
             controller.triggerEvent(this, hook, event)
-        }
-    }
-
-    fun registerEvents() {
-        EntityTrackingEvents.START_TRACKING.register { target, player ->
-            if(target is PlayerEntity) {
-                CourierServerPlayNetworking.send(
-                    player,
-                    Hooked.Packets.SYNC_HOOK_DATA,
-                    SyncHookDataPacket(
-                        target.id,
-                        ArrayList(),
-                        target.hookData().serializeNBT()
-                    )
-                )
-            }
-        }
-        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register { player, _, _ ->
-            CourierServerPlayNetworking.send(
-                player,
-                Hooked.Packets.SYNC_HOOK_DATA,
-                SyncHookDataPacket(
-                    player.id,
-                    ArrayList(),
-                    player.hookData().serializeNBT()
-                )
-            )
         }
     }
 
@@ -100,23 +68,30 @@ object ServerHookProcessor: CommonHookProcessor() {
         pos: Vec3d,
         direction: Vec3d,
         sneaking: Boolean,
-        uuids: List<UUID>
+        ids: List<Int>
     ) {
         if (data.type == HookType.NONE || player.interactionManager.gameMode == GameMode.SPECTATOR) {
             // they seem to think they can fire hooks
             data.syncStatus.forceFullSyncToClient = true
         } else {
-            val iter = uuids.iterator()
+            val iter = ids.iterator()
             data.controller.fireHooks(Context(data), pos, direction, sneaking) { hookPos, hookDirection ->
-                val uuid = if (iter.hasNext()) {
+                var id = if (iter.hasNext()) {
                     iter.next()
                 } else {
-                    logger.warn("Player ${player.name}'s fire hook packet sent too few UUIDs. This shouldn't cause " +
-                        "problems, but may indicate a desync.")
-                    UUID.randomUUID()
+                    logger.info("Player ${player.name}'s fire hook packet sent too few IDs. This may result in " +
+                            "out-of-order hooks and cause conflicts later on.")
+                    data.nextId()
+                }
+                if(id in data.hooks) {
+                    logger.info("Player ${player.name}'s fire hook packet had ID conflicts. This may result in " +
+                            "out-of-order hooks and cause further conflicts.")
+                    while (id in data.hooks) {
+                        id += 10
+                    }
                 }
                 val hook = Hook(
-                    uuid,
+                    id,
                     data.type,
                     hookPos,
                     Hook.State.EXTENDING,
@@ -124,15 +99,15 @@ object ServerHookProcessor: CommonHookProcessor() {
                     BlockPos(0, 0, 0),
                     0
                 )
-                data.hooks.add(hook)
+                data.hooks[id] = hook
                 // this will cause a full sync to the client, and a single-hook sync to other clients
-                data.syncStatus.dirtyHooks.add(hook)
+                data.syncStatus.dirtyHooks[id] = hook
                 data.player.incrementStat(Hooked.HookStats.HOOKS_FIRED)
 
                 hook
             }
             if(iter.hasNext()) {
-                logger.warn("Player ${player.name}'s fire hook packet sent too many UUIDs. This shouldn't cause large" +
+                logger.info("Player ${player.name}'s fire hook packet sent too many IDs. This shouldn't cause large" +
                     "problems, but may indicate a desync.")
             }
         }
@@ -159,33 +134,9 @@ object ServerHookProcessor: CommonHookProcessor() {
         applyHookMotion(context)
         data.controller.update(context)
 
+        // we run this every tick, but it uses `shouldSyncWith` to send updates only when necessary
+        data.updateSync()
 
-        if (data.syncStatus.forceFullSyncToClient || data.syncStatus.dirtyHooks.isNotEmpty()) {
-            CourierServerPlayNetworking.send(
-                player,
-                Hooked.Packets.SYNC_HOOK_DATA,
-                SyncHookDataPacket(
-                    player.id,
-                    data.syncStatus.dirtyHooks.filterTo(ArrayList()) { it.state == Hook.State.REMOVED },
-                    data.serializeNBT()
-                )
-            )
-        }
-        if (data.syncStatus.forceFullSyncToOthers) {
-            val packet = SyncHookDataPacket(
-                player.id,
-                data.syncStatus.dirtyHooks.filterTo(ArrayList()) { it.state == Hook.State.REMOVED },
-                data.serializeNBT()
-            )
-            PlayerLookup.tracking(player).forEach {
-                CourierServerPlayNetworking.send(it, Hooked.Packets.SYNC_HOOK_DATA, packet)
-            }
-        } else if (data.syncStatus.dirtyHooks.isNotEmpty()) {
-            val packet = SyncIndividualHooksPacket(player.id, ArrayList(data.syncStatus.dirtyHooks))
-            PlayerLookup.tracking(player).forEach {
-                CourierServerPlayNetworking.send(it, Hooked.Packets.SYNC_INDIVIDUAL_HOOKS, packet)
-            }
-        }
         if (data.syncStatus.queuedEvents.isNotEmpty()) {
             val packet = HookEventsPacket(player.id, ArrayList(data.syncStatus.queuedEvents))
             CourierServerPlayNetworking.send(player, Hooked.Packets.HOOK_EVENTS, packet)

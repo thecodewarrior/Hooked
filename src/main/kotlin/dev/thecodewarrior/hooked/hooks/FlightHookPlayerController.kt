@@ -1,8 +1,10 @@
 package dev.thecodewarrior.hooked.hooks
 
+import com.teamwizardry.librarianlib.core.util.mixinCast
 import com.teamwizardry.librarianlib.math.dot
 import com.teamwizardry.librarianlib.math.minus
 import com.teamwizardry.librarianlib.math.times
+import dev.thecodewarrior.hooked.bridge.PlayerMixinBridge
 import dev.thecodewarrior.hooked.hook.Hook
 import dev.thecodewarrior.hooked.hook.HookControllerDelegate
 import dev.thecodewarrior.hooked.hook.HookPlayerController
@@ -64,6 +66,10 @@ open class FlightHookPlayerController(val player: PlayerEntity, val type: Flight
         doubleJump: Boolean,
         sneaking: Boolean
     ) {
+        if (delegate.hooks.any { it.state == Hook.State.PLANTED }) {
+            mixinCast<PlayerMixinBridge>(player).hookedShouldAbortElytraFlag = true
+        }
+
         if(doubleJump && sneaking) {
             for(hook in delegate.hooks) {
                 delegate.retractHook(hook)

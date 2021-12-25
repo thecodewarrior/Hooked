@@ -12,5 +12,5 @@ data class FireHookPacket @RefractConstructor constructor(
     @Refract("pos") val pos: Vec3d,
     @Refract("direction") val direction: Vec3d,
     @Refract("sneaking") val sneaking: Boolean,
-    @Refract("uuids") val uuids: ArrayList<UUID>
+    @Refract("ids") val ids: ArrayList<Int>
 ): CourierPacket

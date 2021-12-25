@@ -2,45 +2,40 @@ package dev.thecodewarrior.hooked.hook
 
 import com.teamwizardry.librarianlib.math.plus
 import com.teamwizardry.librarianlib.math.times
-import ll.dev.thecodewarrior.prism.annotation.Refract
-import ll.dev.thecodewarrior.prism.annotation.RefractClass
-import ll.dev.thecodewarrior.prism.annotation.RefractConstructor
 import net.minecraft.sound.SoundEvent
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
-import java.util.*
 
-@RefractClass
-data class Hook @RefractConstructor constructor(
+data class Hook(
     /**
-     * The hook's unique ID
+     * The id of the hook. Assigned by the server. Temporary client-side hooks will have negative ids
      */
-    @Refract("uuid") val uuid: UUID,
+    val id: Int,
     /**
      * The type of the hook
      */
-    @Refract("type") val type: HookType,
+    val type: HookType,
     /**
      * The position of the tail of the hook
      */
-    @Refract("pos") var pos: Vec3d,
+    var pos: Vec3d,
     /**
      * The current state.
      */
-    @Refract("state") var state: State,
+    var state: State,
     /**
      * The (normalized) direction the hook is pointing
      */
-    @Refract("direction") var direction: Vec3d,
+    var direction: Vec3d,
     /**
      * The block the hook is attached to. Should be (0,0,0) unless [state] is [State.PLANTED]
      */
-    @Refract("block") var block: BlockPos,
+    var block: BlockPos,
     /**
      * A controller-defined tag value
      */
-    @Refract("tag") var tag: Int
+    var tag: Int
 ) {
     /**
      * The position of the tail of the hook last tick

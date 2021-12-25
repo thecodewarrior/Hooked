@@ -9,5 +9,5 @@ interface HookProcessorContext: HookControllerDelegate {
     val data: HookedPlayerData
     val type: HookType
     val controller: HookPlayerController
-    override val hooks: MutableList<Hook>
+    override val hooks: Collection<Hook>
 }

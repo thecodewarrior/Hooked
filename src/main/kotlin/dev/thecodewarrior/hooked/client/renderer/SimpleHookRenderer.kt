@@ -45,8 +45,8 @@ abstract class SimpleHookRenderer<C: HookPlayerController>(val type: HookType): 
         data: HookedPlayerData,
         chainMargin: Double
     ) {
-        data.hooks.forEach {
-            renderHook(matrices, player, ghost, tickDelta, it, chainMargin)
+        data.hooks.forEach { (_, hook) ->
+            renderHook(matrices, player, ghost, tickDelta, hook, chainMargin)
         }
     }
 

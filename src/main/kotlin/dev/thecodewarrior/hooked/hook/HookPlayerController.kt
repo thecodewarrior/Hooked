@@ -26,8 +26,6 @@ import kotlin.math.sign
  * Hook controllers should have important data serialized using [@Save][Save]
  */
 abstract class HookPlayerController {
-    private val serializer = SimpleSerializer.get(this.javaClass)
-
     /**
      * Called when the controller is removed so it can do any cleanup necessary.
      */
@@ -97,14 +95,6 @@ abstract class HookPlayerController {
                 delegate.playFeedbackSound(Hooked.Sounds.RETRACT_HOOK_EVENT, 1f, 1f)
             }
         }
-    }
-
-    fun serializeNBT(): NbtCompound {
-        return serializer.createTag(this, Save::class.java)
-    }
-
-    fun deserializeNBT(nbt: NbtCompound) {
-        serializer.applyTag(nbt, this, Save::class.java)
     }
 
     /**

@@ -11,7 +11,7 @@ import net.minecraft.world.World
 interface HookControllerDelegate {
     val player: PlayerEntity
     val world: World
-    val hooks: List<Hook>
+    val hooks: Collection<Hook>
 
     val cooldown: Int
     fun triggerCooldown()
@@ -32,7 +32,7 @@ interface HookControllerDelegate {
         if(hook.state == Hook.State.RETRACTING)
             return
         if(hook.state == Hook.State.PLANTED && !silently) {
-            fireEvent(HookEvent(HookEvent.EventType.DISLODGE, hook.uuid, reason.ordinal))
+            fireEvent(HookEvent(HookEvent.EventType.DISLODGE, hook.id, reason.ordinal))
         }
         hook.state = Hook.State.RETRACTING
         markDirty(hook)

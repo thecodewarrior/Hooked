@@ -106,7 +106,7 @@ object HookRenderManager: IdentifiableResourceReloadListener, WorldRenderEvents.
         val matrix = Matrix4dStack()
         matrix.set(context.matrixStack().peek().model)
 
-        data.hooks.forEach { hook ->
+        data.hooks.forEach { (_, hook) ->
 
             vb.pos(matrix, waistPos).color(DistinctColors.white).width(3f).endVertex()
             vb.dupVertex()
