@@ -180,10 +180,10 @@ object Hooked {
     }
 
     object Packets {
-        val HOOK_EVENTS = CourierPacketType(Identifier("hooked:hook_events"), HookEventsPacket::class.java)
+        val HOOK_EVENTS = HookEventsPacketType(Identifier("hooked:hook_events"))
 
-        val FIRE_HOOK = CourierPacketType(Identifier("hooked:fire_hook"), FireHookPacket::class.java)
-        val HOOK_JUMP = CourierPacketType(Identifier("hooked:hook_jump"), HookJumpPacket::class.java)
+        val FIRE_HOOK = FireHookPacketType(Identifier("hooked:fire_hook"))
+        val HOOK_JUMP = HookJumpPacketType(Identifier("hooked:hook_jump"))
     }
 
     object Sounds {
