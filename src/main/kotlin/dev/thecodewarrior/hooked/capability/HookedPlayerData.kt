@@ -55,9 +55,14 @@ class HookedPlayerData(val player: PlayerEntity) : Component, AutoSyncedComponen
      * middle. If we just used the last key in the map, it would start spamming id conflicts.
      */
     private var lastId: Int = 0
+        get() {
+            if(hooks.isNotEmpty()) {
+                field = max(field, hooks.lastKey())
+            }
+            return field
+        }
 
     fun nextId(): Int {
-        lastId = max(lastId, hooks.lastKey())
         return ++lastId
     }
 
@@ -150,10 +155,9 @@ class HookedPlayerData(val player: PlayerEntity) : Component, AutoSyncedComponen
         type = Hooked.hookRegistry.get(buf.readIdentifier())
 
         // hooks
-        val newHooks = buf.readMap({ TreeMap() }, PacketByteBuf::readVarInt, ::readHook)
+        val newHooks = buf.readCollection({ mutableListOf() }, ::readHook).associateByTo(TreeMap()) { it.id }
         syncStatus.recentHooks.putAll(hooks.filterKeys { it !in newHooks })
         hooks = newHooks
-        lastId = max(lastId, hooks.lastKey())
     }
 
     private fun writeDirtyPacket(buf: PacketByteBuf) {
@@ -171,7 +175,6 @@ class HookedPlayerData(val player: PlayerEntity) : Component, AutoSyncedComponen
                 hooks[id] = hook
             }
         }
-        lastId = max(lastId, hooks.lastKey())
     }
 
     private fun writeHook(buf: PacketByteBuf, hook: Hook) {
