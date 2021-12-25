@@ -7,6 +7,7 @@ import dev.thecodewarrior.hooked.bridge.hookData
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.network.FireHookPacket
 import dev.thecodewarrior.hooked.network.HookJumpPacket
+import net.minecraft.client.network.AbstractClientPlayerEntity
 import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.sound.SoundEvent
@@ -113,7 +114,7 @@ object ClientHookProcessor: CommonHookProcessor() {
         }
     }
 
-    fun tick(player: ClientPlayerEntity) {
+    fun tick(player: AbstractClientPlayerEntity) {
         val data = player.hookData()
 
         applyHookMotion(Context(data))
