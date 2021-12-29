@@ -33,6 +33,7 @@ object Keybinds {
                 val pos = player.eyePos
                 val direction = player.rotationVecClient
                 ClientHookProcessor.fireHook(data, pos, direction, sneakPressed)
+                while(FIRE.wasPressed()) { /* consume excess keypresses */ }
             }
 
             if (jumpPressed) {
