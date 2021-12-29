@@ -8,6 +8,7 @@ import dev.thecodewarrior.hooked.bridge.hookData
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.capability.IHookItem
 import dev.thecodewarrior.hooked.network.HookEventsPacket
+import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.server.network.ServerPlayerEntity
@@ -59,6 +60,12 @@ object ServerHookProcessor: CommonHookProcessor() {
             data.syncStatus.queuedEvents.add(event)
             val hook = data.hooks[event.id] ?: return
             controller.triggerEvent(this, hook, event)
+        }
+    }
+
+    fun registerEvents() {
+        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register { player, _, _ ->
+            player.hookData().syncStatus.forceFullSyncToClient = true
         }
     }
 

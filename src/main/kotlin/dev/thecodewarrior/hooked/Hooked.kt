@@ -55,6 +55,7 @@ object Hooked {
             registerStats()
             registerSounds()
             registerNetworking()
+            ServerHookProcessor.registerEvents()
         }
 
         private fun createRegistry() {
