@@ -1,10 +1,6 @@
 package dev.thecodewarrior.hooked.capability
 
-import com.teamwizardry.librarianlib.core.util.kotlin.NbtBuilder
 import com.teamwizardry.librarianlib.core.util.vec
-import com.teamwizardry.librarianlib.math.Quaternion
-import com.teamwizardry.librarianlib.scribe.Save
-import com.teamwizardry.librarianlib.scribe.SimpleSerializer
 import dev.onyxstudios.cca.api.v3.component.Component
 import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent
 import dev.thecodewarrior.hooked.Hooked
@@ -14,15 +10,11 @@ import dev.thecodewarrior.hooked.hook.HookPlayerController
 import dev.thecodewarrior.hooked.hook.HookType
 import dev.thecodewarrior.hooked.util.CircularArray
 import dev.thecodewarrior.hooked.util.CircularMap
-import it.unimi.dsi.fastutil.ints.Int2ObjectRBTreeMap
-import it.unimi.dsi.fastutil.ints.Int2ObjectSortedMap
-import it.unimi.dsi.fastutil.ints.Int2ObjectSortedMaps
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.server.network.ServerPlayerEntity
 import java.util.*
-import kotlin.collections.LinkedHashMap
 import kotlin.math.max
 
 /**
@@ -162,17 +154,17 @@ class HookedPlayerData(val player: PlayerEntity) : Component, AutoSyncedComponen
 
     private fun writeDirtyPacket(buf: PacketByteBuf) {
         buf.writeVarInt(SyncType.DIRTY.ordinal)
-        buf.writeMap(syncStatus.dirtyHooks, PacketByteBuf::writeVarInt, ::writeHook)
+        buf.writeCollection(syncStatus.dirtyHooks.values, ::writeHook)
     }
 
     private fun applyDirtyPacket(buf: PacketByteBuf) {
-        val dirtyHooks = buf.readMap({ mutableMapOf() }, PacketByteBuf::readVarInt, ::readHook)
-        for((id, hook) in dirtyHooks) {
+        val dirtyHooks = buf.readCollection({ mutableListOf() }, ::readHook)
+        for(hook in dirtyHooks) {
             if (hook.state == Hook.State.REMOVED) {
-                hooks.remove(id)
+                hooks.remove(hook.id)
                 syncStatus.addRecentHook(hook)
             } else {
-                hooks[id] = hook
+                hooks[hook.id] = hook
             }
         }
     }
