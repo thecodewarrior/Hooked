@@ -1,5 +1,6 @@
 package dev.thecodewarrior.hooked.capability
 
+import com.teamwizardry.librarianlib.core.util.kotlin.NbtBuilder
 import com.teamwizardry.librarianlib.core.util.vec
 import dev.onyxstudios.cca.api.v3.component.Component
 import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent
@@ -10,10 +11,15 @@ import dev.thecodewarrior.hooked.hook.HookPlayerController
 import dev.thecodewarrior.hooked.hook.HookType
 import dev.thecodewarrior.hooked.util.CircularArray
 import dev.thecodewarrior.hooked.util.CircularMap
+import net.fabricmc.fabric.api.util.NbtType
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.nbt.NbtCompound
+import net.minecraft.nbt.NbtElement
+import net.minecraft.nbt.NbtList
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.util.Identifier
+import net.minecraft.util.math.BlockPos
 import java.util.*
 import kotlin.math.max
 
@@ -92,9 +98,55 @@ class HookedPlayerData(val player: PlayerEntity) : Component, AutoSyncedComponen
     var syncStatus: SyncStatus = SyncStatus()
 
     override fun writeToNbt(tag: NbtCompound) {
+        tag.putString("Type", Hooked.hookRegistry.getId(type).toString())
+        tag.put("Hooks", NbtList().also { it.addAll(hooks.values.map(::writeHook)) })
     }
 
     override fun readFromNbt(tag: NbtCompound) {
+        type = Hooked.hookRegistry.get(Identifier(tag.getString("Type")))
+        hooks = tag.getList("Hooks", NbtType.COMPOUND).map(::readHook).associateByTo(TreeMap()) { it.id }
+        syncStatus.forceFullSyncToClient = true
+        syncStatus.forceFullSyncToOthers = true
+    }
+
+    private fun writeHook(hook: Hook): NbtCompound {
+        return NbtBuilder.compound {
+            "Id" %= int(hook.id)
+            "State" %= string(hook.state.name)
+            "Tag" %= int(hook.tag)
+            "Position" %= compound {
+                "X" %= double(hook.pos.x)
+                "Y" %= double(hook.pos.y)
+                "Z" %= double(hook.pos.z)
+            }
+            "Direction" %= compound {
+                "X" %= double(hook.direction.x)
+                "Y" %= double(hook.direction.y)
+                "Z" %= double(hook.direction.z)
+            }
+            "Block" %= compound {
+                "X" %= int(hook.block.x)
+                "Y" %= int(hook.block.y)
+                "Z" %= int(hook.block.z)
+            }
+        }
+    }
+
+    private fun readHook(tag: NbtElement): Hook {
+        tag as NbtCompound
+
+        val posTag = tag.getCompound("Position")
+        val dirTag = tag.getCompound("Direction")
+        val blockTag = tag.getCompound("Block")
+        return Hook(
+            tag.getInt("Id"),
+            this.type,
+            vec(posTag.getDouble("X"), posTag.getDouble("Y"), posTag.getDouble("Z")),
+            Hook.State.valueOf(tag.getString("State")),
+            vec(dirTag.getDouble("X"), dirTag.getDouble("Y"), dirTag.getDouble("Z")),
+            BlockPos(blockTag.getInt("X"), blockTag.getInt("Y"), blockTag.getInt("Z")),
+            tag.getInt("Tag")
+        )
     }
 
     fun updateSync() {
