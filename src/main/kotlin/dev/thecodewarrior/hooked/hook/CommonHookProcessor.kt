@@ -21,7 +21,7 @@ import kotlin.math.pow
  * come from on high
  *
  */
-abstract class CommonHookProcessor {
+abstract class CommonHookProcessor : HookProcessor {
     protected val raycaster: Raycaster = Raycaster()
 
     /**

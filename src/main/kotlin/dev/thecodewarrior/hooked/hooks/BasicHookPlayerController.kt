@@ -23,10 +23,6 @@ import kotlin.math.abs
 import kotlin.math.sqrt
 
 open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHookType): HookPlayerController() {
-    override fun remove() {
-        mixinCast<PlayerMixinBridge>(player).hookedTravelingByHookFlag = false
-    }
-
     override fun fireHooks(
         delegate: HookControllerDelegate,
         pos: Vec3d,
@@ -70,7 +66,6 @@ open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHo
         sneaking: Boolean
     ) {
         if (delegate.hooks.any { it.state == Hook.State.PLANTED }) {
-            mixinCast<PlayerMixinBridge>(player).hookedShouldAbortElytraFlag = true
             performJump(delegate)
         }
 
@@ -130,12 +125,9 @@ open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHo
 
     override fun update(delegate: HookControllerDelegate) {
         if (delegate.hooks.none { it.state == Hook.State.PLANTED }) {
-            mixinCast<PlayerMixinBridge>(player).hookedTravelingByHookFlag = false
             return
         }
 
-        // we have at least one planted hook
-        mixinCast<PlayerMixinBridge>(player).hookedTravelingByHookFlag = true
         player.fallDistance = 0f
         clearFlyingKickTimer(player)
 

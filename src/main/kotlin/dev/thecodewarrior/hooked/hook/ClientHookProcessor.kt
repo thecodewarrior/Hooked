@@ -114,7 +114,7 @@ object ClientHookProcessor: CommonHookProcessor() {
         }
     }
 
-    fun tick(player: AbstractClientPlayerEntity) {
+    override fun tick(player: PlayerEntity) {
         val data = player.hookData()
 
         applyHookMotion(Context(data))
@@ -136,6 +136,11 @@ object ClientHookProcessor: CommonHookProcessor() {
                 hudCooldown = 0.0
             }
         }
+    }
+
+    override fun isHookActive(player: PlayerEntity): Boolean {
+        val data = player.hookData()
+        return data.controller.isActive(Context(data))
     }
 
     private val logger = Hooked.logManager.makeLogger<ClientHookProcessor>()

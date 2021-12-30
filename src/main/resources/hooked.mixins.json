@@ -11,8 +11,7 @@
     "ServerPlayerEntityMixin"
   ],
   "client": [
-    "ClientPlayerEntityMixin",
-    "OtherClientPlayerEntityMixin"
+    "AbstractClientPlayerEntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -54,6 +54,10 @@ abstract class HookPlayerController {
      */
     abstract fun update(delegate: HookControllerDelegate)
 
+    open fun isActive(delegate: HookControllerDelegate): Boolean {
+        return delegate.hooks.any { it.state == Hook.State.PLANTED }
+    }
+
     open fun triggerEvent(delegate: HookControllerDelegate, hook: Hook, hookEvent: HookEvent) {
         when (hookEvent.type) {
             HookEvent.EventType.HIT -> onHookHit(delegate, hook)
@@ -202,6 +206,8 @@ abstract class HookPlayerController {
             ): Boolean {
                 return false
             }
+
+            override fun isActive(delegate: HookControllerDelegate): Boolean = false
 
             override fun update(delegate: HookControllerDelegate) {}
         }

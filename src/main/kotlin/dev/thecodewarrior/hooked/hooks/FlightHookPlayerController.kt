@@ -21,6 +21,7 @@ open class FlightHookPlayerController(val player: PlayerEntity, val type: Flight
     var hasExternalFlight: Boolean = true
     var isFlightActive: Boolean = false
     var stopFallDamage: Boolean = false
+    var isInsideHull: Boolean = false
 
     /**
      * Used on the client to control rendering the wireframe hull.
@@ -66,10 +67,6 @@ open class FlightHookPlayerController(val player: PlayerEntity, val type: Flight
         doubleJump: Boolean,
         sneaking: Boolean
     ) {
-        if (delegate.hooks.any { it.state == Hook.State.PLANTED }) {
-            mixinCast<PlayerMixinBridge>(player).hookedShouldAbortElytraFlag = true
-        }
-
         if(doubleJump && sneaking) {
             for(hook in delegate.hooks) {
                 delegate.retractHook(hook)
@@ -106,6 +103,7 @@ open class FlightHookPlayerController(val player: PlayerEntity, val type: Flight
         // When only one hook is planted we don't do any creative flight and fall back to the basic behavior
         if (planted.size < 2) {
             disableFlight()
+            isInsideHull = false
 
             return
         }
@@ -116,19 +114,18 @@ open class FlightHookPlayerController(val player: PlayerEntity, val type: Flight
 
         val waist = player.getWaistPos()
         val constrained = hull.constrain(waist)
+        isInsideHull = waist.squaredDistanceTo(constrained.position) < allowedFlightRange * allowedFlightRange
 
         // if the player isn't flying, allow or disallow flight based upon whether they're inside the hull
         if(!player.abilities.flying) {
-            val allowFlight = waist.squaredDistanceTo(constrained.position) < allowedFlightRange * allowedFlightRange
-
-            if(allowFlight != isFlightActive) {
+            if(isInsideHull != isFlightActive) {
                 showHullTimer.start(10)
-                if(!allowFlight) {
+                if(!isInsideHull) {
                     stopFallDamage = true
                 }
             }
 
-            if(allowFlight) {
+            if(isInsideHull) {
                 enableFlight()
             } else {
                 disableFlight()
@@ -149,6 +146,10 @@ open class FlightHookPlayerController(val player: PlayerEntity, val type: Flight
             }
             showHullTimer.start(10)
         }
+    }
+
+    override fun isActive(delegate: HookControllerDelegate): Boolean {
+        return isInsideHull
     }
 
     protected fun enableFlight() {

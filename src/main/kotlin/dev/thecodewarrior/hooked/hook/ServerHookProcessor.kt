@@ -126,7 +126,8 @@ object ServerHookProcessor: CommonHookProcessor() {
         }
     }
 
-    fun tick(player: ServerPlayerEntity) {
+    override fun tick(player: PlayerEntity) {
+        player as ServerPlayerEntity
         val data = player.hookData()
 
         val equippedType = getEquippedHook(player)?.hookType ?: HookType.NONE
@@ -156,6 +157,11 @@ object ServerHookProcessor: CommonHookProcessor() {
         data.syncStatus.forceFullSyncToOthers = false
         data.syncStatus.dirtyHooks.clear()
         data.syncStatus.queuedEvents.clear()
+    }
+
+    override fun isHookActive(player: PlayerEntity): Boolean {
+        val data = player.hookData()
+        return data.controller.isActive(Context(data))
     }
 
     private fun getEquippedHook(player: PlayerEntity): IHookItem? {
