@@ -6,6 +6,7 @@ import com.teamwizardry.librarianlib.math.minus
 import com.teamwizardry.librarianlib.math.times
 import dev.thecodewarrior.hooked.bridge.PlayerMixinBridge
 import dev.thecodewarrior.hooked.hook.Hook
+import dev.thecodewarrior.hooked.hook.HookActiveReason
 import dev.thecodewarrior.hooked.hook.HookControllerDelegate
 import dev.thecodewarrior.hooked.hook.HookPlayerController
 import dev.thecodewarrior.hooked.util.DynamicHull
@@ -148,8 +149,14 @@ open class FlightHookPlayerController(val player: PlayerEntity, val type: Flight
         }
     }
 
-    override fun isActive(delegate: HookControllerDelegate): Boolean {
-        return isInsideHull
+    override fun isActive(delegate: HookControllerDelegate, reason: HookActiveReason): Boolean {
+        return when(reason) {
+            // we should still be able to sneak to avoid ledges
+            HookActiveReason.DISABLE_CLIP_AT_LEDGE -> false
+            // the hook doesn't pull the player in, no reason to give them too much freedom here
+            HookActiveReason.MOVED_WRONGLY -> false
+            else -> isInsideHull
+        }
     }
 
     protected fun enableFlight() {

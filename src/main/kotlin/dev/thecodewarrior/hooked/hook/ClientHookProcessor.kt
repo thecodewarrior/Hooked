@@ -138,9 +138,9 @@ object ClientHookProcessor: CommonHookProcessor() {
         }
     }
 
-    override fun isHookActive(player: PlayerEntity): Boolean {
+    override fun isHookActive(player: PlayerEntity, reason: HookActiveReason): Boolean {
         val data = player.hookData()
-        return data.controller.isActive(Context(data))
+        return data.controller.isActive(Context(data), reason)
     }
 
     private val logger = Hooked.logManager.makeLogger<ClientHookProcessor>()

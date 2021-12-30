@@ -5,15 +5,20 @@ import net.minecraft.entity.player.PlayerEntity
 interface HookProcessor {
     fun tick(player: PlayerEntity)
 
-    /**
-     * Returns true when the hook is "active". i.e. when a hook is planted
-     */
-    fun isHookActive(player: PlayerEntity): Boolean
+    fun isHookActive(player: PlayerEntity, reason: HookActiveReason): Boolean
+}
+
+enum class HookActiveReason {
+    TRAVEL_STATS,
+    CANCEL_ELYTRA,
+    DISABLE_CLIP_AT_LEDGE,
+    BREAK_SPEED,
+    MOVED_WRONGLY
 }
 
 object NullHookProcessor: HookProcessor {
     override fun tick(player: PlayerEntity) {
     }
 
-    override fun isHookActive(player: PlayerEntity): Boolean = false
+    override fun isHookActive(player: PlayerEntity, reason: HookActiveReason): Boolean = false
 }

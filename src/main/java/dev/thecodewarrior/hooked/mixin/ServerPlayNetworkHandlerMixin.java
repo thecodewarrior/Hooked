@@ -1,6 +1,7 @@
 package dev.thecodewarrior.hooked.mixin;
 
 import dev.thecodewarrior.hooked.bridge.PlayerMixinBridge;
+import dev.thecodewarrior.hooked.hook.HookActiveReason;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
@@ -13,7 +14,7 @@ public abstract class ServerPlayNetworkHandlerMixin {
 
     @ModifyConstant(method = "onPlayerMove", constant = @Constant(doubleValue = 0.0625))
     double injectMovedWrongly(double constant) {
-        if(((PlayerMixinBridge) this.getPlayer()).getHookProcessor().isHookActive(this.getPlayer())) {
+        if(((PlayerMixinBridge) this.getPlayer()).getHookProcessor().isHookActive(this.getPlayer(), HookActiveReason.MOVED_WRONGLY)) {
             return 5.0;
         } else {
             return constant;

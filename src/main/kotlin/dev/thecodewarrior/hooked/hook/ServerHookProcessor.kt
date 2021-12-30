@@ -159,9 +159,9 @@ object ServerHookProcessor: CommonHookProcessor() {
         data.syncStatus.queuedEvents.clear()
     }
 
-    override fun isHookActive(player: PlayerEntity): Boolean {
+    override fun isHookActive(player: PlayerEntity, reason: HookActiveReason): Boolean {
         val data = player.hookData()
-        return data.controller.isActive(Context(data))
+        return data.controller.isActive(Context(data), reason)
     }
 
     private fun getEquippedHook(player: PlayerEntity): IHookItem? {
