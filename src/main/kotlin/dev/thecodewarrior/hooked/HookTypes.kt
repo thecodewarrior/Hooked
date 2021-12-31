@@ -22,7 +22,7 @@ object HookTypes {
         hookLength = 0.5,
         cooldown = 25,
         pullStrength = 0.2,
-        boostHeight = 1.5
+        boostHeight = 2.5
     )
     val WOOD_ITEM = createItem(WOOD_TYPE)
 
@@ -56,7 +56,7 @@ object HookTypes {
         range = 64.0,
         speed = 64.0,
         hookLength = 0.5,
-        cooldown = 0,
+        cooldown = 2,
         pullStrength = 2.25,
         boostHeight = 2.5
     )
