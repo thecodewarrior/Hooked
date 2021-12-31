@@ -1,21 +1,18 @@
 package dev.thecodewarrior.hooked.hook
 
 import com.teamwizardry.librarianlib.core.util.Client
-import com.teamwizardry.librarianlib.courier.CourierClientPlayNetworking
 import dev.thecodewarrior.hooked.Hooked
 import dev.thecodewarrior.hooked.bridge.hookData
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.network.FireHookPacket
 import dev.thecodewarrior.hooked.network.HookJumpPacket
-import net.minecraft.client.network.AbstractClientPlayerEntity
-import net.minecraft.client.network.ClientPlayerEntity
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.sound.SoundEvent
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.GameMode
 import net.minecraft.world.World
-import java.util.*
 
 /**
  * Processes hooks on the *logical* client.
@@ -90,14 +87,14 @@ object ClientHookProcessor: CommonHookProcessor() {
             }
 
             if(shouldSend) {
-                CourierClientPlayNetworking.send(
+                ClientPlayNetworking.send(
                     Hooked.Packets.FIRE_HOOK,
                     FireHookPacket(
                         pos,
                         direction,
                         sneaking,
                         ids
-                    )
+                    ).encode()
                 )
             }
         }
@@ -107,9 +104,9 @@ object ClientHookProcessor: CommonHookProcessor() {
         if (data.type != HookType.NONE) {
             data.controller.jump(Context(data), doubleJump, sneaking)
 
-            CourierClientPlayNetworking.send(
+            ClientPlayNetworking.send(
                 Hooked.Packets.HOOK_JUMP,
-                HookJumpPacket(doubleJump, sneaking)
+                HookJumpPacket(doubleJump, sneaking).encode()
             )
         }
     }

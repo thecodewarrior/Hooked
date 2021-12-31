@@ -1,10 +1,8 @@
 package dev.thecodewarrior.hooked.network
 
 import com.teamwizardry.librarianlib.core.util.vec
-import com.teamwizardry.librarianlib.courier.CourierBuffer
-import com.teamwizardry.librarianlib.courier.PacketType
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.minecraft.network.PacketByteBuf
-import net.minecraft.util.Identifier
 import net.minecraft.util.math.Vec3d
 
 data class FireHookPacket(
@@ -12,28 +10,28 @@ data class FireHookPacket(
     val direction: Vec3d,
     val sneaking: Boolean,
     val ids: List<Int>
-)
-
-class FireHookPacketType(
-    identifier: Identifier,
-) : PacketType<FireHookPacket>(identifier, FireHookPacket::class.java) {
-    override fun encode(packet: FireHookPacket, buffer: CourierBuffer) {
-        buffer.writeDouble(packet.pos.x)
-        buffer.writeDouble(packet.pos.y)
-        buffer.writeDouble(packet.pos.z)
-        buffer.writeDouble(packet.direction.x)
-        buffer.writeDouble(packet.direction.y)
-        buffer.writeDouble(packet.direction.z)
-        buffer.writeBoolean(packet.sneaking)
-        buffer.writeCollection(packet.ids, PacketByteBuf::writeVarInt)
+) {
+    fun encode(): PacketByteBuf {
+        val buffer = PacketByteBufs.create()
+        buffer.writeDouble(this.pos.x)
+        buffer.writeDouble(this.pos.y)
+        buffer.writeDouble(this.pos.z)
+        buffer.writeDouble(this.direction.x)
+        buffer.writeDouble(this.direction.y)
+        buffer.writeDouble(this.direction.z)
+        buffer.writeBoolean(this.sneaking)
+        buffer.writeCollection(this.ids, PacketByteBuf::writeVarInt)
+        return buffer
     }
 
-    override fun decode(buffer: CourierBuffer): FireHookPacket {
-        return FireHookPacket(
-            vec(buffer.readDouble(), buffer.readDouble(), buffer.readDouble()),
-            vec(buffer.readDouble(), buffer.readDouble(), buffer.readDouble()),
-            buffer.readBoolean(),
-            buffer.readCollection({ mutableListOf() }, PacketByteBuf::readVarInt)
-        )
+    companion object {
+        fun decode(buffer: PacketByteBuf): FireHookPacket {
+            return FireHookPacket(
+                vec(buffer.readDouble(), buffer.readDouble(), buffer.readDouble()),
+                vec(buffer.readDouble(), buffer.readDouble(), buffer.readDouble()),
+                buffer.readBoolean(),
+                buffer.readCollection({ mutableListOf() }, PacketByteBuf::readVarInt)
+            )
+        }
     }
 }

@@ -1,7 +1,6 @@
 package dev.thecodewarrior.hooked.hook
 
 import com.teamwizardry.librarianlib.core.util.kotlin.getOrNull
-import com.teamwizardry.librarianlib.courier.CourierServerPlayNetworking
 import dev.emi.trinkets.api.TrinketsApi
 import dev.thecodewarrior.hooked.Hooked
 import dev.thecodewarrior.hooked.bridge.hookData
@@ -10,6 +9,7 @@ import dev.thecodewarrior.hooked.capability.IHookItem
 import dev.thecodewarrior.hooked.network.HookEventsPacket
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundCategory
@@ -147,9 +147,9 @@ object ServerHookProcessor: CommonHookProcessor() {
 
         if (data.syncStatus.queuedEvents.isNotEmpty()) {
             val packet = HookEventsPacket(player.id, ArrayList(data.syncStatus.queuedEvents))
-            CourierServerPlayNetworking.send(player, Hooked.Packets.HOOK_EVENTS, packet)
+            ServerPlayNetworking.send(player, Hooked.Packets.HOOK_EVENTS, packet.encode())
             PlayerLookup.tracking(player).forEach {
-                CourierServerPlayNetworking.send(it, Hooked.Packets.HOOK_EVENTS, packet)
+                ServerPlayNetworking.send(it, Hooked.Packets.HOOK_EVENTS, packet.encode())
             }
         }
 

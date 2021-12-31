@@ -1,12 +1,7 @@
 package dev.thecodewarrior.hooked
 
 import com.teamwizardry.librarianlib.core.util.ModLogManager
-import com.teamwizardry.librarianlib.courier.CourierClientPlayNetworking
-import com.teamwizardry.librarianlib.courier.CourierPacketType
-import com.teamwizardry.librarianlib.courier.CourierServerPlayNetworking
 import com.teamwizardry.librarianlib.glitter.ParticleSystemManager
-import com.teamwizardry.librarianlib.scribe.Scribe
-import com.teamwizardry.librarianlib.scribe.nbt.RegistryEntrySerializer
 import dev.onyxstudios.cca.api.v3.component.ComponentRegistry
 import dev.onyxstudios.cca.api.v3.entity.EntityComponentFactoryRegistry
 import dev.onyxstudios.cca.api.v3.entity.EntityComponentInitializer
@@ -20,13 +15,14 @@ import dev.thecodewarrior.hooked.hook.HookType
 import dev.thecodewarrior.hooked.hook.ServerHookProcessor
 import dev.thecodewarrior.hooked.hooks.*
 import dev.thecodewarrior.hooked.network.*
-import ll.dev.thecodewarrior.mirror.Mirror
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder
 import net.fabricmc.fabric.api.event.registry.RegistryAttribute
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper
 import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.entity.player.PlayerEntity
@@ -38,6 +34,7 @@ import net.minecraft.stat.Stats
 import net.minecraft.util.Identifier
 import net.minecraft.util.registry.DefaultedRegistry
 import net.minecraft.util.registry.Registry
+import net.minecraft.world.World
 import kotlin.math.sqrt
 
 object Hooked {
@@ -64,7 +61,6 @@ object Hooked {
                 Identifier("hooked:hook_type"),
                 Identifier("hooked:none")
             ).attribute(RegistryAttribute.PERSISTED).buildAndRegister()
-            Scribe.nbt.register(RegistryEntrySerializer(hookRegistry, Mirror.reflect<HookType>()))
         }
 
         private fun registerStats() {
@@ -83,14 +79,16 @@ object Hooked {
         }
 
         private fun registerNetworking() {
-            CourierServerPlayNetworking.registerGlobalReceiver(Packets.FIRE_HOOK) { packet, context ->
-                context.execute {
-                    processFireHookPacket(packet, context.player)
+            ServerPlayNetworking.registerGlobalReceiver(Packets.FIRE_HOOK) { server, player, _, buffer, _ ->
+                val packet = FireHookPacket.decode(buffer)
+                server.execute {
+                    processFireHookPacket(packet, player)
                 }
             }
-            CourierServerPlayNetworking.registerGlobalReceiver(Packets.HOOK_JUMP) { packet, context ->
-                context.execute {
-                    processHookJumpPacket(packet, context.player)
+            ServerPlayNetworking.registerGlobalReceiver(Packets.HOOK_JUMP) { server, player, _, buffer, _ ->
+                val packet = HookJumpPacket.decode(buffer)
+                server.execute {
+                    processHookJumpPacket(packet, player)
                 }
             }
         }
@@ -151,15 +149,16 @@ object Hooked {
         }
 
         private fun registerNetworking() {
-            CourierClientPlayNetworking.registerGlobalReceiver(Packets.HOOK_EVENTS) { packet, context ->
-                context.execute {
-                    processHookEventsPacket(packet, context.client.player!!)
+            ClientPlayNetworking.registerGlobalReceiver(Packets.HOOK_EVENTS) { client, _, buffer, _ ->
+                val packet = HookEventsPacket.decode(buffer)
+                client.execute {
+                    processHookEventsPacket(packet, client.world!!)
                 }
             }
         }
 
-        private fun processHookEventsPacket(packet: HookEventsPacket, player: ClientPlayerEntity) {
-            val entity = player.world.getEntityById(packet.entityId) ?: return
+        private fun processHookEventsPacket(packet: HookEventsPacket, world: World) {
+            val entity = world.getEntityById(packet.entityId) ?: return
             if (entity !is PlayerEntity) {
                 logger.warn("hook_events - Entity ${packet.entityId} is not a player, so it has no HookedPlayerData")
                 return
@@ -181,10 +180,10 @@ object Hooked {
     }
 
     object Packets {
-        val HOOK_EVENTS = HookEventsPacketType(Identifier("hooked:hook_events"))
+        val HOOK_EVENTS = Identifier("hooked:hook_events")
 
-        val FIRE_HOOK = FireHookPacketType(Identifier("hooked:fire_hook"))
-        val HOOK_JUMP = HookJumpPacketType(Identifier("hooked:hook_jump"))
+        val FIRE_HOOK = Identifier("hooked:fire_hook")
+        val HOOK_JUMP = Identifier("hooked:hook_jump")
     }
 
     object Sounds {

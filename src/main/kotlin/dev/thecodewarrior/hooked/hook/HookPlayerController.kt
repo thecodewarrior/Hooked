@@ -5,13 +5,10 @@ import com.teamwizardry.librarianlib.core.util.vec
 import com.teamwizardry.librarianlib.math.minus
 import com.teamwizardry.librarianlib.math.plus
 import com.teamwizardry.librarianlib.math.times
-import com.teamwizardry.librarianlib.scribe.Save
-import com.teamwizardry.librarianlib.scribe.SimpleSerializer
 import dev.thecodewarrior.hooked.Hooked
 import dev.thecodewarrior.hooked.mixin.EntityAccessMixin
 import dev.thecodewarrior.hooked.mixin.FloatingTicksAccess
 import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.nbt.NbtCompound
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.math.Vec3d
 import kotlin.math.abs
@@ -22,8 +19,6 @@ import kotlin.math.sign
  *
  * - Hook controllers will only be changed on the server and synced from on high.
  * - Hook controllers don't manage the movement of hooks, that's up to the hook processor.
- *
- * Hook controllers should have important data serialized using [@Save][Save]
  */
 abstract class HookPlayerController {
     /**
