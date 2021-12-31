@@ -12,7 +12,8 @@
     "ServerPlayNetworkHandlerMixin"
   ],
   "client": [
-    "AbstractClientPlayerEntityMixin"
+    "AbstractClientPlayerEntityMixin",
+    "MixinInGameHud"
   ],
   "injectors": {
     "defaultRequire": 1

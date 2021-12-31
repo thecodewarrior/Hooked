@@ -40,6 +40,8 @@ dependencies {
     include "io.github.onyxstudios.Cardinal-Components-API:cardinal-components-entity:${project.cardinal_components_version}"
 
     [
+            "com.teamwizardry.librarianlib:albedo:${liblib_version}",
+            "com.teamwizardry.librarianlib:mosaic:${liblib_version}",
             "com.teamwizardry.librarianlib:glitter:${liblib_version}",
             "com.teamwizardry.librarianlib:etcetera:${liblib_version}"
     ].each {
