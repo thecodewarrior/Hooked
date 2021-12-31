@@ -20,6 +20,7 @@ import net.minecraft.util.shape.VoxelShape
 import net.minecraft.util.shape.VoxelShapes
 import java.util.stream.Stream
 import kotlin.math.abs
+import kotlin.math.acos
 import kotlin.math.sqrt
 
 open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHookType): HookPlayerController() {
@@ -87,14 +88,14 @@ open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHo
             player.x - player.prevY,
             player.x - player.prevZ
         )
-        val motionTowardTarget = if (deltaPos == Vec3d.ZERO) 0.0 else actualMotion dot deltaNormal
+        val stuckAngle = if (deltaPos == Vec3d.ZERO) 0.0 else acos(actualMotion.normalize() dot deltaNormal)
 
         var boostAABB: Box? = null
 
         if (deltaLen < type.pullStrength * 2) {
             boostAABB = player.boundingBox.offset(deltaPos) // the player's bounding box centered around the targetPos
         }
-        if(abs(motionTowardTarget) < 0.1) {
+        if(stuckAngle > Math.toRadians(80.0)) {
             boostAABB = player.boundingBox
         }
 
