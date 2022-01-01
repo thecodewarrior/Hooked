@@ -77,11 +77,8 @@ abstract class SimpleHookRenderer<C: HookPlayerController>(val type: HookType): 
 
         matrices.push()
         matrices.translate(hookPos.x - waist.x, hookPos.y - waist.y, hookPos.z - waist.z)
-        if(hook.direction.x == 0.0 && hook.direction.z == 0.0 && hook.direction.y < 0.0) {
-            matrices.multiply(Quaternion.fromAngleDegAxis(180.0, 1.0, 0.0, 0.0).toMc())
-        } else {
-            matrices.multiply(Quaternion.fromRotationTo(vec(0, 1, 0), hook.direction).toMc())
-        }
+        // we add 90 to the pitch because the model is based on +y, but pitch/yaw are based on +z
+        matrices.multiply(Quaternion.fromAxesAnglesDeg(hook.pitch + 90, -hook.yaw, 0f).toMc())
 
         val vb = ShadedTextureRenderBuffer.SHARED
         vb.texture.set(hookTexture)

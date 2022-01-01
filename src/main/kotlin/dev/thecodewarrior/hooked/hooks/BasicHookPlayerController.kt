@@ -1,9 +1,7 @@
 package dev.thecodewarrior.hooked.hooks
 
-import com.teamwizardry.librarianlib.core.util.mixinCast
 import com.teamwizardry.librarianlib.core.util.vec
 import com.teamwizardry.librarianlib.math.*
-import dev.thecodewarrior.hooked.bridge.PlayerMixinBridge
 import dev.thecodewarrior.hooked.hook.Hook
 import dev.thecodewarrior.hooked.hook.HookControllerDelegate
 import dev.thecodewarrior.hooked.hook.HookPlayerController
@@ -19,7 +17,6 @@ import net.minecraft.util.math.Vec3d
 import net.minecraft.util.shape.VoxelShape
 import net.minecraft.util.shape.VoxelShapes
 import java.util.stream.Stream
-import kotlin.math.abs
 import kotlin.math.acos
 import kotlin.math.sqrt
 
@@ -27,9 +24,10 @@ open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHo
     override fun fireHooks(
         delegate: HookControllerDelegate,
         pos: Vec3d,
-        direction: Vec3d,
+        pitch: Float,
+        yaw: Float,
         sneaking: Boolean,
-        addHook: (pos: Vec3d, direction: Vec3d) -> Hook
+        addHook: (pos: Vec3d, pitch: Float, yaw: Float) -> Hook
     ): Boolean {
         if(delegate.cooldown == 0) {
             val tag = if(sneaking) {
@@ -37,7 +35,7 @@ open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHo
             } else {
                 (delegate.hooks.maxOfOrNull { it.tag } ?: 0) + 1
             }
-            val hook = addHook(pos, direction)
+            val hook = addHook(pos, pitch, yaw)
             hook.tag = tag
             delegate.triggerCooldown()
             return true

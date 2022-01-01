@@ -1,10 +1,8 @@
 package dev.thecodewarrior.hooked.hooks
 
-import com.teamwizardry.librarianlib.core.util.mixinCast
 import com.teamwizardry.librarianlib.math.dot
 import com.teamwizardry.librarianlib.math.minus
 import com.teamwizardry.librarianlib.math.times
-import dev.thecodewarrior.hooked.bridge.PlayerMixinBridge
 import dev.thecodewarrior.hooked.hook.Hook
 import dev.thecodewarrior.hooked.hook.HookActiveReason
 import dev.thecodewarrior.hooked.hook.HookControllerDelegate
@@ -35,27 +33,32 @@ open class FlightHookPlayerController(val player: PlayerEntity, val type: Flight
         disableFlight()
     }
 
-    private val retractThreshold: Double = cos(Math.toRadians(15.0))
     private fun isPointingAtHook(pos: Vec3d, direction: Vec3d, cosThreshold: Double, hook: Hook): Boolean {
         return direction dot (hook.pos - pos).normalize() > cosThreshold
     }
 
+    private val retractThreshold: Double = cos(Math.toRadians(15.0))
     override fun fireHooks(
         delegate: HookControllerDelegate,
         pos: Vec3d,
-        direction: Vec3d,
+        pitch: Float,
+        yaw: Float,
         sneaking: Boolean,
-        addHook: (pos: Vec3d, direction: Vec3d) -> Hook
+        addHook: (pos: Vec3d, pitch: Float, yaw: Float) -> Hook
     ): Boolean {
         if(sneaking) {
-            for (hook in delegate.hooks) {
-                if (isPointingAtHook(pos, direction, retractThreshold, hook)) {
-                    delegate.retractHook(hook)
-                }
+            val direction = Vec3d.fromPolar(pitch, yaw)
+            val closestHook = delegate.hooks
+                .map { hook -> hook to (direction dot (hook.pos - pos).normalize()) }
+                .filter { it.second > retractThreshold }
+                .maxByOrNull { it.second }
+                ?.first
+            if(closestHook != null) {
+                delegate.retractHook(closestHook)
             }
             return true
         } else if(delegate.cooldown == 0) {
-            addHook(pos, direction)
+            addHook(pos, pitch, yaw)
             delegate.triggerCooldown()
             return true
         } else {

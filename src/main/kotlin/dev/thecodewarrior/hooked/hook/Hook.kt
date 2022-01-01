@@ -20,14 +20,12 @@ data class Hook(
      * The position of the tail of the hook
      */
     var pos: Vec3d,
+    var pitch: Float,
+    var yaw: Float,
     /**
      * The current state.
      */
     var state: State,
-    /**
-     * The (normalized) direction the hook is pointing
-     */
-    var direction: Vec3d,
     /**
      * The block the hook is attached to. Should be (0,0,0) unless [state] is [State.PLANTED]
      */
@@ -41,6 +39,12 @@ data class Hook(
      * The position of the tail of the hook last tick
      */
     var posLastTick: Vec3d = pos
+
+    /**
+     * The (normalized) direction the hook is pointing
+     */
+    val direction: Vec3d
+        get() = Vec3d.fromPolar(pitch, yaw)
 
     /**
      * The position of the tip of the hook, as computed from the pos and direction

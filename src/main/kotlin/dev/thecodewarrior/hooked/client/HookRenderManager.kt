@@ -122,32 +122,28 @@ object HookRenderManager: IdentifiableResourceReloadListener, WorldRenderEvents.
 
             matrices.push()
             matrices.translate(hookPos.x, hookPos.y, hookPos.z)
-            if(hook.direction.x == 0.0 && hook.direction.z == 0.0 && hook.direction.y < 0.0) {
-                matrices.multiply(Quaternion.fromAngleDegAxis(180.0, 1.0, 0.0, 0.0).toMc())
-            } else {
-                matrices.multiply(Quaternion.fromRotationTo(vec(0, 1, 0), hook.direction).toMc())
-            }
+            matrices.multiply(Quaternion.fromAxesAnglesDeg(hook.pitch, -hook.yaw, 0f).toMc())
 
             val length = hook.type.hookLength
             val claw = length / 3
 
-            vb.pos(matrices, 0, length, 0).color(color).width(3f).endVertex()
+            vb.pos(matrices, 0, 0, length).color(color).width(3f).endVertex()
             vb.dupVertex()
 
             vb.draw(Primitive.LINE_STRIP_ADJACENCY)
 
             vb.pos(matrices, 0, 0, 0).color(color).width(3f).endVertex() // curl in ends because why not
-            vb.pos(matrices, -claw, length - claw, 0).color(color).width(3f).endVertex()
-            vb.pos(matrices, 0, length, 0).color(color).width(3f).endVertex()
-            vb.pos(matrices, claw, length - claw, 0).color(color).width(3f).endVertex()
+            vb.pos(matrices, -claw, 0, length - claw).color(color).width(3f).endVertex()
+            vb.pos(matrices, 0, 0, length).color(color).width(3f).endVertex()
+            vb.pos(matrices, claw, 0, length - claw).color(color).width(3f).endVertex()
             vb.pos(matrices, 0, 0, 0).color(color).width(3f).endVertex() // curl in ends because why not
 
             vb.draw(Primitive.LINE_STRIP_ADJACENCY)
 
             vb.pos(matrices, 0, 0, 0).color(color).width(3f).endVertex() // curl in ends because why not
-            vb.pos(matrices, 0, length - claw, -claw).color(color).width(3f).endVertex()
-            vb.pos(matrices, 0, length, 0).color(color).width(3f).endVertex()
-            vb.pos(matrices, 0, length - claw, claw).color(color).width(3f).endVertex()
+            vb.pos(matrices, 0, -claw, length - claw).color(color).width(3f).endVertex()
+            vb.pos(matrices, 0, 0, length).color(color).width(3f).endVertex()
+            vb.pos(matrices, 0, claw, length - claw).color(color).width(3f).endVertex()
             vb.pos(matrices, 0, 0, 0).color(color).width(3f).endVertex() // curl in ends because why not
 
             vb.draw(Primitive.LINE_STRIP_ADJACENCY)

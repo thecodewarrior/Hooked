@@ -66,18 +66,16 @@ object ClientHookProcessor: CommonHookProcessor() {
         Context(data).fireEvent(event)
     }
 
-    fun fireHook(data: HookedPlayerData, pos: Vec3d, direction: Vec3d, sneaking: Boolean) {
+    fun fireHook(data: HookedPlayerData, pos: Vec3d, pitch: Float, yaw: Float, sneaking: Boolean) {
         if (data.type != HookType.NONE && Client.minecraft.interactionManager?.currentGameMode != GameMode.SPECTATOR) {
             val ids = arrayListOf<Int>()
-            val shouldSend = data.controller.fireHooks(Context(data), pos, direction, sneaking) { hookPos, hookDirection ->
+            val shouldSend = data.controller.fireHooks(Context(data), pos, pitch, yaw, sneaking) { hookPos, hookPitch, hookYaw ->
                 val id = data.nextId()
                 ids.add(id)
                 val hook = Hook(
-                    id,
-                    data.type,
-                    hookPos,
+                    id, data.type,
+                    hookPos, hookPitch, hookYaw,
                     Hook.State.EXTENDING,
-                    hookDirection,
                     BlockPos(0, 0, 0),
                     0
                 )
@@ -90,10 +88,8 @@ object ClientHookProcessor: CommonHookProcessor() {
                 ClientPlayNetworking.send(
                     Hooked.Packets.FIRE_HOOK,
                     FireHookPacket(
-                        pos,
-                        direction,
-                        sneaking,
-                        ids
+                        pos, pitch, yaw,
+                        sneaking, ids
                     ).encode()
                 )
             }

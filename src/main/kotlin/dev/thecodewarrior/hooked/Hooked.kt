@@ -108,7 +108,8 @@ object Hooked {
                     player,
                     hookedPlayerData,
                     packet.pos,
-                    packet.direction.normalize(),
+                    packet.pitch,
+                    packet.yaw,
                     packet.sneaking,
                     packet.ids
                 )

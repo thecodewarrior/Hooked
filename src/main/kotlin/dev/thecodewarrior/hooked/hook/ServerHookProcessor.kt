@@ -73,7 +73,8 @@ object ServerHookProcessor: CommonHookProcessor() {
         player: ServerPlayerEntity,
         data: HookedPlayerData,
         pos: Vec3d,
-        direction: Vec3d,
+        pitch: Float,
+        yaw: Float,
         sneaking: Boolean,
         ids: List<Int>
     ) {
@@ -82,7 +83,7 @@ object ServerHookProcessor: CommonHookProcessor() {
             data.syncStatus.forceFullSyncToClient = true
         } else {
             val iter = ids.iterator()
-            data.controller.fireHooks(Context(data), pos, direction, sneaking) { hookPos, hookDirection ->
+            data.controller.fireHooks(Context(data), pos, pitch, yaw, sneaking) { hookPos, hookPitch, hookYaw ->
                 var id = if (iter.hasNext()) {
                     iter.next()
                 } else {
@@ -98,11 +99,9 @@ object ServerHookProcessor: CommonHookProcessor() {
                     }
                 }
                 val hook = Hook(
-                    id,
-                    data.type,
-                    hookPos,
+                    id, data.type,
+                    hookPos, hookPitch, hookYaw,
                     Hook.State.EXTENDING,
-                    hookDirection,
                     BlockPos(0, 0, 0),
                     0
                 )

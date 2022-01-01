@@ -35,8 +35,8 @@ abstract class HookPlayerController {
      */
     abstract fun fireHooks(
         delegate: HookControllerDelegate,
-        pos: Vec3d, direction: Vec3d, sneaking: Boolean,
-        addHook: (pos: Vec3d, direction: Vec3d) -> Hook
+        pos: Vec3d, pitch: Float, yaw: Float, sneaking: Boolean,
+        addHook: (pos: Vec3d, pitch: Float, yaw: Float) -> Hook
     ): Boolean
 
     /**
@@ -196,8 +196,9 @@ abstract class HookPlayerController {
             override fun jump(delegate: HookControllerDelegate, doubleJump: Boolean, sneaking: Boolean) {}
             override fun fireHooks(
                 delegate: HookControllerDelegate,
-                pos: Vec3d, direction: Vec3d, sneaking: Boolean,
-                addHook: (pos: Vec3d, direction: Vec3d) -> Hook
+                pos: Vec3d, pitch: Float, yaw: Float,
+                sneaking: Boolean,
+                addHook: (pos: Vec3d, pitch: Float, yaw: Float) -> Hook
             ): Boolean {
                 return false
             }

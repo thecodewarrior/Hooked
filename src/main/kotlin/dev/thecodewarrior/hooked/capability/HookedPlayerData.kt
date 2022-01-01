@@ -112,23 +112,16 @@ class HookedPlayerData(val player: PlayerEntity) : Component, AutoSyncedComponen
     private fun writeHook(hook: Hook): NbtCompound {
         return NbtBuilder.compound {
             "Id" %= int(hook.id)
+            "X" %= double(hook.pos.x)
+            "Y" %= double(hook.pos.y)
+            "Z" %= double(hook.pos.z)
             "State" %= string(hook.state.name)
-            "Tag" %= int(hook.tag)
-            "Position" %= compound {
-                "X" %= double(hook.pos.x)
-                "Y" %= double(hook.pos.y)
-                "Z" %= double(hook.pos.z)
-            }
-            "Direction" %= compound {
-                "X" %= double(hook.direction.x)
-                "Y" %= double(hook.direction.y)
-                "Z" %= double(hook.direction.z)
-            }
             "Block" %= compound {
                 "X" %= int(hook.block.x)
                 "Y" %= int(hook.block.y)
                 "Z" %= int(hook.block.z)
             }
+            "Tag" %= int(hook.tag)
         }
     }
 
@@ -136,14 +129,14 @@ class HookedPlayerData(val player: PlayerEntity) : Component, AutoSyncedComponen
         tag as NbtCompound
 
         val posTag = tag.getCompound("Position")
-        val dirTag = tag.getCompound("Direction")
         val blockTag = tag.getCompound("Block")
         return Hook(
             tag.getInt("Id"),
             this.type,
-            vec(posTag.getDouble("X"), posTag.getDouble("Y"), posTag.getDouble("Z")),
+            vec(tag.getDouble("X"), tag.getDouble("Y"), tag.getDouble("Z")),
+            tag.getFloat("Pitch"),
+            tag.getFloat("Yaw"),
             Hook.State.valueOf(tag.getString("State")),
-            vec(dirTag.getDouble("X"), dirTag.getDouble("Y"), dirTag.getDouble("Z")),
             BlockPos(blockTag.getInt("X"), blockTag.getInt("Y"), blockTag.getInt("Z")),
             tag.getInt("Tag")
         )
@@ -227,10 +220,9 @@ class HookedPlayerData(val player: PlayerEntity) : Component, AutoSyncedComponen
         buf.writeDouble(hook.pos.x)
         buf.writeDouble(hook.pos.y)
         buf.writeDouble(hook.pos.z)
+        buf.writeFloat(hook.pitch)
+        buf.writeFloat(hook.yaw)
         buf.writeVarInt(hook.state.ordinal)
-        buf.writeDouble(hook.direction.x)
-        buf.writeDouble(hook.direction.y)
-        buf.writeDouble(hook.direction.z)
         buf.writeBlockPos(hook.block)
         buf.writeVarInt(hook.tag)
     }
@@ -240,8 +232,9 @@ class HookedPlayerData(val player: PlayerEntity) : Component, AutoSyncedComponen
             buf.readVarInt(),
             this.type,
             vec(buf.readDouble(), buf.readDouble(), buf.readDouble()),
+            buf.readFloat(),
+            buf.readFloat(),
             Hook.State.values()[buf.readVarInt()],
-            vec(buf.readDouble(), buf.readDouble(), buf.readDouble()),
             buf.readBlockPos(),
             buf.readVarInt()
         )

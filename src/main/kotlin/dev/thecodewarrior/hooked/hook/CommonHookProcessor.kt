@@ -7,9 +7,7 @@ import com.teamwizardry.librarianlib.math.*
 import dev.thecodewarrior.hooked.Hooked
 import dev.thecodewarrior.hooked.util.getWaistPos
 import net.minecraft.block.ShapeContext
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.pow
+import kotlin.math.*
 
 /**
  * See [ClientHookProcessor] and [ServerHookProcessor] for information about their netcode.
@@ -169,7 +167,8 @@ abstract class CommonHookProcessor : HookProcessor {
             } else {
                 val direction = delta / distance
                 hook.pos -= direction * min(context.type.speed, distance)
-                hook.direction = direction
+                hook.yaw = -Math.toDegrees(atan2(direction.x, direction.z)).toFloat()
+                hook.pitch = -Math.toDegrees(asin(direction.y)).toFloat()
             }
         }
     }
