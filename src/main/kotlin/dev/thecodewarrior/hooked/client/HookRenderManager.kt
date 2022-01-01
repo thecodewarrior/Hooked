@@ -13,6 +13,7 @@ import com.teamwizardry.librarianlib.math.*
 import dev.thecodewarrior.hooked.bridge.hookData
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.client.renderer.HookRenderer
+import dev.thecodewarrior.hooked.hook.ClientHookProcessor
 import dev.thecodewarrior.hooked.hook.Hook
 import dev.thecodewarrior.hooked.hook.HookPlayerController
 import dev.thecodewarrior.hooked.hook.HookType
@@ -28,6 +29,7 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.resource.ResourceManager
 import net.minecraft.resource.ResourceReloader
 import net.minecraft.util.Identifier
+import net.minecraft.util.math.Box
 import net.minecraft.util.profiler.Profiler
 import org.lwjgl.opengl.GL11
 import java.awt.Color
@@ -95,6 +97,16 @@ object HookRenderManager: IdentifiableResourceReloadListener, WorldRenderEvents.
                 }
             }
         }
+
+        if(Client.minecraft.entityRenderDispatcher.shouldRenderHitboxes()) {
+            val jumpPreview = ClientHookProcessor.previewJumpTarget(Client.minecraft.player!!)?.maxByOrNull { it.minY }
+
+            if(jumpPreview != null) {
+                stack.push()
+                drawBoundingBox(stack, jumpPreview)
+                stack.pop()
+            }
+        }
     }
 
     fun drawDebugLines(matrices: MatrixStack, player: PlayerEntity, tickDelta: Float, data: HookedPlayerData) {
@@ -152,6 +164,46 @@ object HookRenderManager: IdentifiableResourceReloadListener, WorldRenderEvents.
         }
 
         RenderSystem.enableDepthTest()
+    }
+
+
+    fun drawBoundingBox(matrices: MatrixStack, box: Box) {
+        val color = DistinctColors.yellow
+        val width = 3f
+
+        val vb = FlatLinesRenderBuffer.SHARED
+
+        vb.pos(matrices, box.maxX, box.minY, box.maxZ).color(color).width(width).endVertex()
+        vb.pos(matrices, box.maxX, box.minY, box.minZ).color(color).width(width).endVertex()
+        vb.pos(matrices, box.minX, box.minY, box.minZ).color(color).width(width).endVertex()
+        vb.pos(matrices, box.minX, box.maxY, box.minZ).color(color).width(width).endVertex()
+        vb.pos(matrices, box.maxX, box.maxY, box.minZ).color(color).width(width).endVertex()
+        vb.pos(matrices, box.maxX, box.maxY, box.maxZ).color(color).width(width).endVertex()
+        vb.draw(Primitive.LINE_STRIP_ADJACENCY)
+
+        vb.pos(matrices, box.minX, box.minY, box.maxZ).color(color).width(width).endVertex()
+        vb.pos(matrices, box.maxX, box.minY, box.maxZ).color(color).width(width).endVertex()
+        vb.pos(matrices, box.maxX, box.minY, box.minZ).color(color).width(width).endVertex()
+        vb.pos(matrices, box.maxX, box.maxY, box.minZ).color(color).width(width).endVertex()
+        vb.pos(matrices, box.maxX, box.maxY, box.maxZ).color(color).width(width).endVertex()
+        vb.pos(matrices, box.minX, box.maxY, box.maxZ).color(color).width(width).endVertex()
+        vb.draw(Primitive.LINE_STRIP_ADJACENCY)
+
+        vb.pos(matrices, box.minX, box.minY, box.minZ).color(color).width(width).endVertex()
+        vb.pos(matrices, box.minX, box.minY, box.maxZ).color(color).width(width).endVertex()
+        vb.pos(matrices, box.maxX, box.minY, box.maxZ).color(color).width(width).endVertex()
+        vb.pos(matrices, box.maxX, box.maxY, box.maxZ).color(color).width(width).endVertex()
+        vb.pos(matrices, box.minX, box.maxY, box.maxZ).color(color).width(width).endVertex()
+        vb.pos(matrices, box.minX, box.maxY, box.minZ).color(color).width(width).endVertex()
+        vb.draw(Primitive.LINE_STRIP_ADJACENCY)
+
+        vb.pos(matrices, box.maxX, box.minY, box.minZ).color(color).width(width).endVertex()
+        vb.pos(matrices, box.minX, box.minY, box.minZ).color(color).width(width).endVertex()
+        vb.pos(matrices, box.minX, box.minY, box.maxZ).color(color).width(width).endVertex()
+        vb.pos(matrices, box.minX, box.maxY, box.maxZ).color(color).width(width).endVertex()
+        vb.pos(matrices, box.minX, box.maxY, box.minZ).color(color).width(width).endVertex()
+        vb.pos(matrices, box.maxX, box.maxY, box.minZ).color(color).width(width).endVertex()
+        vb.draw(Primitive.LINE_STRIP_ADJACENCY)
     }
 
 }

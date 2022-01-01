@@ -4,12 +4,16 @@ import com.teamwizardry.librarianlib.core.util.Client
 import dev.thecodewarrior.hooked.Hooked
 import dev.thecodewarrior.hooked.bridge.hookData
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
+import dev.thecodewarrior.hooked.hooks.BasicHookPlayerController
 import dev.thecodewarrior.hooked.network.FireHookPacket
 import dev.thecodewarrior.hooked.network.HookJumpPacket
+import dev.thecodewarrior.hooked.util.JumpHeightUtil
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
+import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.sound.SoundEvent
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.Box
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.GameMode
 import net.minecraft.world.World
@@ -134,6 +138,14 @@ object ClientHookProcessor: CommonHookProcessor() {
     override fun isHookActive(player: PlayerEntity, reason: HookActiveReason): Boolean {
         val data = player.hookData()
         return data.controller.isActive(Context(data), reason)
+    }
+
+    fun previewJumpTarget(player: ClientPlayerEntity): List<Box>? {
+        val data = player.hookData()
+        val controller = data.controller as? BasicHookPlayerController ?: return null
+        if(data.hooks.values.none { it.state == Hook.State.PLANTED }) return null
+
+        return controller.computeJumpTargets(Context(data))?.filter { it.minY > player.y }
     }
 
     private val logger = Hooked.logManager.makeLogger<ClientHookProcessor>()
