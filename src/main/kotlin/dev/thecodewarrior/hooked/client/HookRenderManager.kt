@@ -30,6 +30,7 @@ import net.minecraft.resource.ResourceReloader
 import net.minecraft.util.Identifier
 import net.minecraft.util.profiler.Profiler
 import org.lwjgl.opengl.GL11
+import java.awt.Color
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 
@@ -89,72 +90,72 @@ object HookRenderManager: IdentifiableResourceReloadListener, WorldRenderEvents.
                     )
                     stack.pop()
                 }
-                if (Client.minecraft.wireFrame) {
-                    drawDebugLines(context, player, data)
+                if (Client.minecraft.entityRenderDispatcher.shouldRenderHitboxes()) {
+                    drawDebugLines(stack, player, context.tickDelta(), data)
                 }
             }
         }
     }
 
-    fun drawDebugLines(context: WorldRenderContext, player: PlayerEntity, data: HookedPlayerData) {
+    fun drawDebugLines(matrices: MatrixStack, player: PlayerEntity, tickDelta: Float, data: HookedPlayerData) {
         if (data.hooks.isEmpty())
             return
 
+        RenderSystem.disableDepthTest()
         val vb = FlatLinesRenderBuffer.SHARED
 
-        val waistPos = player.getWaistPos(Client.worldTime.tickDelta)
-        val matrix = Matrix4dStack()
-        matrix.set(context.matrixStack().peek().model)
+        val waist = player.getWaistPos(tickDelta)
 
         data.hooks.forEach { (_, hook) ->
-
-            vb.pos(matrix, waistPos).color(DistinctColors.white).width(3f).endVertex()
-            vb.dupVertex()
-            vb.pos(matrix, hook.pos).color(DistinctColors.white).width(3f).endVertex()
-            vb.dupVertex()
-
-            matrix.push()
-            matrix.translate(hook.pos)
-            matrix.rotate(Quaternion.fromRotationTo(vec(0, 1, 0), hook.direction))
-
-            val color = when (hook.state) {
+            val color = when(hook.state) {
                 Hook.State.EXTENDING -> DistinctColors.green
-                Hook.State.PLANTED -> DistinctColors.blue
+                Hook.State.PLANTED -> DistinctColors.navy
                 Hook.State.RETRACTING -> DistinctColors.red
                 Hook.State.REMOVED -> DistinctColors.black
             }
+
+            val hookPos = hook.posLastTick + (hook.pos - hook.posLastTick) * tickDelta
+
+            vb.pos(matrices, waist).color(color).width(3f).endVertex()
+            vb.dupVertex()
+            vb.pos(matrices, hookPos).color(color).width(3f).endVertex()
+
+            matrices.push()
+            matrices.translate(hookPos.x, hookPos.y, hookPos.z)
+            if(hook.direction.x == 0.0 && hook.direction.z == 0.0 && hook.direction.y < 0.0) {
+                matrices.multiply(Quaternion.fromAngleDegAxis(180.0, 1.0, 0.0, 0.0).toMc())
+            } else {
+                matrices.multiply(Quaternion.fromRotationTo(vec(0, 1, 0), hook.direction).toMc())
+            }
+
             val length = hook.type.hookLength
             val claw = length / 3
 
-            vb.pos(matrix, 0, 0, 0).color(color).width(3f).endVertex()
-            vb.dupVertex()
-            vb.pos(matrix, 0, length, 0).color(color).width(3f).endVertex()
+            vb.pos(matrices, 0, length, 0).color(color).width(3f).endVertex()
             vb.dupVertex()
 
-            vb.pos(matrix, -claw, length - claw, 0).color(color).width(3f).endVertex()
-            vb.dupVertex()
-            vb.pos(matrix, 0, length, 0).color(color).width(3f).endVertex()
-            vb.dupVertex()
+            vb.draw(Primitive.LINE_STRIP_ADJACENCY)
 
-            vb.dupVertex()
-            vb.dupVertex()
-            vb.pos(matrix, claw, length - claw, 0).color(color).width(3f).endVertex()
-            vb.dupVertex()
+            vb.pos(matrices, 0, 0, 0).color(color).width(3f).endVertex() // curl in ends because why not
+            vb.pos(matrices, -claw, length - claw, 0).color(color).width(3f).endVertex()
+            vb.pos(matrices, 0, length, 0).color(color).width(3f).endVertex()
+            vb.pos(matrices, claw, length - claw, 0).color(color).width(3f).endVertex()
+            vb.pos(matrices, 0, 0, 0).color(color).width(3f).endVertex() // curl in ends because why not
 
-            vb.pos(matrix, 0, length - claw, -claw).color(color).width(3f).endVertex()
-            vb.dupVertex()
-            vb.pos(matrix, 0, length, 0).color(color).width(3f).endVertex()
-            vb.dupVertex()
+            vb.draw(Primitive.LINE_STRIP_ADJACENCY)
 
-            vb.dupVertex()
-            vb.dupVertex()
-            vb.pos(matrix, 0, length - claw, claw).color(color).width(3f).endVertex()
-            vb.dupVertex()
+            vb.pos(matrices, 0, 0, 0).color(color).width(3f).endVertex() // curl in ends because why not
+            vb.pos(matrices, 0, length - claw, -claw).color(color).width(3f).endVertex()
+            vb.pos(matrices, 0, length, 0).color(color).width(3f).endVertex()
+            vb.pos(matrices, 0, length - claw, claw).color(color).width(3f).endVertex()
+            vb.pos(matrices, 0, 0, 0).color(color).width(3f).endVertex() // curl in ends because why not
 
-            matrix.pop()
+            vb.draw(Primitive.LINE_STRIP_ADJACENCY)
+
+            matrices.pop()
         }
 
-        vb.draw(Primitive.LINES_ADJACENCY)
+        RenderSystem.enableDepthTest()
     }
 
 }
