@@ -13,6 +13,7 @@ enum class HookActiveReason {
     CANCEL_ELYTRA,
     ELYTRA_DAMAGE,
     DISABLE_CLIP_AT_LEDGE,
+    DISABLE_AUTO_JUMP,
     BREAK_SPEED,
     MOVED_WRONGLY
 }

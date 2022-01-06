@@ -156,6 +156,8 @@ open class FlightHookPlayerController(val player: PlayerEntity, val type: Flight
         return when(reason) {
             // we should still be able to sneak to avoid ledges
             HookActiveReason.DISABLE_CLIP_AT_LEDGE -> false
+            // the player should still be able to auto jump
+            HookActiveReason.DISABLE_AUTO_JUMP -> false
             // the hook doesn't pull the player in, no reason to give them too much freedom here
             HookActiveReason.MOVED_WRONGLY -> false
             else -> isInsideHull

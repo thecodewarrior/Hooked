@@ -12,6 +12,7 @@
     "ServerPlayNetworkHandlerMixin"
   ],
   "client": [
+    "ClientPlayerEntityMixin",
     "AbstractClientPlayerEntityMixin",
     "MixinInGameHud"
   ],
