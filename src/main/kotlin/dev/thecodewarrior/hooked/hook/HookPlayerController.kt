@@ -88,6 +88,9 @@ abstract class HookPlayerController {
             DislodgeReason.BLOCK_BROKEN, DislodgeReason.DISTANCE -> {
                 delegate.playFeedbackSound(Hooked.Sounds.HOOK_DISLODGE_EVENT, 1f, 1f)
             }
+            DislodgeReason.DISALLOWED -> {
+                delegate.playFeedbackSound(Hooked.Sounds.HOOK_DISLODGE_EVENT, 1f, 1f)
+            }
             DislodgeReason.HOOK_COUNT -> {}
             DislodgeReason.EXPLICIT -> {
                 delegate.playWorldSound(Hook.hitSound(delegate.world, hook.block), hook.pos, 1f, 1f)
@@ -178,6 +181,11 @@ abstract class HookPlayerController {
          * The player moved too far from the hook
          */
         DISTANCE,
+
+        /**
+         * The hook was disallowed. e.g. because the player was flying and allowHooksWhileFlying was false
+         */
+        DISALLOWED,
 
         /**
          * The hook was dislodged because of the hook count limit

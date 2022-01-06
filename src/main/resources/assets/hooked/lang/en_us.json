@@ -28,5 +28,6 @@
   "key.category.hooked": "Hooked",
   "key.hooked.fire": "Fire Hook",
   "stat.hooked.hook_one_cm": "Distance by Grappling Hook",
-  "stat.hooked.hooks_fired": "Grappling Hooks Fired"
+  "stat.hooked.hooks_fired": "Grappling Hooks Fired",
+  "gamerule.allowHooksWhileFlying": "Allow hooks while flying [Hooked]"
 }

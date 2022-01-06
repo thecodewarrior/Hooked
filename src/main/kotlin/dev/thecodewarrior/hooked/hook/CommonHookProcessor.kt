@@ -102,35 +102,47 @@ abstract class CommonHookProcessor : HookProcessor {
     }
 
     private fun updatePlanted(context: HookProcessorContext) {
+        if(
+            context.player.isFallFlying &&
+            !context.player.world.gameRules.getBoolean(Hooked.Rules.ALLOW_HOOKS_WHILE_FLYING)
+        ) {
+            for(hook in context.hooks) {
+                if(hook.state != Hook.State.RETRACTING) {
+                    hook.state = Hook.State.RETRACTING
+                    context.markDirty(hook)
+                    context.fireEvent(
+                        HookEvent(
+                            HookEvent.EventType.DISLODGE,
+                            hook.id,
+                            HookPlayerController.DislodgeReason.DISALLOWED.ordinal
+                        )
+                    )
+                }
+            }
+        }
+
         // a bit of wiggle room before a hook breaks off.
         val breakEpsilon: Double = 1 / 16.0
         val breakRangeSq = (context.type.range + breakEpsilon).pow(2)
 
-        context.hooks.forEach { hook ->
-            if (hook.state != Hook.State.PLANTED) return@forEach
-
-            if (hook.pos.squaredDistanceTo(context.player.getWaistPos()) > breakRangeSq) {
-                hook.state = Hook.State.RETRACTING
-                context.markDirty(hook)
-                context.fireEvent(
-                    HookEvent(
-                        HookEvent.EventType.DISLODGE,
-                        hook.id,
-                        HookPlayerController.DislodgeReason.DISTANCE.ordinal
-                    )
-                )
-            } else if (context.world.isAir(hook.block)) {
-                hook.state = Hook.State.RETRACTING
-                context.markDirty(hook)
-                context.fireEvent(
-                    HookEvent(
-                        HookEvent.EventType.DISLODGE,
-                        hook.id,
-                        HookPlayerController.DislodgeReason.BLOCK_BROKEN.ordinal
-                    )
-                )
+        for(hook in context.hooks) {
+            if (hook.state != Hook.State.PLANTED) {
+                continue
             }
 
+            val reason = when {
+                hook.pos.squaredDistanceTo(context.player.getWaistPos()) > breakRangeSq -> {
+                    HookPlayerController.DislodgeReason.DISTANCE
+                }
+                context.world.isAir(hook.block) -> {
+                    HookPlayerController.DislodgeReason.BLOCK_BROKEN
+                }
+                else -> continue
+            }
+
+            hook.state = Hook.State.RETRACTING
+            context.markDirty(hook)
+            context.fireEvent(HookEvent(HookEvent.EventType.DISLODGE, hook.id, reason.ordinal))
         }
         var plantedCount = 0
         // count from the end of the list, retracting everything after the threshold

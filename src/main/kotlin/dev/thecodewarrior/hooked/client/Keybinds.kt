@@ -30,7 +30,7 @@ object Keybinds {
         if(data.type != HookType.NONE) {
             val sneakPressed = Client.minecraft.options.keySneak.isPressed
             if (FIRE.wasPressed()) {
-                ClientHookProcessor.fireHook(data, player.eyePos, player.pitch, player.yaw, sneakPressed)
+                ClientHookProcessor.fireHook(player, data, player.eyePos, player.pitch, player.yaw, sneakPressed)
                 while(FIRE.wasPressed()) { /* consume excess keypresses */ }
             }
 

@@ -70,7 +70,10 @@ object ClientHookProcessor: CommonHookProcessor() {
         Context(data).fireEvent(event)
     }
 
-    fun fireHook(data: HookedPlayerData, pos: Vec3d, pitch: Float, yaw: Float, sneaking: Boolean) {
+    fun fireHook(player: PlayerEntity, data: HookedPlayerData, pos: Vec3d, pitch: Float, yaw: Float, sneaking: Boolean) {
+        if(player.isFallFlying && !player.world.gameRules.getBoolean(Hooked.Rules.ALLOW_HOOKS_WHILE_FLYING)) {
+            return
+        }
         if (data.type != HookType.NONE && Client.minecraft.interactionManager?.currentGameMode != GameMode.SPECTATOR) {
             val ids = arrayListOf<Int>()
             val shouldSend = data.controller.fireHooks(Context(data), pos, pitch, yaw, sneaking) { hookPos, hookPitch, hookYaw ->

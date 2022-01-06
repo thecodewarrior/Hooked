@@ -8,12 +8,13 @@
     "EntityAccessMixin",
     "FloatingTicksAccess",
     "PlayerEntityMixin",
+    "PlayerManagerMixin",
     "ServerPlayerEntityMixin",
     "ServerPlayNetworkHandlerMixin"
   ],
   "client": [
-    "ClientPlayerEntityMixin",
     "AbstractClientPlayerEntityMixin",
+    "ClientPlayerEntityMixin",
     "MixinInGameHud"
   ],
   "injectors": {

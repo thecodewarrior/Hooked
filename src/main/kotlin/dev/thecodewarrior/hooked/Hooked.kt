@@ -22,10 +22,13 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder
 import net.fabricmc.fabric.api.event.registry.RegistryAttribute
+import net.fabricmc.fabric.api.gamerule.v1.GameRuleFactory
+import net.fabricmc.fabric.api.gamerule.v1.GameRuleRegistry
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper
-import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.network.PacketByteBuf
 import net.minecraft.resource.ResourceType
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundEvent
@@ -34,6 +37,7 @@ import net.minecraft.stat.Stats
 import net.minecraft.util.Identifier
 import net.minecraft.util.registry.DefaultedRegistry
 import net.minecraft.util.registry.Registry
+import net.minecraft.world.GameRules
 import net.minecraft.world.World
 import kotlin.math.sqrt
 
@@ -53,6 +57,7 @@ object Hooked {
             registerSounds()
             registerNetworking()
             ServerHookProcessor.registerEvents()
+            Rules // static initializer registers the gamerule
         }
 
         private fun createRegistry() {
@@ -156,6 +161,13 @@ object Hooked {
                     processHookEventsPacket(packet, client.world!!)
                 }
             }
+            ClientPlayNetworking.registerGlobalReceiver(Packets.GAMERULE_SYNC) { client, _, buffer, _ ->
+                buffer.retain()
+                client.execute {
+                    Rules.decodeSync(client.world!!.gameRules, buffer)
+                    buffer.release()
+                }
+            }
         }
 
         private fun processHookEventsPacket(packet: HookEventsPacket, world: World) {
@@ -185,6 +197,9 @@ object Hooked {
 
         val FIRE_HOOK = Identifier("hooked:fire_hook")
         val HOOK_JUMP = Identifier("hooked:hook_jump")
+
+        @JvmField
+        val GAMERULE_SYNC = Identifier("hooked:gamerule_sync")
     }
 
     object Sounds {
@@ -205,5 +220,29 @@ object Hooked {
         val HOOK_ONE_CM = Identifier("hooked:hook_one_cm")
         @JvmField
         val HOOKS_FIRED = Identifier("hooked:hooks_fired")
+    }
+
+    object Rules {
+        val ALLOW_HOOKS_WHILE_FLYING = GameRuleRegistry.register(
+            "allowHooksWhileFlying", GameRules.Category.PLAYER, GameRuleFactory.createBooleanRule(true) { server, _ ->
+                if(server != null) {
+                    val packet = encodeSync(server.gameRules)
+                    server.playerManager.playerList.forEach { player ->
+                        ServerPlayNetworking.send(player, Packets.GAMERULE_SYNC, packet)
+                    }
+                }
+            }
+        )
+
+        @JvmStatic
+        fun encodeSync(gameRules: GameRules): PacketByteBuf {
+            val buffer = PacketByteBufs.create()
+            buffer.writeBoolean(gameRules.get(ALLOW_HOOKS_WHILE_FLYING).get())
+            return buffer
+        }
+
+        fun decodeSync(gameRules: GameRules, buf: PacketByteBuf) {
+            gameRules.get(ALLOW_HOOKS_WHILE_FLYING).set(buf.readBoolean(), null)
+        }
     }
 }
