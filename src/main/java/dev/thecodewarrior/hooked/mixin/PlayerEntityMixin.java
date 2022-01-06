@@ -12,6 +12,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.tag.FluidTags;
@@ -50,6 +51,13 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerMi
     private void checkFallFlyingHookedMixin(CallbackInfoReturnable<Boolean> cir) {
         if(this.getHookProcessor().isHookActive((PlayerEntity) (Object) this, HookActiveReason.CANCEL_ELYTRA)) {
             cir.setReturnValue(false);
+        }
+    }
+
+    @Inject(method = "isInvulnerableTo", at = @At("HEAD"), cancellable = true)
+    private void isInvulnerableToMixin(DamageSource damageSource, CallbackInfoReturnable<Boolean> cir) {
+        if(this.getHookProcessor().isHookActive((PlayerEntity) (Object) this, HookActiveReason.ELYTRA_DAMAGE)) {
+            cir.setReturnValue(true);
         }
     }
 

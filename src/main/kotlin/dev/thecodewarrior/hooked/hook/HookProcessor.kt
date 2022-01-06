@@ -11,6 +11,7 @@ interface HookProcessor {
 enum class HookActiveReason {
     TRAVEL_STATS,
     CANCEL_ELYTRA,
+    ELYTRA_DAMAGE,
     DISABLE_CLIP_AT_LEDGE,
     BREAK_SPEED,
     MOVED_WRONGLY
