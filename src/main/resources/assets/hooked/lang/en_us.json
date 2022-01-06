@@ -1,6 +1,6 @@
 {
-  "curios.identifier.hooked": "Grappling Hook",
-  "hooked.controller.basic.controls.multi.fire": "- Press '%1$s' to fire the main hook",
+  "gamerule.allowHooksWhileFlying": "Allow hooks while flying [Hooked]",
+  "hooked.controller.basic.controls.multi.fire": "- Press '%1$s' to fire",
   "hooked.controller.basic.controls.multi.fire_extra": "- Sneak and press '%1$s' to fire additional hooks",
   "hooked.controller.basic.controls.multi.jump": "- Jump to retract all hooks",
   "hooked.controller.basic.controls.single.fire": "- Press '%1$s' to fire",
@@ -17,17 +17,17 @@
   "item.hooked.diamond_hook": "Diamond Hook",
   "item.hooked.diamond_hook.tip": "Plenty of hooks, plenty of speed",
   "item.hooked.ender_hook": "Ender Hook",
-  "item.hooked.ender_hook.tip": "Fast. Very, very fast",
+  "item.hooked.ender_hook.tip": "Fast. Very, very fast.",
   "item.hooked.iron_hook": "Iron Hook",
   "item.hooked.iron_hook.tip": "Versatile, flexible movement",
   "item.hooked.red_hook": "Red Hook",
   "item.hooked.red_hook.tip": "Creative flight, contained",
   "item.hooked.wood_hook": "Wooden Hook",
-  "item.hooked.wood_hook.tip": "A simple solution to escaping ditches and climbing trees",
+  "item.hooked.wood_hook.tip": "Better than getting stuck",
   "itemGroup.hooked": "Hooked",
   "key.category.hooked": "Hooked",
   "key.hooked.fire": "Fire Hook",
   "stat.hooked.hook_one_cm": "Distance by Grappling Hook",
   "stat.hooked.hooks_fired": "Grappling Hooks Fired",
-  "gamerule.allowHooksWhileFlying": "Allow hooks while flying [Hooked]"
+  "trinkets.slot.legs.hooked": "Grappling Hook"
 }

@@ -14,6 +14,7 @@ import dev.thecodewarrior.hooked.hook.ClientHookProcessor
 import dev.thecodewarrior.hooked.hook.HookType
 import dev.thecodewarrior.hooked.hook.ServerHookProcessor
 import dev.thecodewarrior.hooked.hooks.*
+import dev.thecodewarrior.hooked.item.HookItem
 import dev.thecodewarrior.hooked.network.*
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.api.ModInitializer
@@ -27,6 +28,7 @@ import net.fabricmc.fabric.api.gamerule.v1.GameRuleRegistry
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper
+import net.minecraft.client.gui.screen.Screen
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.resource.ResourceType
@@ -134,6 +136,7 @@ object Hooked {
             registerNetworking()
             registerKeybinds()
             EnderHookPlayerController.particleEffect = EnderHookPlayerController.ClientParticleEffect
+            HookItem.hasShiftDown = Screen::hasShiftDown
         }
 
         private fun registerHookRenderers() {
