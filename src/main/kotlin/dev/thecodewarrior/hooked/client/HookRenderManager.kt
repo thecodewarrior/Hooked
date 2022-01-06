@@ -74,6 +74,7 @@ object HookRenderManager: IdentifiableResourceReloadListener, WorldRenderEvents.
         val stack = MatrixStack()
         val viewPos = Client.minecraft.gameRenderer.camera.pos
         stack.translate(-viewPos.x, -viewPos.y, -viewPos.z)
+        stack.peek().normal.load(context.matrixStack().peek().normal)
 
         val world = Client.minecraft.world ?: return
         world.players.forEach { player ->
