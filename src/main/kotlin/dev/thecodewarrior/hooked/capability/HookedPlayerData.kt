@@ -115,6 +115,8 @@ class HookedPlayerData(val player: PlayerEntity) : Component, AutoSyncedComponen
             "X" %= double(hook.pos.x)
             "Y" %= double(hook.pos.y)
             "Z" %= double(hook.pos.z)
+            "Pitch" %= double(hook.pitch)
+            "Yaw" %= double(hook.yaw)
             "State" %= string(hook.state.name)
             "Block" %= compound {
                 "X" %= int(hook.block.x)
