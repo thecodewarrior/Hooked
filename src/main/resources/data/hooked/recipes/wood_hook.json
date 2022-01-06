@@ -7,13 +7,13 @@
   ],
   "key": {
     "T": {
-      "tag": "forge:rods/wooden"
+      "item": "minecraft:stick"
     },
     "P": {
       "item": "minecraft:wooden_pickaxe"
     },
     "S": {
-      "tag": "forge:string"
+      "item": "minecraft:string"
     }
   },
   "result": {

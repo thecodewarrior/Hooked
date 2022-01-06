@@ -7,10 +7,10 @@
   ],
   "key": {
     "P": {
-      "tag": "forge:ender_pearls"
+      "item": "minecraft:ender_pearl"
     },
     "R": {
-      "tag": "forge:rods/blaze"
+      "item": "minecraft:blaze_rod"
     },
     "E": {
       "item": "minecraft:ender_eye"

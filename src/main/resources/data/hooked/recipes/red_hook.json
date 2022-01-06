@@ -10,7 +10,7 @@
       "item": "minecraft:piston"
     },
     "D": {
-      "tag": "forge:dusts/redstone"
+      "item": "minecraft:redstone"
     },
     "B": {
       "item": "minecraft:redstone_block"

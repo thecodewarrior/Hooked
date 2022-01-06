@@ -7,7 +7,7 @@
   ],
   "key": {
     "D": {
-      "tag": "forge:gems/diamond"
+      "item": "minecraft:diamond"
     },
     "H": {
       "item": "hooked:iron_hook"
