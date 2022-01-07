@@ -15,7 +15,9 @@
   "client": [
     "AbstractClientPlayerEntityMixin",
     "ClientPlayerEntityMixin",
-    "MixinInGameHud"
+    "MixinInGameHud",
+    "PlayerEntityRendererMixin",
+    "WorldRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

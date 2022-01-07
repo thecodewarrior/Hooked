@@ -1,66 +1,64 @@
 package dev.thecodewarrior.hooked.hooks
 
-import com.mojang.blaze3d.systems.RenderSystem
-import com.teamwizardry.librarianlib.albedo.base.buffer.FlatLinesRenderBuffer
-import com.teamwizardry.librarianlib.albedo.buffer.Primitive
-import com.teamwizardry.librarianlib.math.Matrix4dStack
+import com.teamwizardry.librarianlib.core.util.Client
+import com.teamwizardry.librarianlib.core.util.kotlin.color
+import com.teamwizardry.librarianlib.math.cross
+import com.teamwizardry.librarianlib.math.minus
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.client.renderer.SimpleHookRenderer
 import dev.thecodewarrior.hooked.util.getWaistPos
-import dev.thecodewarrior.hooked.util.withAlpha
+import dev.thecodewarrior.hooked.util.normal
+import dev.thecodewarrior.hooked.util.vertex
 import net.minecraft.client.render.RenderLayer
 import net.minecraft.client.render.VertexConsumerProvider
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.util.Identifier
-import org.lwjgl.opengl.GL11
+import net.minecraft.util.math.Vec3d
 import java.awt.Color
 
 open class FlightHookRenderer(type: FlightHookType): SimpleHookRenderer<FlightHookPlayerController>(type) {
     override fun render(
         matrices: MatrixStack,
         player: PlayerEntity,
-        ghost: Boolean,
+        consumers: VertexConsumerProvider,
         tickDelta: Float,
         data: HookedPlayerData,
         controller: FlightHookPlayerController
     ) {
         val waist = player.getWaistPos(tickDelta)
+        matrices.push()
         matrices.translate(waist.x, waist.y, waist.z)
-        renderHooks(matrices, player, ghost, tickDelta, data, 2.5)
+        renderHooks(matrices, player, consumers, tickDelta, data, 2.5)
+        matrices.pop()
 
         if (controller.showHullTimer.value != 0.0) {
             val alpha = controller.showHullTimer.value.toFloat()
             val frontColor = Color(1f, 0f, 0f, alpha)
             val backColor = Color(0.5f, 0f, 0f, alpha)
 
-            matrices.translate(-waist.x, -waist.y, -waist.z)
-            RenderSystem.enableBlend()
-            RenderSystem.depthFunc(GL11.GL_GREATER)
-            RenderSystem.depthMask(false)
-            drawWireframe(matrices, controller, backColor)
+//            RenderSystem.depthFunc(GL11.GL_GREATER)
+//            RenderSystem.depthMask(false)
+//            drawWireframe(matrices, consumers, controller, backColor)
 
-            RenderSystem.depthFunc(GL11.GL_LEQUAL)
-            RenderSystem.depthMask(true)
-            drawWireframe(matrices, controller, frontColor)
-            RenderSystem.disableBlend()
+            drawWireframe(matrices, consumers, controller, frontColor)
         }
     }
 
     fun drawWireframe(
         matrices: MatrixStack,
+        consumers: VertexConsumerProvider,
         controller: FlightHookPlayerController,
         color: Color
     ) {
-        val vb = FlatLinesRenderBuffer.SHARED
+        val consumer = consumers.getBuffer(RenderLayer.getLines())
+        val camera = Client.minecraft.gameRenderer.camera
+        camera.diagonalPlane
+        val look = Vec3d.fromPolar(camera.pitch, camera.yaw)
 
         for(edge in controller.hull.shape.wireframe) {
-            vb.pos(matrices, edge.a.x, edge.a.y, edge.a.z).width(2f).color(color).endVertex()
-            vb.pos(matrices, edge.a.x, edge.a.y, edge.a.z).width(2f).color(color).endVertex()
-            vb.pos(matrices, edge.b.x, edge.b.y, edge.b.z).width(2f).color(color).endVertex()
-            vb.pos(matrices, edge.b.x, edge.b.y, edge.b.z).width(2f).color(color).endVertex()
+            val normal = (edge.b - edge.a).normalize()
+            consumer.vertex(matrices, edge.a).color(color).normal(matrices, normal).next()
+            consumer.vertex(matrices, edge.b).color(color).normal(matrices, normal).next()
         }
-
-        vb.draw(Primitive.LINES_ADJACENCY)
     }
 }

@@ -1,8 +1,5 @@
 package dev.thecodewarrior.hooked.client.renderer
 
-import com.teamwizardry.librarianlib.albedo.base.buffer.ShadedTextureRenderBuffer
-import com.teamwizardry.librarianlib.albedo.buffer.Primitive
-import com.teamwizardry.librarianlib.core.util.*
 import com.teamwizardry.librarianlib.math.*
 import dev.thecodewarrior.hooked.Hooked
 import dev.thecodewarrior.hooked.shade.obj.*
@@ -11,8 +8,13 @@ import dev.thecodewarrior.hooked.hook.Hook
 import dev.thecodewarrior.hooked.hook.HookPlayerController
 import dev.thecodewarrior.hooked.hook.HookType
 import dev.thecodewarrior.hooked.util.getWaistPos
+import dev.thecodewarrior.hooked.util.normal
 import dev.thecodewarrior.hooked.util.toMc
+import dev.thecodewarrior.hooked.util.vertex
 import net.fabricmc.fabric.api.resource.SimpleResourceReloadListener
+import net.minecraft.client.render.OverlayTexture
+import net.minecraft.client.render.RenderLayer
+import net.minecraft.client.render.VertexConsumerProvider
 import net.minecraft.client.render.WorldRenderer
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.entity.player.PlayerEntity
@@ -42,25 +44,26 @@ abstract class SimpleHookRenderer<C: HookPlayerController>(val type: HookType): 
     protected fun renderHooks(
         matrices: MatrixStack,
         player: PlayerEntity,
-        ghost: Boolean,
+        consumers: VertexConsumerProvider,
         tickDelta: Float,
         data: HookedPlayerData,
         chainMargin: Double
     ) {
         data.hooks.forEach { (_, hook) ->
-            renderHook(matrices, player, ghost, tickDelta, hook, chainMargin)
+            renderHook(matrices, player, consumers, tickDelta, hook, chainMargin)
         }
+        // force it to draw
+        consumers.getBuffer(RenderLayer.getEntityCutout(Identifier("minecraft:textures/misc/white.png")))
     }
 
     private fun renderHook(
         matrices: MatrixStack,
         player: PlayerEntity,
-        ghost: Boolean,
+        consumers: VertexConsumerProvider,
         tickDelta: Float,
         hook: Hook,
         chainMargin: Double
     ) {
-        val ghostAlpha = if(ghost) 0.15f else 1.0f
         val waist = player.getWaistPos(tickDelta)
         val hookPos = hook.posLastTick + (hook.pos - hook.posLastTick) * tickDelta
         val chainLength = waist.distanceTo(hookPos)
@@ -75,8 +78,8 @@ abstract class SimpleHookRenderer<C: HookPlayerController>(val type: HookType): 
 
         val actualLength = chainLength - chainMargin
 
-        drawHalfChain(matrices, chain1Texture, player.world, waist, chainDirection, actualLength, 0.5, 0.0, 0.0, 1.0, ghostAlpha)
-        drawHalfChain(matrices, chain2Texture, player.world, waist, chainDirection, actualLength, 0.0, 0.5, -1.0, 0.0, ghostAlpha)
+        drawHalfChain(matrices, consumers, chain1Texture, player.world, waist, chainDirection, actualLength, 0.5, 0.0, 0.0, 1.0)
+        drawHalfChain(matrices, consumers, chain2Texture, player.world, waist, chainDirection, actualLength, 0.0, 0.5, -1.0, 0.0)
 
         matrices.pop()
 
@@ -85,21 +88,25 @@ abstract class SimpleHookRenderer<C: HookPlayerController>(val type: HookType): 
         // we add 90 to the pitch because the model is based on +y, but pitch/yaw are based on +z
         matrices.multiply(Quaternion.fromAxesAnglesDeg(hook.pitch + 90, -hook.yaw, 0f).toMc())
 
-        val vb = ShadedTextureRenderBuffer.SHARED
-        vb.texture.set(hookTexture)
+        val consumer = consumers.getBuffer(RenderLayer.getEntityCutout(hookTexture))
         val lightmap = getBrightnessForRender(player.world, BlockPos(hookPos))
-        modelVertexIndices.forEach { vertexIndex ->
+
+        modelVertexIndices.forEachIndexed { i, vertexIndex ->
             val vertex = model.getVertex(vertexIndex)
             val tex = model.getTexCoord(vertexIndex)
             val normal = model.getNormal(vertexIndex)
-            vb.pos(matrices, vertex.x, vertex.y, vertex.z)
-                .color(1f, 1f, 1f, ghostAlpha)
-                .tex(tex.x, 1 - tex.y)
-                .light(lightmap)
-                .normal(matrices, normal.x, normal.y, normal.z)
-                .endVertex()
+            consumer.vertex(matrices, vertex.x, vertex.y, vertex.z).color(1f, 1f, 1f, 1f).texture(tex.x, 1 - tex.y)
+                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, normal.x, normal.y, normal.z).next()
+            if(i % 3 == 2) {
+                // see RenderSystem.sharedSequentialQuad
+                // 1-2
+                // |/|
+                // 0-3
+                // the game operates in quads, so we need to get rid of the 2-3-0 triangle
+                consumer.vertex(matrices, vertex.x, vertex.y, vertex.z).color(1f, 1f, 1f, 1f).texture(tex.x, 1 - tex.y)
+                    .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, normal.x, normal.y, normal.z).next()
+            }
         }
-        vb.draw(Primitive.TRIANGLES)
 
         matrices.pop()
     }
@@ -109,6 +116,7 @@ abstract class SimpleHookRenderer<C: HookPlayerController>(val type: HookType): 
      */
     fun drawHalfChain(
         matrices: MatrixStack,
+        consumers: VertexConsumerProvider,
         texture: Identifier,
         world: World,
         waist: Vec3d,
@@ -117,20 +125,14 @@ abstract class SimpleHookRenderer<C: HookPlayerController>(val type: HookType): 
         deltaX: Double,
         deltaZ: Double,
         normalX: Double,
-        normalZ: Double,
-        ghostAlpha: Float
+        normalZ: Double
     ) {
         if (chainLength < 0) // this can happen when the chain is shorter than the chain margin
             return
         val chainSegments = floorInt(chainLength)
         val firstSegmentLength = chainLength - chainSegments
 
-        val normalMatrix = Matrix3d(matrices.peek().normal)
-        val normal = normalMatrix.transform(vec(normalX, 0, normalZ))
-        val rnormal = -normal
-
-        val vb = ShadedTextureRenderBuffer.SHARED
-        vb.texture.set(texture)
+        val consumer = consumers.getBuffer(RenderLayer.getEntityCutout(texture))
 
         if (firstSegmentLength > chainLengthEpsilon) {
             val lightPos = BlockPos(waist + chainDirection * (firstSegmentLength / 2))
@@ -139,23 +141,23 @@ abstract class SimpleHookRenderer<C: HookPlayerController>(val type: HookType): 
             val minV = 1 - firstSegmentLength.toFloat()
             val len = firstSegmentLength
 
-            vb.pos(matrices, -deltaX, 0, -deltaZ).normal(matrices, normalX, 0, normalZ)
-                .color(1f, 1f, 1f, ghostAlpha).tex(0f, minV).light(lightmap).endVertex()
-            vb.pos(matrices, deltaX, 0, deltaZ).normal(matrices, normalX, 0, normalZ)
-                .color(1f, 1f, 1f, ghostAlpha).tex(1f, minV).light(lightmap).endVertex()
-            vb.pos(matrices, deltaX, len, deltaZ).normal(matrices, normalX, 0, normalZ)
-                .color(1f, 1f, 1f, ghostAlpha).tex(1f, 1f).light(lightmap).endVertex()
-            vb.pos(matrices, -deltaX, len, -deltaZ).normal(matrices, normalX, 0, normalZ)
-                .color(1f, 1f, 1f, ghostAlpha).tex(0f, 1f).light(lightmap).endVertex()
+            consumer.vertex(matrices, -deltaX, 0, -deltaZ).color(1f, 1f, 1f, 1f).texture(0f, minV)
+                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, normalX, 0, normalZ).next()
+            consumer.vertex(matrices, deltaX, 0, deltaZ).color(1f, 1f, 1f, 1f).texture(1f, minV)
+                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, normalX, 0, normalZ).next()
+            consumer.vertex(matrices, deltaX, len, deltaZ).color(1f, 1f, 1f, 1f).texture(1f, 1f)
+                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, normalX, 0, normalZ).next()
+            consumer.vertex(matrices, -deltaX, len, -deltaZ).color(1f, 1f, 1f, 1f).texture(0f, 1f)
+                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, normalX, 0, normalZ).next()
 
-            vb.pos(matrices, -deltaX, len, -deltaZ).normal(matrices, -normalX, 0, -normalZ)
-                .color(1f, 1f, 1f, ghostAlpha).tex(0f, 1f).light(lightmap).endVertex()
-            vb.pos(matrices, deltaX, len, deltaZ).normal(matrices, -normalX, 0, -normalZ)
-                .color(1f, 1f, 1f, ghostAlpha).tex(1f, 1f).light(lightmap).endVertex()
-            vb.pos(matrices, deltaX, 0, deltaZ).normal(matrices, -normalX, 0, -normalZ)
-                .color(1f, 1f, 1f, ghostAlpha).tex(1f, minV).light(lightmap).endVertex()
-            vb.pos(matrices, -deltaX, 0, -deltaZ).normal(matrices, -normalX, 0, -normalZ)
-                .color(1f, 1f, 1f, ghostAlpha).tex(0f, minV).light(lightmap).endVertex()
+            consumer.vertex(matrices, -deltaX, len, -deltaZ).color(1f, 1f, 1f, 1f).texture(0f, 1f)
+                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, -normalX, 0, -normalZ).next()
+            consumer.vertex(matrices, deltaX, len, deltaZ).color(1f, 1f, 1f, 1f).texture(1f, 1f)
+                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, -normalX, 0, -normalZ).next()
+            consumer.vertex(matrices, deltaX, 0, deltaZ).color(1f, 1f, 1f, 1f).texture(1f, minV)
+                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, -normalX, 0, -normalZ).next()
+            consumer.vertex(matrices, -deltaX, 0, -deltaZ).color(1f, 1f, 1f, 1f).texture(0f, minV)
+                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, -normalX, 0, -normalZ).next()
         }
         for (i in 0 until chainSegments) {
             val yPos = firstSegmentLength + i
@@ -163,26 +165,24 @@ abstract class SimpleHookRenderer<C: HookPlayerController>(val type: HookType): 
             val lightPos = BlockPos(waist + chainDirection * (yPos + 0.5))
             val lightmap = getBrightnessForRender(world, lightPos)
 
-            vb.pos(matrices, -deltaX, yPos, -deltaZ).normal(matrices, normalX, 0, normalZ)
-                .color(1f, 1f, 1f, ghostAlpha).tex(0f, 0f).light(lightmap).endVertex()
-            vb.pos(matrices, deltaX, yPos, deltaZ).normal(matrices, normalX, 0, normalZ)
-                .color(1f, 1f, 1f, ghostAlpha).tex(1f, 0f).light(lightmap).endVertex()
-            vb.pos(matrices, deltaX, yPos + 1, deltaZ).normal(matrices, normalX, 0, normalZ)
-                .color(1f, 1f, 1f, ghostAlpha).tex(1f, 1f).light(lightmap).endVertex()
-            vb.pos(matrices, -deltaX, yPos + 1, -deltaZ).normal(matrices, normalX, 0, normalZ)
-                .color(1f, 1f, 1f, ghostAlpha).tex(0f, 1f).light(lightmap).endVertex()
+            consumer.vertex(matrices, -deltaX, yPos, -deltaZ).color(1f, 1f, 1f, 1f).texture(0f, 0f)
+                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, normalX, 0, normalZ).next()
+            consumer.vertex(matrices, deltaX, yPos, deltaZ).color(1f, 1f, 1f, 1f).texture(1f, 0f)
+                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, normalX, 0, normalZ).next()
+            consumer.vertex(matrices, deltaX, yPos + 1, deltaZ).color(1f, 1f, 1f, 1f).texture(1f, 1f)
+                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, normalX, 0, normalZ).next()
+            consumer.vertex(matrices, -deltaX, yPos + 1, -deltaZ).color(1f, 1f, 1f, 1f).texture(0f, 1f)
+                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, normalX, 0, normalZ).next()
 
-            vb.pos(matrices, -deltaX, yPos + 1, -deltaZ).normal(matrices, -normalX, 0, -normalZ)
-                .color(1f, 1f, 1f, ghostAlpha).tex(0f, 1f).light(lightmap).endVertex()
-            vb.pos(matrices, deltaX, yPos + 1, deltaZ).normal(matrices, -normalX, 0, -normalZ)
-                .color(1f, 1f, 1f, ghostAlpha).tex(1f, 1f).light(lightmap).endVertex()
-            vb.pos(matrices, deltaX, yPos, deltaZ).normal(matrices, -normalX, 0, -normalZ)
-                .color(1f, 1f, 1f, ghostAlpha).tex(1f, 0f).light(lightmap).endVertex()
-            vb.pos(matrices, -deltaX, yPos, -deltaZ).normal(matrices, -normalX, 0, -normalZ)
-                .color(1f, 1f, 1f, ghostAlpha).tex(0f, 0f).light(lightmap).endVertex()
+            consumer.vertex(matrices, -deltaX, yPos + 1, -deltaZ).color(1f, 1f, 1f, 1f).texture(0f, 1f)
+                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, -normalX, 0, -normalZ).next()
+            consumer.vertex(matrices, deltaX, yPos + 1, deltaZ).color(1f, 1f, 1f, 1f).texture(1f, 1f)
+                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, -normalX, 0, -normalZ).next()
+            consumer.vertex(matrices, deltaX, yPos, deltaZ).color(1f, 1f, 1f, 1f).texture(1f, 0f)
+                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, -normalX, 0, -normalZ).next()
+            consumer.vertex(matrices, -deltaX, yPos, -deltaZ).color(1f, 1f, 1f, 1f).texture(0f, 0f)
+                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, -normalX, 0, -normalZ).next()
         }
-
-        vb.draw(Primitive.QUADS)
     }
 
     private fun getBrightnessForRender(world: World, pos: BlockPos): Int {

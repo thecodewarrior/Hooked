@@ -1,6 +1,5 @@
 package dev.thecodewarrior.hooked.hooks
 
-import com.teamwizardry.librarianlib.math.Matrix4dStack
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.client.renderer.SimpleHookRenderer
 import dev.thecodewarrior.hooked.util.getWaistPos
@@ -12,13 +11,13 @@ open class BasicHookRenderer(type: BasicHookType): SimpleHookRenderer<BasicHookP
     override fun render(
         matrices: MatrixStack,
         player: PlayerEntity,
-        ghost: Boolean,
+        consumers: VertexConsumerProvider,
         tickDelta: Float,
         data: HookedPlayerData,
         controller: BasicHookPlayerController
     ) {
         val waist = player.getWaistPos(tickDelta)
         matrices.translate(waist.x, waist.y, waist.z)
-        renderHooks(matrices, player, ghost, tickDelta, data, 0.0)
+        renderHooks(matrices, player, consumers, tickDelta, data, 0.0)
     }
 }

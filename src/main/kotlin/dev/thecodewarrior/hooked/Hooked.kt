@@ -141,7 +141,6 @@ object Hooked {
 
         private fun registerHookRenderers() {
             ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(HookRenderManager)
-            HookRenderManager.registerEvents()
             HookTypes.types.forEach {
                 when(it) {
                     is FlightHookType -> HookRenderManager.register(it, FlightHookRenderer(it))

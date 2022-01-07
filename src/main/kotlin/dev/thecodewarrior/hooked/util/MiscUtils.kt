@@ -30,14 +30,3 @@ val Entity.actualMotion: Vec3d get() = vec(this.x - this.prevX, this.y - this.pr
 fun Vec3d.isFinite(): Boolean {
     return x.isFinite() && y.isFinite() && z.isFinite()
 }
-
-fun Color.withAlpha(alpha: Float): Color {
-    return Color(this.red / 255f, this.green / 255f, this.blue / 255f, alpha)
-}
-
-fun Quaternion.toMc(): net.minecraft.util.math.Quaternion = net.minecraft.util.math.Quaternion(
-    this.x.toFloat(),
-    this.y.toFloat(),
-    this.z.toFloat(),
-    this.w.toFloat()
-)
