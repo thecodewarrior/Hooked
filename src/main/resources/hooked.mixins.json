@@ -16,6 +16,7 @@
     "AbstractClientPlayerEntityMixin",
     "ClientPlayerEntityMixin",
     "MixinInGameHud",
+    "OtherClientPlayerEntityMixin",
     "PlayerEntityRendererMixin",
     "WorldRendererMixin"
   ],
