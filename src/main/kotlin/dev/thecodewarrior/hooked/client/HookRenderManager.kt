@@ -3,6 +3,7 @@ package dev.thecodewarrior.hooked.client
 import com.teamwizardry.librarianlib.core.util.Client
 import com.teamwizardry.librarianlib.core.util.DistinctColors
 import com.teamwizardry.librarianlib.core.util.kotlin.color
+import com.teamwizardry.librarianlib.core.util.vec
 import com.teamwizardry.librarianlib.math.Quaternion
 import com.teamwizardry.librarianlib.math.minus
 import com.teamwizardry.librarianlib.math.plus
@@ -99,15 +100,6 @@ object HookRenderManager: IdentifiableResourceReloadListener {
                 drawDebugLines(matrices, consumers, player, tickDelta, data)
             }
         }
-
-        if(Client.minecraft.entityRenderDispatcher.shouldRenderHitboxes()) {
-            val jumpPreview = ClientHookProcessor.previewJumpTarget(Client.minecraft.player!!)?.maxByOrNull { it.minY }
-
-            if(jumpPreview != null) {
-                val color = DistinctColors.yellow
-                WorldRenderer.drawBox(matrices, consumers.getBuffer(RenderLayer.getLines()), jumpPreview, color.red/255f, color.green/255f, color.blue/255f, 1f)
-            }
-        }
         matrices.pop()
     }
 
@@ -120,6 +112,36 @@ object HookRenderManager: IdentifiableResourceReloadListener {
         missingPlayers.toList().forEach { player ->
             renderPlayer(player, matrices, tickDelta, consumers)
         }
+        matrices.push()
+        matrices.translate(-camera.pos.x, -camera.pos.y, -camera.pos.z)
+
+        if(Client.minecraft.entityRenderDispatcher.shouldRenderHitboxes()) {
+            val player = Client.minecraft.player!!
+            val playerBox = player.boundingBox
+            val playerBoxMin = vec(playerBox.minX, playerBox.minY, playerBox.minZ)
+            val targets = ClientHookProcessor.previewJumpTarget(player)
+            if(!targets.isNullOrEmpty()) {
+                val targetY = targets.maxOf { it.minY }
+                val jumpPreview = targets.filter { it.minY == targetY }.minByOrNull {
+                    vec(it.minX, it.minY, it.minZ).squaredDistanceTo(playerBoxMin)
+                }
+
+                if (jumpPreview != null && targetY > player.y) {
+                    val color = DistinctColors.yellow
+                    WorldRenderer.drawBox(
+                        matrices,
+                        consumers.getBuffer(RenderLayer.getLines()),
+                        jumpPreview,
+                        color.red / 255f,
+                        color.green / 255f,
+                        color.blue / 255f,
+                        1f
+                    )
+                }
+            }
+        }
+
+        matrices.pop()
     }
 
     fun drawDebugLines(matrices: MatrixStack, consumers: VertexConsumerProvider, player: PlayerEntity, tickDelta: Float, data: HookedPlayerData) {
