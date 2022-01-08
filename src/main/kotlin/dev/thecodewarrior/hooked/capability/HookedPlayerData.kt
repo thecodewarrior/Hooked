@@ -100,6 +100,7 @@ class HookedPlayerData(val player: PlayerEntity) : Component, AutoSyncedComponen
     override fun writeToNbt(tag: NbtCompound) {
         tag.putString("Type", Hooked.hookRegistry.getId(type).toString())
         tag.put("Hooks", NbtList().also { it.addAll(hooks.values.map(::writeHook)) })
+        tag.put("Controller", NbtCompound().also { controller.saveState(it) })
     }
 
     override fun readFromNbt(tag: NbtCompound) {
@@ -107,6 +108,7 @@ class HookedPlayerData(val player: PlayerEntity) : Component, AutoSyncedComponen
         hooks = tag.getList("Hooks", NbtType.COMPOUND).map(::readHook).associateByTo(TreeMap()) { it.id }
         syncStatus.forceFullSyncToClient = true
         syncStatus.forceFullSyncToOthers = true
+        controller.loadState(tag.getCompound("Controller"))
     }
 
     private fun writeHook(hook: Hook): NbtCompound {
@@ -179,22 +181,19 @@ class HookedPlayerData(val player: PlayerEntity) : Component, AutoSyncedComponen
 
     private fun writeFullPacket(buf: PacketByteBuf) {
         buf.writeVarInt(SyncType.FULL.ordinal)
-
-        // type
         buf.writeIdentifier(Hooked.hookRegistry.getId(type))
-
-        // hooks
         buf.writeCollection(hooks.values, ::writeHook)
+        controller.writeSyncState(buf)
     }
 
     private fun applyFullPacket(buf: PacketByteBuf) {
-        // type
         type = Hooked.hookRegistry.get(buf.readIdentifier())
 
-        // hooks
         val newHooks = buf.readCollection({ mutableListOf() }, ::readHook).associateByTo(TreeMap()) { it.id }
         syncStatus.recentHooks.putAll(hooks.filterKeys { it !in newHooks })
         hooks = newHooks
+
+        controller.readSyncState(buf)
     }
 
     private fun writeDirtyPacket(buf: PacketByteBuf) {

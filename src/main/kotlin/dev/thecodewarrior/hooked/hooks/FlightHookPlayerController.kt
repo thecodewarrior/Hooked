@@ -12,12 +12,14 @@ import dev.thecodewarrior.hooked.util.FadeTimer
 import dev.thecodewarrior.hooked.util.fromWaistPos
 import dev.thecodewarrior.hooked.util.getWaistPos
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.nbt.NbtCompound
+import net.minecraft.network.PacketByteBuf
 import net.minecraft.util.math.Vec3d
 import kotlin.math.cos
 
 open class FlightHookPlayerController(val player: PlayerEntity, val type: FlightHookType): HookPlayerController() {
     val hull: DynamicHull = DynamicHull()
-    var hasExternalFlight: Boolean = true
+    var hasExternalFlight: Boolean = false
     var isFlightActive: Boolean = false
     var stopFallDamage: Boolean = false
     var isInsideHull: Boolean = false
@@ -28,6 +30,28 @@ open class FlightHookPlayerController(val player: PlayerEntity, val type: Flight
     var showHullTimer: FadeTimer = FadeTimer()
 
     private val allowedFlightRange = 0.5
+
+    override fun saveState(tag: NbtCompound) {
+        tag.putBoolean("HasExternalFlight", hasExternalFlight)
+        tag.putBoolean("IsFlightActive", isFlightActive)
+        tag.putBoolean("StopFallDamage", stopFallDamage)
+    }
+
+    override fun loadState(tag: NbtCompound) {
+        hasExternalFlight = tag.getBoolean("HasExternalFlight")
+        isFlightActive = tag.getBoolean("IsFlightActive")
+        stopFallDamage = tag.getBoolean("StopFallDamage")
+    }
+
+    override fun writeSyncState(buf: PacketByteBuf) {
+        buf.writeBoolean(hasExternalFlight)
+        buf.writeBoolean(stopFallDamage)
+    }
+
+    override fun readSyncState(buf: PacketByteBuf) {
+        hasExternalFlight = buf.readBoolean()
+        stopFallDamage = buf.readBoolean()
+    }
 
     override fun remove() {
         disableFlight()
@@ -75,6 +99,7 @@ open class FlightHookPlayerController(val player: PlayerEntity, val type: Flight
             for(hook in delegate.hooks) {
                 delegate.retractHook(hook)
             }
+            stopFallDamage = true
         }
 
         if(doubleJump && delegate.hooks.any { it.state == Hook.State.PLANTED }) {

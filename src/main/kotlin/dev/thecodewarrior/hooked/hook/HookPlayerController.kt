@@ -9,6 +9,8 @@ import dev.thecodewarrior.hooked.Hooked
 import dev.thecodewarrior.hooked.mixin.EntityAccessMixin
 import dev.thecodewarrior.hooked.mixin.FloatingTicksAccess
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.nbt.NbtCompound
+import net.minecraft.network.PacketByteBuf
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.math.Vec3d
 import kotlin.math.abs
@@ -48,6 +50,12 @@ abstract class HookPlayerController {
      * Called after the hook processor updates the hooks
      */
     abstract fun update(delegate: HookControllerDelegate)
+
+    open fun saveState(tag: NbtCompound) {}
+    open fun loadState(tag: NbtCompound) {}
+    // this synchronization only happens when doing a full sync, not incremental syncs
+    open fun writeSyncState(buf: PacketByteBuf) {}
+    open fun readSyncState(buf: PacketByteBuf) {}
 
     open fun isActive(delegate: HookControllerDelegate, reason: HookActiveReason): Boolean {
         return delegate.hooks.any { it.state == Hook.State.PLANTED }
