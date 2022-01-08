@@ -145,14 +145,12 @@ class HookedPlayerData(val player: PlayerEntity) : Component, AutoSyncedComponen
     }
 
     fun updateSync() {
-        Hooked.Components.HOOK_DATA.sync(player, ::writeUpdatePacket)
-    }
-
-    override fun shouldSyncWith(player: ServerPlayerEntity): Boolean {
-        return if(player == this.player) {
-            syncStatus.forceFullSyncToClient || syncStatus.dirtyHooks.isNotEmpty()
-        } else {
-            syncStatus.forceFullSyncToOthers || syncStatus.dirtyHooks.isNotEmpty()
+        Hooked.Components.HOOK_DATA.sync(player, ::writeUpdatePacket) { player ->
+            if(player == this.player) {
+                syncStatus.forceFullSyncToClient || syncStatus.dirtyHooks.isNotEmpty()
+            } else {
+                syncStatus.forceFullSyncToOthers || syncStatus.dirtyHooks.isNotEmpty()
+            }
         }
     }
 

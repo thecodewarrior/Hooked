@@ -141,7 +141,7 @@ object ServerHookProcessor: CommonHookProcessor() {
         applyHookMotion(context)
         data.controller.update(context)
 
-        // we run this every tick, but it uses `shouldSyncWith` to send updates only when necessary
+        // we run this every tick, but it uses a predicate to only send to players that need updates
         data.updateSync()
 
         if (data.syncStatus.queuedEvents.isNotEmpty()) {
