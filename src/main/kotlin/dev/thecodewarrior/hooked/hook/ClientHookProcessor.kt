@@ -86,6 +86,7 @@ object ClientHookProcessor: CommonHookProcessor() {
                     BlockPos(0, 0, 0),
                     0
                 )
+                hook.firstTick = true
                 data.hooks[id] = hook
 
                 hook

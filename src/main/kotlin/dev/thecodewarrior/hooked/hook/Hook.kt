@@ -52,6 +52,13 @@ data class Hook(
     val tipPos: Vec3d
         get() = pos + direction * type.hookLength
 
+    /**
+     * Used when firing hooks on the client side to prevent them from rendering during the first tick.
+     *
+     * This is to fix the ender hook flashing in the middle of the screen when firing.
+     */
+    var firstTick: Boolean = false
+
     enum class State {
         EXTENDING, PLANTED, RETRACTING, REMOVED
     }

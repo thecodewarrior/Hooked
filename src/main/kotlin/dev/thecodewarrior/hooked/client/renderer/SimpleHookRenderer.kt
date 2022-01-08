@@ -50,7 +50,8 @@ abstract class SimpleHookRenderer<C: HookPlayerController>(val type: HookType): 
         chainMargin: Double
     ) {
         data.hooks.forEach { (_, hook) ->
-            renderHook(matrices, player, consumers, tickDelta, hook, chainMargin)
+            if(!hook.firstTick)
+                renderHook(matrices, player, consumers, tickDelta, hook, chainMargin)
         }
         // force it to draw
         consumers.getBuffer(RenderLayer.getEntityCutout(Identifier("minecraft:textures/misc/white.png")))

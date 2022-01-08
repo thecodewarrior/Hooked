@@ -48,6 +48,7 @@ abstract class CommonHookProcessor : HookProcessor {
     private fun updateHooks(context: HookProcessorContext) {
         for (hook in context.hooks) {
             hook.posLastTick = hook.pos
+            hook.firstTick = false
         }
         updateRetracting(context)
         updateExtending(context)
