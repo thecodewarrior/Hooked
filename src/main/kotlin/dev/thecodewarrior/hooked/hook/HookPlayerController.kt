@@ -2,6 +2,7 @@ package dev.thecodewarrior.hooked.hook
 
 import com.teamwizardry.librarianlib.core.util.mixinCast
 import com.teamwizardry.librarianlib.core.util.vec
+import com.teamwizardry.librarianlib.etcetera.Raycaster
 import com.teamwizardry.librarianlib.math.minus
 import com.teamwizardry.librarianlib.math.plus
 import com.teamwizardry.librarianlib.math.times
@@ -13,6 +14,7 @@ import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.math.Vec3d
+import net.minecraft.util.shape.VoxelShapes
 import kotlin.math.abs
 import kotlin.math.sign
 
@@ -45,6 +47,21 @@ abstract class HookPlayerController {
      * Called when the jump key is pressed on the client
      */
     abstract fun jump(delegate: HookControllerDelegate, doubleJump: Boolean, sneaking: Boolean)
+
+    /**
+     * Configures the raycaster. The hook processor considers any hit type other than [Raycaster.HitType.BLOCK] to be a
+     * miss, so you can't cast against fluids or entities.
+     */
+    open fun configureRaycast(request: Raycaster.RaycastRequest) {
+        request.withBlockMode(Raycaster.BlockMode.COLLISION)
+            .withBlockOverride { state, _, _ ->
+                when {
+                    Hooked.Tags.SOLID_BLOCKS.contains(state.block) -> VoxelShapes.fullCube()
+                    Hooked.Tags.IGNORE_BLOCKS.contains(state.block) -> VoxelShapes.empty()
+                    else -> null
+                }
+            }
+    }
 
     /**
      * Called after the hook processor updates the hooks

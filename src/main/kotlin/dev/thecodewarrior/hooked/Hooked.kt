@@ -28,6 +28,7 @@ import net.fabricmc.fabric.api.gamerule.v1.GameRuleRegistry
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper
+import net.fabricmc.fabric.api.tag.TagFactory
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.network.PacketByteBuf
@@ -60,6 +61,7 @@ object Hooked {
             registerNetworking()
             ServerHookProcessor.registerEvents()
             Rules // static initializer registers the gamerule
+            Tags // static initializer registers tags
         }
 
         private fun createRegistry() {
@@ -184,6 +186,11 @@ object Hooked {
                 ClientHookProcessor.triggerServerEvent(entity.hookData(), it)
             }
         }
+    }
+
+    object Tags {
+        val SOLID_BLOCKS = TagFactory.BLOCK.create(Identifier("hooked:solid_blocks"))
+        val IGNORE_BLOCKS = TagFactory.BLOCK.create(Identifier("hooked:ignore_blocks"))
     }
 
     object Components : EntityComponentInitializer {

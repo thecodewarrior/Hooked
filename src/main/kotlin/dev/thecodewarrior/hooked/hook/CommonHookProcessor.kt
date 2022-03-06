@@ -64,15 +64,16 @@ abstract class CommonHookProcessor : HookProcessor {
 
             val castDistance = min(context.type.speed, distanceLeft) + context.type.hookLength
 
-            raycaster.cast(
+            val request = Raycaster.RaycastRequest(
                 context.world,
-                Raycaster.BlockMode.COLLISION,
-                ShapeContext.of(context.player),
                 hook.pos.x, hook.pos.y, hook.pos.z,
                 hook.pos.x + hook.direction.x * castDistance,
                 hook.pos.y + hook.direction.y * castDistance,
                 hook.pos.z + hook.direction.z * castDistance
             )
+                .withEntityContext(context.player)
+            context.controller.configureRaycast(request)
+            raycaster.cast(request)
 
             hook.pos += hook.direction * (castDistance * raycaster.fraction - hook.type.hookLength)
 
@@ -85,17 +86,13 @@ abstract class CommonHookProcessor : HookProcessor {
                     context.fireEvent(HookEvent(HookEvent.EventType.HIT, hook.id, 0))
                     context.controller.onHookHit(context, hook)
                 }
-                Raycaster.HitType.NONE -> {
-                    // if we reached max extension, transition to the retracting state
+                else -> {
+                    // we missed. if we reached max extension, transition to the retracting state
                     if (distanceLeft <= context.type.speed) {
                         hook.state = Hook.State.RETRACTING
                         context.markDirty(hook)
                         context.fireEvent(HookEvent(HookEvent.EventType.MISS, hook.id, 0))
                     }
-                }
-                else -> {
-                    raycaster.reset()
-                    inconceivable("Raycast only included blocks but returned non-block hit type ${raycaster.hitType}")
                 }
             }
             raycaster.reset()
