@@ -54,8 +54,18 @@ abstract class HookPlayerController {
     open fun saveState(tag: NbtCompound) {}
     open fun loadState(tag: NbtCompound) {}
     // this synchronization only happens when doing a full sync, not incremental syncs
-    open fun writeSyncState(buf: PacketByteBuf) {}
-    open fun readSyncState(buf: PacketByteBuf) {}
+    /**
+     * Write to the synchronization packet. This isn't used for incremental synchronization packets.
+     *
+     * @param initial true if [buf] is the initial sync packet or false if [buf] a subsequent update packet
+     */
+    open fun writeSyncState(buf: PacketByteBuf, initial: Boolean) {}
+    /**
+     * Read from the synchronization packet.
+     *
+     * @param initial true if [buf] is the initial sync packet or false if [buf] a subsequent update packet
+     */
+    open fun readSyncState(buf: PacketByteBuf, initial: Boolean) {}
 
     open fun isActive(delegate: HookControllerDelegate, reason: HookActiveReason): Boolean {
         return delegate.hooks.any { it.state == Hook.State.PLANTED }

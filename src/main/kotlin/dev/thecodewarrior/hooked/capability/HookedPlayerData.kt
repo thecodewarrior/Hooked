@@ -157,16 +157,16 @@ class HookedPlayerData(val player: PlayerEntity) : Component, AutoSyncedComponen
     }
 
     private enum class SyncType {
-        FULL, DIRTY
+        INIT, FULL, DIRTY
     }
 
     override fun writeSyncPacket(buf: PacketByteBuf, recipient: ServerPlayerEntity) {
-        writeFullPacket(buf)
+        writeFullPacket(buf, true)
     }
 
     private fun writeUpdatePacket(buf: PacketByteBuf, recipient: ServerPlayerEntity) {
         if(recipient == this.player || syncStatus.forceFullSyncToOthers) {
-            writeFullPacket(buf)
+            writeFullPacket(buf, false)
         } else {
             writeDirtyPacket(buf)
         }
@@ -174,26 +174,27 @@ class HookedPlayerData(val player: PlayerEntity) : Component, AutoSyncedComponen
 
     override fun applySyncPacket(buf: PacketByteBuf) {
         when(SyncType.values()[buf.readVarInt()]) {
-            SyncType.FULL -> applyFullPacket(buf)
+            SyncType.INIT -> applyFullPacket(buf, true)
+            SyncType.FULL -> applyFullPacket(buf, false)
             SyncType.DIRTY -> applyDirtyPacket(buf)
         }
     }
 
-    private fun writeFullPacket(buf: PacketByteBuf) {
-        buf.writeVarInt(SyncType.FULL.ordinal)
+    private fun writeFullPacket(buf: PacketByteBuf, initial: Boolean) {
+        buf.writeVarInt(if(initial) SyncType.INIT.ordinal else SyncType.FULL.ordinal)
         buf.writeIdentifier(Hooked.hookRegistry.getId(type))
         buf.writeCollection(hooks.values, ::writeHook)
-        controller.writeSyncState(buf)
+        controller.writeSyncState(buf, initial)
     }
 
-    private fun applyFullPacket(buf: PacketByteBuf) {
+    private fun applyFullPacket(buf: PacketByteBuf, initial: Boolean) {
         type = Hooked.hookRegistry.get(buf.readIdentifier())
 
         val newHooks = buf.readCollection({ mutableListOf() }, ::readHook).associateByTo(TreeMap()) { it.id }
         syncStatus.recentHooks.putAll(hooks.filterKeys { it !in newHooks })
         hooks = newHooks
 
-        controller.readSyncState(buf)
+        controller.readSyncState(buf, initial)
     }
 
     private fun writeDirtyPacket(buf: PacketByteBuf) {

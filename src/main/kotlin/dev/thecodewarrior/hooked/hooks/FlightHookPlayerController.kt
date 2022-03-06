@@ -43,14 +43,20 @@ open class FlightHookPlayerController(val player: PlayerEntity, val type: Flight
         stopFallDamage = tag.getBoolean("StopFallDamage")
     }
 
-    override fun writeSyncState(buf: PacketByteBuf) {
+    override fun writeSyncState(buf: PacketByteBuf, initial: Boolean) {
         buf.writeBoolean(hasExternalFlight)
         buf.writeBoolean(stopFallDamage)
+        if(initial) {
+            buf.writeBoolean(isFlightActive)
+        }
     }
 
-    override fun readSyncState(buf: PacketByteBuf) {
+    override fun readSyncState(buf: PacketByteBuf, initial: Boolean) {
         hasExternalFlight = buf.readBoolean()
         stopFallDamage = buf.readBoolean()
+        if(initial) {
+            isFlightActive = buf.readBoolean()
+        }
     }
 
     override fun remove() {
