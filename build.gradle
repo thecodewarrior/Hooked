@@ -32,6 +32,7 @@ dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modCompileOnly files("lib/iris-and-sodium-mc1.17-1.1.2+build.9.jar")
 
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
     modImplementation "net.fabricmc:fabric-language-kotlin:${project.fabric_kotlin_version}"
@@ -40,7 +41,6 @@ dependencies {
     include "io.github.onyxstudios.Cardinal-Components-API:cardinal-components-entity:${project.cardinal_components_version}"
 
     [
-            "com.teamwizardry.librarianlib:albedo:${liblib_version}",
             "com.teamwizardry.librarianlib:mosaic:${liblib_version}",
             "com.teamwizardry.librarianlib:glitter:${liblib_version}",
             "com.teamwizardry.librarianlib:etcetera:${liblib_version}"
@@ -51,6 +51,10 @@ dependencies {
 
 loom {
     mixin.defaultRefmapName.set("hooked.refmap.json")
+
+    runConfigs.configureEach {
+        vmArg("-javaagent:$buildDir/agent/mixin.jar")
+    }
 }
 
 processResources {
@@ -99,4 +103,17 @@ publishing {
     repositories {
 
     }
+}
+
+tasks.register("copyMixinAgent", Sync) {
+    from(configurations.runtimeClasspath)
+    include("sponge-mixin-*")
+    into(file("$buildDir/agent"))
+    eachFile {
+        name = "mixin.jar"
+    }
+}
+
+processResources {
+    dependsOn(copyMixinAgent)
 }

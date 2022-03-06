@@ -135,6 +135,7 @@ object Hooked {
             registerHookRenderers()
             registerNetworking()
             registerKeybinds()
+            HookRenderManager.registerEvents()
             EnderHookPlayerController.particleEffect = EnderHookPlayerController.ClientParticleEffect
             HookItem.hasShiftDown = Screen::hasShiftDown
         }

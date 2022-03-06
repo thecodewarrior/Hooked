@@ -13,7 +13,7 @@ public abstract class ServerPlayNetworkHandlerMixin {
     @Shadow public abstract ServerPlayerEntity getPlayer();
 
     @ModifyConstant(method = "onPlayerMove", constant = @Constant(doubleValue = 0.0625))
-    double injectMovedWrongly(double constant) {
+    double hooked$injectMovedWrongly(double constant) {
         if(((PlayerMixinBridge) this.getPlayer()).getHookProcessor().isHookActive(this.getPlayer(), HookActiveReason.MOVED_WRONGLY)) {
             return 5.0;
         } else {

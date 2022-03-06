@@ -7,7 +7,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.hud.InGameHud;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.Arm;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -28,7 +27,7 @@ public abstract class MixinInGameHud {
     @Shadow @Final private MinecraftClient client;
 
     @Inject(method = "renderCrosshair", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;getAttackCooldownProgress(F)F"))
-    public void injectCrosshair(MatrixStack matrices, CallbackInfo ci) {
+    private void hooked$injectCrosshair(MatrixStack matrices, CallbackInfo ci) {
         var matrix = new Matrix4d(matrices);
         if(ClientHookProcessor.getHudCooldown() == 0)
             return;
@@ -46,7 +45,7 @@ public abstract class MixinInGameHud {
     }
 
     @Inject(method = "renderHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;getAttackCooldownProgress(F)F"))
-    public void injectHotbar(float tickDelta, MatrixStack matrices, CallbackInfo ci) {
+    private void hooked$injectHotbar(float tickDelta, MatrixStack matrices, CallbackInfo ci) {
         var matrix = new Matrix4d(matrices);
         if(ClientHookProcessor.getHudCooldown() == 0)
             return;

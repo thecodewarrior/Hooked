@@ -1,7 +1,10 @@
 package dev.thecodewarrior.hooked.hooks
 
+import com.teamwizardry.librarianlib.core.bridge.IMatrix4f
 import com.teamwizardry.librarianlib.core.util.Client
 import com.teamwizardry.librarianlib.core.util.kotlin.color
+import com.teamwizardry.librarianlib.core.util.mixinCast
+import com.teamwizardry.librarianlib.core.util.vec
 import com.teamwizardry.librarianlib.math.cross
 import com.teamwizardry.librarianlib.math.minus
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
@@ -51,9 +54,6 @@ open class FlightHookRenderer(type: FlightHookType): SimpleHookRenderer<FlightHo
         color: Color
     ) {
         val consumer = consumers.getBuffer(RenderLayer.getLines())
-        val camera = Client.minecraft.gameRenderer.camera
-        camera.diagonalPlane
-        val look = Vec3d.fromPolar(camera.pitch, camera.yaw)
 
         for(edge in controller.hull.shape.wireframe) {
             val normal = (edge.b - edge.a).normalize()

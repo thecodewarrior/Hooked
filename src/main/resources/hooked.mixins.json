@@ -15,6 +15,7 @@
   "client": [
     "AbstractClientPlayerEntityMixin",
     "ClientPlayerEntityMixin",
+    "IrisShadowRendererMixin",
     "MixinInGameHud",
     "OtherClientPlayerEntityMixin",
     "PlayerEntityRendererMixin",

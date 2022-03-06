@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(ClientPlayerEntity.class)
 public abstract class ClientPlayerEntityMixin implements PlayerMixinBridge {
     @Inject(method = "isAutoJumpEnabled", at = @At("HEAD"), cancellable = true)
-    private void isAutoJumpEnabledMixin(CallbackInfoReturnable<Boolean> cir) {
+    private void hooked$isAutoJumpEnabledMixin(CallbackInfoReturnable<Boolean> cir) {
         if(this.getHookProcessor().isHookActive((PlayerEntity) (Object) this, HookActiveReason.DISABLE_AUTO_JUMP)) {
             cir.setReturnValue(false);
         }

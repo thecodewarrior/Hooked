@@ -19,6 +19,8 @@ import dev.thecodewarrior.hooked.util.getWaistPos
 import dev.thecodewarrior.hooked.util.normal
 import dev.thecodewarrior.hooked.util.toMc
 import dev.thecodewarrior.hooked.util.vertex
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener
 import net.minecraft.client.network.AbstractClientPlayerEntity
 import net.minecraft.client.render.*
@@ -41,15 +43,20 @@ import kotlin.collections.set
 import kotlin.collections.toTypedArray
 import kotlin.math.sqrt
 
-object HookRenderManager: IdentifiableResourceReloadListener {
+object HookRenderManager: IdentifiableResourceReloadListener, WorldRenderEvents.BeforeEntities {
     private val registry = mutableMapOf<HookType, HookRenderer<*>>()
 
     fun register(type: HookType, renderer: HookRenderer<*>) {
         registry[type] = renderer
     }
+
     fun getRenderer(type: HookType): HookRenderer<in HookPlayerController>? {
         @Suppress("UNCHECKED_CAST")
         return registry[type] as HookRenderer<in HookPlayerController>?
+    }
+
+    fun registerEvents() {
+        WorldRenderEvents.BEFORE_ENTITIES.register(this)
     }
 
     override fun getFabricId(): Identifier {
@@ -71,16 +78,7 @@ object HookRenderManager: IdentifiableResourceReloadListener {
         )
     }
 
-    var isRenderingWorld = false
-    val missingPlayers = mutableSetOf<AbstractClientPlayerEntity>()
-
     fun renderPlayer(player: AbstractClientPlayerEntity, matrices: MatrixStack, tickDelta: Float, consumers: VertexConsumerProvider) {
-        if(!isRenderingWorld)
-            return
-        missingPlayers.remove(player)
-        val camera = Client.minecraft.gameRenderer.camera
-        matrices.push()
-        matrices.translate(-camera.pos.x, -camera.pos.y, -camera.pos.z)
         val data = player.hookData()
         if (data.type != HookType.NONE) {
             val visibleToTeam = !player.isInvisibleTo(Client.player)
@@ -100,20 +98,20 @@ object HookRenderManager: IdentifiableResourceReloadListener {
                 drawDebugLines(matrices, consumers, player, tickDelta, data)
             }
         }
-        matrices.pop()
     }
 
-    fun preRenderEntities() {
-        missingPlayers.clear()
-        missingPlayers.addAll(Client.minecraft.world!!.players)
-    }
-
-    fun postRenderEntities(matrices: MatrixStack, tickDelta: Float, camera: Camera, consumers: VertexConsumerProvider) {
-        missingPlayers.toList().forEach { player ->
-            renderPlayer(player, matrices, tickDelta, consumers)
+    fun renderHooks(stack: MatrixStack, tickDelta: Float, consumers: VertexConsumerProvider) {
+        Client.minecraft.world?.players?.forEach { player ->
+            renderPlayer(player, stack, tickDelta, consumers)
         }
-        matrices.push()
-        matrices.translate(-camera.pos.x, -camera.pos.y, -camera.pos.z)
+    }
+
+    override fun beforeEntities(context: WorldRenderContext) {
+        context.matrixStack().push()
+        val viewPos = context.gameRenderer().camera.pos
+        context.matrixStack().translate(-viewPos.x, -viewPos.y, -viewPos.z)
+
+        renderHooks(context.matrixStack(), context.tickDelta(), context.consumers()!!)
 
         if(Client.minecraft.entityRenderDispatcher.shouldRenderHitboxes()) {
             val player = Client.minecraft.player!!
@@ -129,8 +127,8 @@ object HookRenderManager: IdentifiableResourceReloadListener {
                 if (jumpPreview != null && targetY > player.y) {
                     val color = DistinctColors.yellow
                     WorldRenderer.drawBox(
-                        matrices,
-                        consumers.getBuffer(RenderLayer.getLines()),
+                        context.matrixStack(),
+                        context.consumers()!!.getBuffer(RenderLayer.getLines()),
                         jumpPreview,
                         color.red / 255f,
                         color.green / 255f,
@@ -141,7 +139,7 @@ object HookRenderManager: IdentifiableResourceReloadListener {
             }
         }
 
-        matrices.pop()
+        context.matrixStack().pop()
     }
 
     fun drawDebugLines(matrices: MatrixStack, consumers: VertexConsumerProvider, player: PlayerEntity, tickDelta: Float, data: HookedPlayerData) {
