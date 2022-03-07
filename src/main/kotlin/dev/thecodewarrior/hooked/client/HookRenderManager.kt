@@ -140,6 +140,7 @@ object HookRenderManager: IdentifiableResourceReloadListener, WorldRenderEvents.
         }
 
         context.matrixStack().pop()
+        (context.consumers() as? VertexConsumerProvider.Immediate)?.draw()
     }
 
     fun drawDebugLines(matrices: MatrixStack, consumers: VertexConsumerProvider, player: PlayerEntity, tickDelta: Float, data: HookedPlayerData) {
