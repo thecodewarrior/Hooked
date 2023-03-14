@@ -1,10 +1,10 @@
 plugins {
-    id 'fabric-loom' version '0.10.64'
+    id 'fabric-loom' version '0.12-SNAPSHOT'
     id 'maven-publish'
     id 'eclipse'
     id 'idea'
     id 'java'
-    id 'org.jetbrains.kotlin.jvm' version '1.6.10'
+    id 'org.jetbrains.kotlin.jvm' version '1.7.10'
 }
 
 sourceCompatibility = JavaVersion.VERSION_16
@@ -37,8 +37,12 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
     modImplementation "net.fabricmc:fabric-language-kotlin:${project.fabric_kotlin_version}"
     modImplementation "dev.emi:trinkets:${project.trinkets_version}"
-    modImplementation "io.github.onyxstudios.Cardinal-Components-API:cardinal-components-entity:${project.cardinal_components_version}"
-    include "io.github.onyxstudios.Cardinal-Components-API:cardinal-components-entity:${project.cardinal_components_version}"
+
+//    modImplementation "io.github.onyxstudios.Cardinal-Components-API:cardinal-components-entity:${project.cardinal_components_version}"
+//    include "io.github.onyxstudios.Cardinal-Components-API:cardinal-components-entity:${project.cardinal_components_version}"
+
+    modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${project.cardinal_components_version}"
+    include "dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${project.cardinal_components_version}"
 
     [
             "com.teamwizardry.librarianlib:mosaic:${liblib_version}",

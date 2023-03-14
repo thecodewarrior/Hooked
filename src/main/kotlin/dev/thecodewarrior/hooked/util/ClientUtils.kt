@@ -25,7 +25,7 @@ inline fun VertexConsumer.vertex(stack: MatrixStack, x: Number, y: Number, z: Nu
     val xf = x.toFloat()
     val yf = y.toFloat()
     val zf = z.toFloat()
-    val matrix = mixinCast<IMatrix4f>(stack.peek().model)
+    val matrix = mixinCast<IMatrix4f>(stack.peek().positionMatrix)
     return this.vertex(
         matrix.transformX(xf, yf, zf).toDouble(),
         matrix.transformY(xf, yf, zf).toDouble(),
@@ -37,7 +37,7 @@ fun VertexConsumer.vertex(stack: MatrixStack, v: Vec3d): VertexConsumer {
     val xf = v.x.toFloat()
     val yf = v.y.toFloat()
     val zf = v.z.toFloat()
-    val matrix = mixinCast<IMatrix4f>(stack.peek().model)
+    val matrix = mixinCast<IMatrix4f>(stack.peek().positionMatrix)
     return this.vertex(
         matrix.transformX(xf, yf, zf).toDouble(),
         matrix.transformY(xf, yf, zf).toDouble(),
@@ -50,7 +50,7 @@ inline fun VertexConsumer.normal(stack: MatrixStack, x: Number, y: Number, z: Nu
     val xf = x.toFloat()
     val yf = y.toFloat()
     val zf = z.toFloat()
-    val matrix = mixinCast<IMatrix3f>(stack.peek().normal)
+    val matrix = mixinCast<IMatrix3f>(stack.peek().normalMatrix)
     return this.normal(
         matrix.transformX(xf, yf, zf),
         matrix.transformY(xf, yf, zf),
@@ -63,7 +63,7 @@ fun VertexConsumer.normal(stack: MatrixStack, v: Vec3d): VertexConsumer {
     val xf = v.x.toFloat()
     val yf = v.y.toFloat()
     val zf = v.z.toFloat()
-    val matrix = mixinCast<IMatrix3f>(stack.peek().normal)
+    val matrix = mixinCast<IMatrix3f>(stack.peek().normalMatrix)
     return this.normal(
         matrix.transformX(xf, yf, zf),
         matrix.transformY(xf, yf, zf),

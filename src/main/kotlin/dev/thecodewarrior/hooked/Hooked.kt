@@ -21,6 +21,7 @@ import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
+import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents
 import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder
 import net.fabricmc.fabric.api.event.registry.RegistryAttribute
 import net.fabricmc.fabric.api.gamerule.v1.GameRuleFactory
@@ -28,7 +29,6 @@ import net.fabricmc.fabric.api.gamerule.v1.GameRuleRegistry
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper
-import net.fabricmc.fabric.api.tag.TagFactory
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.network.PacketByteBuf
@@ -37,6 +37,7 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundEvent
 import net.minecraft.stat.StatFormatter
 import net.minecraft.stat.Stats
+import net.minecraft.tag.TagKey
 import net.minecraft.util.Identifier
 import net.minecraft.util.registry.DefaultedRegistry
 import net.minecraft.util.registry.Registry
@@ -59,7 +60,9 @@ object Hooked {
             registerStats()
             registerSounds()
             registerNetworking()
-            ServerHookProcessor.registerEvents()
+            ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register { player, _, _ ->
+                player.hookData().syncStatus.forceFullSyncToClient = true
+            }
             Rules // static initializer registers the gamerule
             Tags // static initializer registers tags
         }
@@ -189,8 +192,8 @@ object Hooked {
     }
 
     object Tags {
-        val SOLID_BLOCKS = TagFactory.BLOCK.create(Identifier("hooked:solid_blocks"))
-        val IGNORE_BLOCKS = TagFactory.BLOCK.create(Identifier("hooked:ignore_blocks"))
+        val SOLID_BLOCKS = TagKey.of(Registry.BLOCK_KEY, Identifier("hooked:solid_blocks"))
+        val IGNORE_BLOCKS = TagKey.of(Registry.BLOCK_KEY, Identifier("hooked:ignore_blocks"))
     }
 
     object Components : EntityComponentInitializer {

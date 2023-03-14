@@ -219,8 +219,8 @@ abstract class SimpleHookRenderer<C: HookPlayerController>(val type: HookType): 
 
     private fun loadModel(manager: ResourceManager): ReloadData {
         var model = try {
-            manager.getResource(modelLocation).use {
-                ObjReader.read(it.inputStream)
+            manager.getResource(modelLocation).get().inputStream.use {
+                ObjReader.read(it)
             }
         } catch (e: IOException) {
             Objs.create()
