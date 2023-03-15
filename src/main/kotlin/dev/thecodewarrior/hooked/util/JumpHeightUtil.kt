@@ -4,7 +4,6 @@ import com.teamwizardry.librarianlib.core.util.vec
 import net.minecraft.block.ShapeContext
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.util.collection.ReusableStream
 import net.minecraft.util.function.BooleanBiFunction
 import net.minecraft.util.math.Box
 import net.minecraft.util.math.Vec3d
@@ -28,23 +27,21 @@ object JumpHeightUtil {
         movement: Vec3d,
         maxHeight: Double
     ): Vec3d {
-        val shapeContext = ShapeContext.of(player)
         val voxelShape: VoxelShape = player.world.worldBorder.asVoxelShape()
-        val stream = if (VoxelShapes.matchesAnywhere(
+        val list: List<VoxelShape> = if (VoxelShapes.matchesAnywhere(
                 voxelShape,
                 VoxelShapes.cuboid(box.contract(1.0E-7)),
                 BooleanBiFunction.AND
             )
-        ) Stream.empty() else Stream.of(voxelShape)
-        val stream2: Stream<VoxelShape> = player.world.getEntityCollisions(player, box.stretch(movement), { true })
-        val reusableStream: ReusableStream<VoxelShape> = ReusableStream(Stream.concat(stream2, stream))
+        ) emptyList() else listOf(voxelShape)
+        val list2: List<VoxelShape> = player.world.getEntityCollisions(player, box.stretch(movement))
+        val finalList: List<VoxelShape> = list + list2
         val horizontal = if (movement.lengthSquared() == 0.0) movement else Entity.adjustMovementForCollisions(
             player,
             movement,
             box,
             player.world,
-            shapeContext,
-            reusableStream
+            finalList
         )
         val collidedX = movement.x != horizontal.x
         val collidedZ = movement.z != horizontal.z
@@ -54,16 +51,14 @@ object JumpHeightUtil {
                 Vec3d(movement.x, maxHeight, movement.z),
                 box,
                 player.world,
-                shapeContext,
-                reusableStream
+                finalList
             )
             val ceiling = Entity.adjustMovementForCollisions(
                 player,
                 Vec3d(0.0, maxHeight, 0.0),
                 box.stretch(movement.x, 0.0, movement.z),
                 player.world,
-                shapeContext,
-                reusableStream
+                finalList
             )
             if (ceiling.y < maxHeight) {
                 val ceilingHorizontal = Entity.adjustMovementForCollisions(
@@ -71,8 +66,7 @@ object JumpHeightUtil {
                     Vec3d(movement.x, 0.0, movement.z),
                     box.offset(ceiling),
                     player.world,
-                    shapeContext,
-                    reusableStream
+                    finalList
                 ).add(ceiling)
                 if (ceilingHorizontal.horizontalLengthSquared() > rising.horizontalLengthSquared()) {
                     rising = ceilingHorizontal
@@ -85,8 +79,7 @@ object JumpHeightUtil {
                         Vec3d(0.0, -rising.y + movement.y, 0.0),
                         box.offset(rising),
                         player.world,
-                        shapeContext,
-                        reusableStream
+                        finalList
                     )
                 )
             }

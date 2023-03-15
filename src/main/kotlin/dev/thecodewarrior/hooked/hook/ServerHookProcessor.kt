@@ -63,11 +63,11 @@ object ServerHookProcessor: CommonHookProcessor() {
         }
     }
 
-    fun registerEvents() {
-        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register { player, _, _ ->
-            player.hookData().syncStatus.forceFullSyncToClient = true
-        }
-    }
+//    fun registerEvents() {
+//        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register { player, _, _ ->
+//            player.hookData().syncStatus.forceFullSyncToClient = true
+//        }
+//    }
 
     fun fireHook(
         player: ServerPlayerEntity,

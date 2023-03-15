@@ -56,8 +56,8 @@ abstract class HookPlayerController {
         request.withBlockMode(Raycaster.BlockMode.COLLISION)
             .withBlockOverride { state, _, _ ->
                 when {
-                    Hooked.Tags.SOLID_BLOCKS.contains(state.block) -> VoxelShapes.fullCube()
-                    Hooked.Tags.IGNORE_BLOCKS.contains(state.block) -> VoxelShapes.empty()
+                    state.isIn(Hooked.Tags.SOLID_BLOCKS) -> VoxelShapes.fullCube()
+                    state.isIn(Hooked.Tags.IGNORE_BLOCKS) -> VoxelShapes.empty()
                     else -> null
                 }
             }

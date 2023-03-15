@@ -20,7 +20,7 @@ object Keybinds {
     var doubleJumpTimer = 0
 
     fun tick(client: MinecraftClient) {
-        val jumpDown = Client.minecraft.options.keyJump.isPressed
+        val jumpDown = Client.minecraft.options.jumpKey.isPressed
         val jumpPressed = jumpDown && !jumpWasDown
         jumpWasDown = jumpDown
 
@@ -28,7 +28,7 @@ object Keybinds {
         val data = player.hookData()
 
         if(data.type != HookType.NONE) {
-            val sneakPressed = Client.minecraft.options.keySneak.isPressed
+            val sneakPressed = Client.minecraft.options.sneakKey.isPressed
             if (FIRE.wasPressed()) {
                 ClientHookProcessor.fireHook(player, data, player.eyePos, player.pitch, player.yaw, sneakPressed)
                 while(FIRE.wasPressed()) { /* consume excess keypresses */ }
