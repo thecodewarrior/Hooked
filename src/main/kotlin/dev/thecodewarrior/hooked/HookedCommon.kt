@@ -15,10 +15,10 @@ object HookedCommon: ModInitializer {
     override fun onInitialize() {
         HookTypes.registerTypes()
         HookItems.registerItems()
-        HookStats.registerStats()
         HookSounds.registerSounds()
         registerNetworking()
         ServerHookProcessor.registerEvents()
+        HookStats // static initializer registers stats
         HookGameRules // static initializer registers the gamerules
         HookTags // static initializer registers tags
     }
