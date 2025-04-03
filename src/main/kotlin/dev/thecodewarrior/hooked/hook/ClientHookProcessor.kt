@@ -1,6 +1,7 @@
 package dev.thecodewarrior.hooked.hook
 
 import com.teamwizardry.librarianlib.core.util.Client
+import dev.thecodewarrior.hooked.HookGameRules
 import dev.thecodewarrior.hooked.Hooked
 import dev.thecodewarrior.hooked.bridge.hookData
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
@@ -70,7 +71,7 @@ object ClientHookProcessor: CommonHookProcessor() {
     }
 
     fun fireHook(player: PlayerEntity, data: HookedPlayerData, pos: Vec3d, pitch: Float, yaw: Float, sneaking: Boolean) {
-        if(player.isFallFlying && !player.world.gameRules.getBoolean(Hooked.Rules.ALLOW_HOOKS_WHILE_FLYING)) {
+        if(player.isFallFlying && !player.world.gameRules.getBoolean(HookGameRules.ALLOW_HOOKS_WHILE_FLYING)) {
             return
         }
         if (data.type != HookType.NONE && Client.minecraft.interactionManager?.currentGameMode != GameMode.SPECTATOR) {

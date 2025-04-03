@@ -4,7 +4,8 @@ import com.teamwizardry.librarianlib.core.util.kotlin.NbtBuilder
 import com.teamwizardry.librarianlib.core.util.vec
 import dev.onyxstudios.cca.api.v3.component.Component
 import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent
-import dev.thecodewarrior.hooked.Hooked
+import dev.thecodewarrior.hooked.HookTypes
+import dev.thecodewarrior.hooked.HookedComponents
 import dev.thecodewarrior.hooked.hook.Hook
 import dev.thecodewarrior.hooked.hook.HookEvent
 import dev.thecodewarrior.hooked.hook.HookPlayerController
@@ -98,13 +99,13 @@ class HookedPlayerData(val player: PlayerEntity) : Component, AutoSyncedComponen
     var syncStatus: SyncStatus = SyncStatus()
 
     override fun writeToNbt(tag: NbtCompound) {
-        tag.putString("Type", Hooked.hookRegistry.getId(type).toString())
+        tag.putString("Type", HookTypes.HOOK_TYPE_REGISTRY.getId(type).toString())
         tag.put("Hooks", NbtList().also { it.addAll(hooks.values.map(::writeHook)) })
         tag.put("Controller", NbtCompound().also { controller.saveState(it) })
     }
 
     override fun readFromNbt(tag: NbtCompound) {
-        type = Hooked.hookRegistry.get(Identifier(tag.getString("Type")))
+        type = HookTypes.HOOK_TYPE_REGISTRY.get(Identifier.of(tag.getString("Type")))
         hooks = tag.getList("Hooks", NbtType.COMPOUND).map(::readHook).associateByTo(TreeMap()) { it.id }
         syncStatus.forceFullSyncToClient = true
         syncStatus.forceFullSyncToOthers = true
@@ -147,7 +148,7 @@ class HookedPlayerData(val player: PlayerEntity) : Component, AutoSyncedComponen
     }
 
     fun updateSync() {
-        Hooked.Components.HOOK_DATA.sync(player, ::writeUpdatePacket) { player ->
+        HookedComponents.HOOK_DATA.sync(player, ::writeUpdatePacket) { player ->
             if(player == this.player) {
                 syncStatus.forceFullSyncToClient || syncStatus.dirtyHooks.isNotEmpty()
             } else {
@@ -182,13 +183,13 @@ class HookedPlayerData(val player: PlayerEntity) : Component, AutoSyncedComponen
 
     private fun writeFullPacket(buf: PacketByteBuf, initial: Boolean) {
         buf.writeVarInt(if(initial) SyncType.INIT.ordinal else SyncType.FULL.ordinal)
-        buf.writeIdentifier(Hooked.hookRegistry.getId(type))
+        buf.writeIdentifier(HookTypes.HOOK_TYPE_REGISTRY.getId(type))
         buf.writeCollection(hooks.values, ::writeHook)
         controller.writeSyncState(buf, initial)
     }
 
     private fun applyFullPacket(buf: PacketByteBuf, initial: Boolean) {
-        type = Hooked.hookRegistry.get(buf.readIdentifier())
+        type = HookTypes.HOOK_TYPE_REGISTRY.get(buf.readIdentifier())
 
         val newHooks = buf.readCollection({ mutableListOf() }, ::readHook).associateByTo(TreeMap()) { it.id }
         syncStatus.recentHooks.putAll(hooks.filterKeys { it !in newHooks })

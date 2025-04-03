@@ -1,12 +1,11 @@
 package dev.thecodewarrior.hooked.hook
 
 import com.teamwizardry.librarianlib.core.util.block
-import com.teamwizardry.librarianlib.core.util.kotlin.inconceivable
 import com.teamwizardry.librarianlib.etcetera.Raycaster
 import com.teamwizardry.librarianlib.math.*
+import dev.thecodewarrior.hooked.HookGameRules
 import dev.thecodewarrior.hooked.Hooked
 import dev.thecodewarrior.hooked.util.getWaistPos
-import net.minecraft.block.ShapeContext
 import kotlin.math.*
 
 /**
@@ -102,7 +101,7 @@ abstract class CommonHookProcessor : HookProcessor {
     private fun updatePlanted(context: HookProcessorContext) {
         if(
             context.player.isFallFlying &&
-            !context.player.world.gameRules.getBoolean(Hooked.Rules.ALLOW_HOOKS_WHILE_FLYING)
+            !context.player.world.gameRules.getBoolean(HookGameRules.ALLOW_HOOKS_WHILE_FLYING)
         ) {
             for(hook in context.hooks) {
                 if(hook.state != Hook.State.RETRACTING) {

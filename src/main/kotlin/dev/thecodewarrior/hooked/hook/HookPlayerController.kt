@@ -6,7 +6,8 @@ import com.teamwizardry.librarianlib.etcetera.Raycaster
 import com.teamwizardry.librarianlib.math.minus
 import com.teamwizardry.librarianlib.math.plus
 import com.teamwizardry.librarianlib.math.times
-import dev.thecodewarrior.hooked.Hooked
+import dev.thecodewarrior.hooked.HookSounds
+import dev.thecodewarrior.hooked.HookTags
 import dev.thecodewarrior.hooked.mixin.EntityAccessMixin
 import dev.thecodewarrior.hooked.mixin.FloatingTicksAccess
 import net.minecraft.entity.player.PlayerEntity
@@ -56,8 +57,8 @@ abstract class HookPlayerController {
         request.withBlockMode(Raycaster.BlockMode.COLLISION)
             .withBlockOverride { state, _, _ ->
                 when {
-                    Hooked.Tags.SOLID_BLOCKS.contains(state.block) -> VoxelShapes.fullCube()
-                    Hooked.Tags.IGNORE_BLOCKS.contains(state.block) -> VoxelShapes.empty()
+                    state.isIn(HookTags.SOLID_BLOCKS) -> VoxelShapes.fullCube()
+                    state.isIn(HookTags.IGNORE_BLOCKS) -> VoxelShapes.empty()
                     else -> null
                 }
             }
@@ -105,14 +106,14 @@ abstract class HookPlayerController {
      */
     open fun onHookHit(delegate: HookControllerDelegate, hook: Hook) {
         delegate.playWorldSound(Hook.hitSound(delegate.world, hook.block), hook.pos, 1f, 1f)
-        delegate.playFeedbackSound(Hooked.Sounds.HOOK_HIT_EVENT, 1f, 1f)
+        delegate.playFeedbackSound(HookSounds.HOOK_HIT_EVENT, 1f, 1f)
     }
 
     /**
      * Called when a hook starts retracting because it reached full extension without hitting anything
      */
     open fun onHookMiss(delegate: HookControllerDelegate, hook: Hook) {
-        delegate.playFeedbackSound(Hooked.Sounds.HOOK_MISS_EVENT, 1f, 1f)
+        delegate.playFeedbackSound(HookSounds.HOOK_MISS_EVENT, 1f, 1f)
     }
 
     /**
@@ -121,15 +122,15 @@ abstract class HookPlayerController {
     open fun onHookDislodge(delegate: HookControllerDelegate, hook: Hook, reason: DislodgeReason) {
         when(reason) {
             DislodgeReason.BLOCK_BROKEN, DislodgeReason.DISTANCE -> {
-                delegate.playFeedbackSound(Hooked.Sounds.HOOK_DISLODGE_EVENT, 1f, 1f)
+                delegate.playFeedbackSound(HookSounds.HOOK_DISLODGE_EVENT, 1f, 1f)
             }
             DislodgeReason.DISALLOWED -> {
-                delegate.playFeedbackSound(Hooked.Sounds.HOOK_DISLODGE_EVENT, 1f, 1f)
+                delegate.playFeedbackSound(HookSounds.HOOK_DISLODGE_EVENT, 1f, 1f)
             }
             DislodgeReason.HOOK_COUNT -> {}
             DislodgeReason.EXPLICIT -> {
                 delegate.playWorldSound(Hook.hitSound(delegate.world, hook.block), hook.pos, 1f, 1f)
-                delegate.playFeedbackSound(Hooked.Sounds.RETRACT_HOOK_EVENT, 1f, 1f)
+                delegate.playFeedbackSound(HookSounds.RETRACT_HOOK_EVENT, 1f, 1f)
             }
         }
     }

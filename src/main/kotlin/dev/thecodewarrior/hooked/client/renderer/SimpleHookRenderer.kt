@@ -1,7 +1,7 @@
 package dev.thecodewarrior.hooked.client.renderer
 
 import com.teamwizardry.librarianlib.math.*
-import dev.thecodewarrior.hooked.Hooked
+import dev.thecodewarrior.hooked.HookTypes
 import dev.thecodewarrior.hooked.shade.obj.*
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.hook.Hook
@@ -32,7 +32,7 @@ import kotlin.math.atan2
 
 abstract class SimpleHookRenderer<C: HookPlayerController>(val type: HookType): HookRenderer<C>(),
     SimpleResourceReloadListener<SimpleHookRenderer.ReloadData> {
-    private val id: Identifier = Hooked.hookRegistry.getId(type)
+    private val id: Identifier = HookTypes.HOOK_TYPE_REGISTRY.getId(type)
 
     private var model: Obj = Objs.create()
     private var modelVertexIndices: IntArray = IntArray(0)

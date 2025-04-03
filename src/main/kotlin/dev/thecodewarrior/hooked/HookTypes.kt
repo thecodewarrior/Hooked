@@ -5,16 +5,26 @@ import dev.thecodewarrior.hooked.hooks.BasicHookType
 import dev.thecodewarrior.hooked.hooks.EnderHookType
 import dev.thecodewarrior.hooked.hooks.FlightHookType
 import dev.thecodewarrior.hooked.item.HookItem
-import net.fabricmc.fabric.api.client.itemgroup.FabricItemGroupBuilder
+import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder
+import net.fabricmc.fabric.api.event.registry.RegistryAttribute
+import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup
+import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
+import net.minecraft.registry.Registries
+import net.minecraft.registry.Registry
+import net.minecraft.registry.RegistryKey
+import net.minecraft.text.Text
 import net.minecraft.util.Identifier
-import net.minecraft.util.registry.Registry
 
 object HookTypes {
-    val ITEM_GROUP = FabricItemGroupBuilder.build(Identifier("hooked:item_group")) { ItemStack(IRON_ITEM) }
+    val HOOK_TYPE_REGISTRY_KEY = RegistryKey.ofRegistry<HookType>(Identifier.of("hooked:hook_type"))
 
-    val WOOD_ID = Identifier("hooked:wood_hook")
+    val HOOK_TYPE_REGISTRY = FabricRegistryBuilder.createDefaulted(HOOK_TYPE_REGISTRY_KEY, Identifier.of("hooked:none"))
+        .attribute(RegistryAttribute.SYNCED)
+        .buildAndRegister()
+
+    val WOOD_ID = Identifier.of("hooked:wood_hook")
     val WOOD_TYPE = BasicHookType(
         count = 1,
         range = 8.0,
@@ -24,9 +34,8 @@ object HookTypes {
         pullStrength = 0.2,
         boostHeight = 2.5
     )
-    val WOOD_ITEM = createItem(WOOD_TYPE)
 
-    val IRON_ID = Identifier("hooked:iron_hook")
+    val IRON_ID = Identifier.of("hooked:iron_hook")
     val IRON_TYPE = BasicHookType(
         count = 2,
         range = 16.0,
@@ -36,9 +45,8 @@ object HookTypes {
         pullStrength = 0.4,
         boostHeight = 2.5
     )
-    val IRON_ITEM = createItem(IRON_TYPE)
 
-    val DIAMOND_ID = Identifier("hooked:diamond_hook")
+    val DIAMOND_ID = Identifier.of("hooked:diamond_hook")
     val DIAMOND_TYPE = BasicHookType(
         count = 4,
         range = 24.0,
@@ -48,9 +56,8 @@ object HookTypes {
         pullStrength = 1.0,
         boostHeight = 2.5
     )
-    val DIAMOND_ITEM = createItem(DIAMOND_TYPE)
 
-    val ENDER_ID = Identifier("hooked:ender_hook")
+    val ENDER_ID = Identifier.of("hooked:ender_hook")
     val ENDER_TYPE = EnderHookType(
         count = 1,
         range = 64.0,
@@ -60,9 +67,8 @@ object HookTypes {
         pullStrength = 2.25,
         boostHeight = 2.5
     )
-    val ENDER_ITEM = createItem(ENDER_TYPE)
 
-    val RED_ID = Identifier("hooked:red_hook")
+    val RED_ID = Identifier.of("hooked:red_hook")
     val RED_TYPE = FlightHookType(
         count = 8,
         range = 48.0,
@@ -71,28 +77,15 @@ object HookTypes {
         cooldown = 5,
         pullStrength = 1.0,
     )
-    val RED_ITEM = createItem(RED_TYPE)
 
     val types = listOf(WOOD_TYPE, IRON_TYPE, DIAMOND_TYPE, ENDER_TYPE, RED_TYPE)
 
     fun registerTypes() {
-        Registry.register(Hooked.hookRegistry, WOOD_ID, WOOD_TYPE)
-        Registry.register(Hooked.hookRegistry, IRON_ID, IRON_TYPE)
-        Registry.register(Hooked.hookRegistry, DIAMOND_ID, DIAMOND_TYPE)
-        Registry.register(Hooked.hookRegistry, ENDER_ID, ENDER_TYPE)
-        Registry.register(Hooked.hookRegistry, RED_ID, RED_TYPE)
-        Registry.register(Hooked.hookRegistry, Identifier("hooked:none"), HookType.NONE)
-    }
-
-    fun createItem(type: HookType): HookItem {
-        return HookItem(Item.Settings().maxCount(1).group(ITEM_GROUP), type)
-    }
-
-    fun registerItems() {
-        Registry.register(Registry.ITEM, WOOD_ID, WOOD_ITEM)
-        Registry.register(Registry.ITEM, IRON_ID, IRON_ITEM)
-        Registry.register(Registry.ITEM, DIAMOND_ID, DIAMOND_ITEM)
-        Registry.register(Registry.ITEM, ENDER_ID, ENDER_ITEM)
-        Registry.register(Registry.ITEM, RED_ID, RED_ITEM)
+        Registry.register(HOOK_TYPE_REGISTRY, WOOD_ID, WOOD_TYPE)
+        Registry.register(HOOK_TYPE_REGISTRY, IRON_ID, IRON_TYPE)
+        Registry.register(HOOK_TYPE_REGISTRY, DIAMOND_ID, DIAMOND_TYPE)
+        Registry.register(HOOK_TYPE_REGISTRY, ENDER_ID, ENDER_TYPE)
+        Registry.register(HOOK_TYPE_REGISTRY, RED_ID, RED_TYPE)
+        Registry.register(HOOK_TYPE_REGISTRY, Identifier.of("hooked:none"), HookType.NONE)
     }
 }

@@ -2,6 +2,7 @@ package dev.thecodewarrior.hooked.hook
 
 import com.teamwizardry.librarianlib.core.util.kotlin.getOrNull
 import dev.emi.trinkets.api.TrinketsApi
+import dev.thecodewarrior.hooked.HookStats
 import dev.thecodewarrior.hooked.Hooked
 import dev.thecodewarrior.hooked.bridge.hookData
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
@@ -108,7 +109,7 @@ object ServerHookProcessor: CommonHookProcessor() {
                 data.hooks[id] = hook
                 // this will cause a full sync to the client, and a single-hook sync to other clients
                 data.syncStatus.dirtyHooks[id] = hook
-                data.player.incrementStat(Hooked.HookStats.HOOKS_FIRED)
+                data.player.incrementStat(HookStats.HOOKS_FIRED)
 
                 hook
             }
