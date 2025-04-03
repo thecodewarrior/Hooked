@@ -202,16 +202,6 @@ object Hooked {
         }
     }
 
-    object Packets {
-        val HOOK_EVENTS = Identifier("hooked:hook_events")
-
-        val FIRE_HOOK = Identifier("hooked:fire_hook")
-        val HOOK_JUMP = Identifier("hooked:hook_jump")
-
-        @JvmField
-        val GAMERULE_SYNC = Identifier("hooked:gamerule_sync")
-    }
-
     object Sounds {
         val FIRE_HOOK_ID = Identifier("hooked:fire_hook")
         val FIRE_HOOK_EVENT = SoundEvent(FIRE_HOOK_ID)

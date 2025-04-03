@@ -5,9 +5,8 @@ import dev.thecodewarrior.hooked.Hooked
 import dev.thecodewarrior.hooked.bridge.hookData
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.hooks.BasicHookPlayerController
-import dev.thecodewarrior.hooked.network.FireHookPacket
-import dev.thecodewarrior.hooked.network.HookJumpPacket
-import dev.thecodewarrior.hooked.util.JumpHeightUtil
+import dev.thecodewarrior.hooked.network.FireHookC2SPacket
+import dev.thecodewarrior.hooked.network.HookJumpC2SPacket
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.entity.player.PlayerEntity
@@ -93,13 +92,7 @@ object ClientHookProcessor: CommonHookProcessor() {
             }
 
             if(shouldSend) {
-                ClientPlayNetworking.send(
-                    Hooked.Packets.FIRE_HOOK,
-                    FireHookPacket(
-                        pos, pitch, yaw,
-                        sneaking, ids
-                    ).encode()
-                )
+                ClientPlayNetworking.send(FireHookC2SPacket(pos, pitch, yaw, sneaking, ids))
             }
         }
     }
@@ -108,10 +101,7 @@ object ClientHookProcessor: CommonHookProcessor() {
         if (data.type != HookType.NONE) {
             data.controller.jump(Context(data), doubleJump, sneaking)
 
-            ClientPlayNetworking.send(
-                Hooked.Packets.HOOK_JUMP,
-                HookJumpPacket(doubleJump, sneaking).encode()
-            )
+            ClientPlayNetworking.send(HookJumpC2SPacket(doubleJump, sneaking))
         }
     }
 

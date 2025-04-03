@@ -6,7 +6,7 @@ import dev.thecodewarrior.hooked.Hooked
 import dev.thecodewarrior.hooked.bridge.hookData
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.capability.IHookItem
-import dev.thecodewarrior.hooked.network.HookEventsPacket
+import dev.thecodewarrior.hooked.network.HookEventsS2CPacket
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
@@ -145,10 +145,10 @@ object ServerHookProcessor: CommonHookProcessor() {
         data.updateSync()
 
         if (data.syncStatus.queuedEvents.isNotEmpty()) {
-            val packet = HookEventsPacket(player.id, ArrayList(data.syncStatus.queuedEvents))
-            ServerPlayNetworking.send(player, Hooked.Packets.HOOK_EVENTS, packet.encode())
+            val packet = HookEventsS2CPacket(player.id, ArrayList(data.syncStatus.queuedEvents))
+            ServerPlayNetworking.send(player, packet)
             PlayerLookup.tracking(player).forEach {
-                ServerPlayNetworking.send(it, Hooked.Packets.HOOK_EVENTS, packet.encode())
+                ServerPlayNetworking.send(it, packet)
             }
         }
 
