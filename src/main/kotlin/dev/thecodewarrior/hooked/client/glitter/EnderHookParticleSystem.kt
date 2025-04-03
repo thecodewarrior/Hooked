@@ -10,7 +10,7 @@ import com.teamwizardry.librarianlib.glitter.modules.SpriteRenderOptions
 import com.teamwizardry.librarianlib.math.Easing
 import net.minecraft.util.Identifier
 
-object EnderHookParticleSystem: ParticleSystem(Identifier("hooked:ender_hook")) {
+object EnderHookParticleSystem: ParticleSystem(Identifier.of("hooked:ender_hook")) {
     val defaultColor: Color = Color(0.9f, 0.3f, 1.0f, 1.0f)
 
     override fun configure() {
@@ -55,7 +55,7 @@ object EnderHookParticleSystem: ParticleSystem(Identifier("hooked:ender_hook")) 
 
         renderModules.add(
             SpriteRenderModule.build(
-                SpriteRenderOptions.build(Identifier("hooked:textures/glitter/bar.png"))
+                SpriteRenderOptions.build(Identifier.of("hooked:textures/glitter/bar.png"))
                     .worldLight(true)
                     .diffuseLight(true)
                     .build(),

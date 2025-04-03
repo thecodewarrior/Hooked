@@ -2,6 +2,7 @@ package dev.thecodewarrior.hooked.client.renderer
 
 import com.teamwizardry.librarianlib.math.*
 import dev.thecodewarrior.hooked.HookTypes
+import dev.thecodewarrior.hooked.Hooked
 import dev.thecodewarrior.hooked.shade.obj.*
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.hook.Hook
@@ -9,7 +10,6 @@ import dev.thecodewarrior.hooked.hook.HookPlayerController
 import dev.thecodewarrior.hooked.hook.HookType
 import dev.thecodewarrior.hooked.util.getWaistPos
 import dev.thecodewarrior.hooked.util.normal
-import dev.thecodewarrior.hooked.util.toMc
 import dev.thecodewarrior.hooked.util.vertex
 import net.fabricmc.fabric.api.resource.SimpleResourceReloadListener
 import net.minecraft.client.render.OverlayTexture
@@ -21,6 +21,8 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.resource.ResourceManager
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.ChunkSectionPos
+import net.minecraft.util.math.RotationAxis
 import net.minecraft.util.math.Vec3d
 import net.minecraft.util.profiler.Profiler
 import net.minecraft.world.World
@@ -36,10 +38,10 @@ abstract class SimpleHookRenderer<C: HookPlayerController>(val type: HookType): 
 
     private var model: Obj = Objs.create()
     private var modelVertexIndices: IntArray = IntArray(0)
-    private val modelLocation = Identifier(id.namespace, "models/hook/${id.path}.obj")
-    private val hookTexture = Identifier(id.namespace, "textures/hook/${id.path}/hook.png")
-    private val chain1Texture = Identifier(id.namespace, "textures/hook/${id.path}/chain1.png")
-    private val chain2Texture = Identifier(id.namespace, "textures/hook/${id.path}/chain2.png")
+    private val modelLocation = Identifier.of(id.namespace, "models/hook/${id.path}.obj")
+    private val hookTexture = Identifier.of(id.namespace, "textures/hook/${id.path}/hook.png")
+    private val chain1Texture = Identifier.of(id.namespace, "textures/hook/${id.path}/chain1.png")
+    private val chain2Texture = Identifier.of(id.namespace, "textures/hook/${id.path}/chain2.png")
 
     protected fun renderHooks(
         matrices: MatrixStack,
@@ -54,7 +56,7 @@ abstract class SimpleHookRenderer<C: HookPlayerController>(val type: HookType): 
                 renderHook(matrices, player, consumers, tickDelta, hook, chainMargin)
         }
         // force it to draw
-        consumers.getBuffer(RenderLayer.getEntityCutout(Identifier("minecraft:textures/misc/white.png")))
+        consumers.getBuffer(RenderLayer.getEntityCutout(Identifier.of("minecraft:textures/misc/white.png")))
     }
 
     private fun renderHook(
@@ -74,7 +76,8 @@ abstract class SimpleHookRenderer<C: HookPlayerController>(val type: HookType): 
         val yaw = -Math.toDegrees(atan2(chainDirection.x, chainDirection.z)).toFloat()
         val pitch = -Math.toDegrees(asin(chainDirection.y)).toFloat()
         // we add 90 to the pitch because the model is based on +y, but pitch/yaw are based on +z
-        matrices.multiply(Quaternion.fromAxesAnglesDeg(pitch + 90, -yaw, 0f).toMc())
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-yaw))
+        matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(pitch + 90))
         matrices.translate(0.0, chainMargin, 0.0)
 
         val actualLength = chainLength - chainMargin
@@ -87,17 +90,18 @@ abstract class SimpleHookRenderer<C: HookPlayerController>(val type: HookType): 
         matrices.push()
         matrices.translate(hookPos.x - waist.x, hookPos.y - waist.y, hookPos.z - waist.z)
         // we add 90 to the pitch because the model is based on +y, but pitch/yaw are based on +z
-        matrices.multiply(Quaternion.fromAxesAnglesDeg(hook.pitch + 90, -hook.yaw, 0f).toMc())
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-hook.yaw))
+        matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(hook.pitch + 90))
 
         val consumer = consumers.getBuffer(RenderLayer.getEntityCutout(hookTexture))
-        val lightmap = getBrightnessForRender(player.world, BlockPos(hookPos))
+        val lightmap = getBrightnessForRender(player.world, hookPos)
 
         modelVertexIndices.forEachIndexed { i, vertexIndex ->
             val vertex = model.getVertex(vertexIndex)
             val tex = model.getTexCoord(vertexIndex)
             val normal = model.getNormal(vertexIndex)
             consumer.vertex(matrices, vertex.x, vertex.y, vertex.z).color(1f, 1f, 1f, 1f).texture(tex.x, 1 - tex.y)
-                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, normal.x, normal.y, normal.z).next()
+                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, normal.x, normal.y, normal.z)
             if(i % 3 == 2) {
                 // see RenderSystem.sharedSequentialQuad
                 // 1-2
@@ -105,7 +109,7 @@ abstract class SimpleHookRenderer<C: HookPlayerController>(val type: HookType): 
                 // 0-3
                 // the game operates in quads, so we need to get rid of the 2-3-0 triangle
                 consumer.vertex(matrices, vertex.x, vertex.y, vertex.z).color(1f, 1f, 1f, 1f).texture(tex.x, 1 - tex.y)
-                    .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, normal.x, normal.y, normal.z).next()
+                    .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, normal.x, normal.y, normal.z)
             }
         }
 
@@ -136,59 +140,64 @@ abstract class SimpleHookRenderer<C: HookPlayerController>(val type: HookType): 
         val consumer = consumers.getBuffer(RenderLayer.getEntityCutout(texture))
 
         if (firstSegmentLength > chainLengthEpsilon) {
-            val lightPos = BlockPos(waist + chainDirection * (firstSegmentLength / 2))
+            val lightPos = waist + chainDirection * (firstSegmentLength / 2)
             val lightmap = getBrightnessForRender(world, lightPos)
 
             val minV = 1 - firstSegmentLength.toFloat()
             val len = firstSegmentLength
 
             consumer.vertex(matrices, -deltaX, 0, -deltaZ).color(1f, 1f, 1f, 1f).texture(0f, minV)
-                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, normalX, 0, normalZ).next()
+                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, normalX, 0, normalZ)
             consumer.vertex(matrices, deltaX, 0, deltaZ).color(1f, 1f, 1f, 1f).texture(1f, minV)
-                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, normalX, 0, normalZ).next()
+                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, normalX, 0, normalZ)
             consumer.vertex(matrices, deltaX, len, deltaZ).color(1f, 1f, 1f, 1f).texture(1f, 1f)
-                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, normalX, 0, normalZ).next()
+                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, normalX, 0, normalZ)
             consumer.vertex(matrices, -deltaX, len, -deltaZ).color(1f, 1f, 1f, 1f).texture(0f, 1f)
-                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, normalX, 0, normalZ).next()
+                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, normalX, 0, normalZ)
 
             consumer.vertex(matrices, -deltaX, len, -deltaZ).color(1f, 1f, 1f, 1f).texture(0f, 1f)
-                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, -normalX, 0, -normalZ).next()
+                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, -normalX, 0, -normalZ)
             consumer.vertex(matrices, deltaX, len, deltaZ).color(1f, 1f, 1f, 1f).texture(1f, 1f)
-                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, -normalX, 0, -normalZ).next()
+                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, -normalX, 0, -normalZ)
             consumer.vertex(matrices, deltaX, 0, deltaZ).color(1f, 1f, 1f, 1f).texture(1f, minV)
-                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, -normalX, 0, -normalZ).next()
+                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, -normalX, 0, -normalZ)
             consumer.vertex(matrices, -deltaX, 0, -deltaZ).color(1f, 1f, 1f, 1f).texture(0f, minV)
-                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, -normalX, 0, -normalZ).next()
+                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, -normalX, 0, -normalZ)
         }
         for (i in 0 until chainSegments) {
             val yPos = firstSegmentLength + i
 
-            val lightPos = BlockPos(waist + chainDirection * (yPos + 0.5))
+            val lightPos = waist + chainDirection * (yPos + 0.5)
             val lightmap = getBrightnessForRender(world, lightPos)
 
             consumer.vertex(matrices, -deltaX, yPos, -deltaZ).color(1f, 1f, 1f, 1f).texture(0f, 0f)
-                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, normalX, 0, normalZ).next()
+                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, normalX, 0, normalZ)
             consumer.vertex(matrices, deltaX, yPos, deltaZ).color(1f, 1f, 1f, 1f).texture(1f, 0f)
-                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, normalX, 0, normalZ).next()
+                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, normalX, 0, normalZ)
             consumer.vertex(matrices, deltaX, yPos + 1, deltaZ).color(1f, 1f, 1f, 1f).texture(1f, 1f)
-                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, normalX, 0, normalZ).next()
+                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, normalX, 0, normalZ)
             consumer.vertex(matrices, -deltaX, yPos + 1, -deltaZ).color(1f, 1f, 1f, 1f).texture(0f, 1f)
-                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, normalX, 0, normalZ).next()
+                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, normalX, 0, normalZ)
 
             consumer.vertex(matrices, -deltaX, yPos + 1, -deltaZ).color(1f, 1f, 1f, 1f).texture(0f, 1f)
-                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, -normalX, 0, -normalZ).next()
+                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, -normalX, 0, -normalZ)
             consumer.vertex(matrices, deltaX, yPos + 1, deltaZ).color(1f, 1f, 1f, 1f).texture(1f, 1f)
-                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, -normalX, 0, -normalZ).next()
+                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, -normalX, 0, -normalZ)
             consumer.vertex(matrices, deltaX, yPos, deltaZ).color(1f, 1f, 1f, 1f).texture(1f, 0f)
-                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, -normalX, 0, -normalZ).next()
+                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, -normalX, 0, -normalZ)
             consumer.vertex(matrices, -deltaX, yPos, -deltaZ).color(1f, 1f, 1f, 1f).texture(0f, 0f)
-                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, -normalX, 0, -normalZ).next()
+                .overlay(OverlayTexture.DEFAULT_UV).light(lightmap).normal(matrices, -normalX, 0, -normalZ)
         }
     }
 
-    private fun getBrightnessForRender(world: World, pos: BlockPos): Int {
-        return if (world.chunkManager.isChunkLoaded(pos.x / 16, pos.y / 16))
-            WorldRenderer.getLightmapCoordinates(world, pos) else 0
+    private fun getBrightnessForRender(world: World, pos: Vec3d): Int {
+        val sectionX = ChunkSectionPos.getSectionCoord(pos.x)
+        val sectionZ = ChunkSectionPos.getSectionCoord(pos.z)
+        return if (world.chunkManager.isChunkLoaded(sectionX, sectionZ)) {
+            WorldRenderer.getLightmapCoordinates(world, BlockPos.ofFloored(pos))
+        } else {
+            0
+        }
     }
 
     data class ReloadData(val model: Obj)
@@ -204,7 +213,7 @@ abstract class SimpleHookRenderer<C: HookPlayerController>(val type: HookType): 
     }
 
     override fun getFabricId(): Identifier {
-        return Identifier(id.namespace, "${id.path}/hook_renderer")
+        return Identifier.of(id.namespace, "${id.path}/hook_renderer")
     }
 
     override fun load(
@@ -219,10 +228,9 @@ abstract class SimpleHookRenderer<C: HookPlayerController>(val type: HookType): 
 
     private fun loadModel(manager: ResourceManager): ReloadData {
         var model = try {
-            manager.getResource(modelLocation).use {
-                ObjReader.read(it.inputStream)
-            }
+            manager.open(modelLocation).use { ObjReader.read(it) }
         } catch (e: IOException) {
+            logger.error("Failed to load model", e)
             Objs.create()
         }
 
@@ -238,6 +246,7 @@ abstract class SimpleHookRenderer<C: HookPlayerController>(val type: HookType): 
 
     companion object {
         val chainLengthEpsilon = 1 / 16.0
+        val logger = Hooked.logManager.makeLogger<SimpleHookRenderer<*>>()
     }
 
 }

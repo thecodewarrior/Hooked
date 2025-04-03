@@ -37,16 +37,18 @@ object HookedCommon: ModInitializer {
         }
     }
 
+    /**
+     * The tolerance for the starting position of hooks being fired. Because of the way Hooked is designed it has to
+     * give the client a lot of leeway, but even that has limits.
+     */
+    val fireHookCheatLimit = 16
+
     private fun processFireHookPacket(packet: FireHookC2SPacket, player: ServerPlayerEntity) {
         val hookedPlayerData = player.hookData()
         val distanceSq = packet.pos.squaredDistanceTo(player.eyePos)
-        val maxDistance = CheatMitigation.fireHookTolerance.getValue(player)
-        if (distanceSq > maxDistance * maxDistance) {
+        if (distanceSq > fireHookCheatLimit * fireHookCheatLimit) {
             hookedPlayerData.syncStatus.forceFullSyncToClient = true
-            logger.error(
-                "Player ${player.name} fired a hook from ${sqrt(distanceSq)} blocks away. The tolerance " +
-                        "based on their ping of ${player.pingMilliseconds} is $maxDistance"
-            )
+            logger.error("Player ${player.name} fired a hook from ${sqrt(distanceSq)} blocks away. The tolerance is $fireHookCheatLimit")
         } else {
             ServerHookProcessor.fireHook(
                 player,

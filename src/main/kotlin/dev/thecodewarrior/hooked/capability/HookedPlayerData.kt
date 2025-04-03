@@ -2,8 +2,6 @@ package dev.thecodewarrior.hooked.capability
 
 import com.teamwizardry.librarianlib.core.util.kotlin.NbtBuilder
 import com.teamwizardry.librarianlib.core.util.vec
-import dev.onyxstudios.cca.api.v3.component.Component
-import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent
 import dev.thecodewarrior.hooked.HookTypes
 import dev.thecodewarrior.hooked.HookedComponents
 import dev.thecodewarrior.hooked.hook.Hook
@@ -18,9 +16,13 @@ import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtElement
 import net.minecraft.nbt.NbtList
 import net.minecraft.network.PacketByteBuf
+import net.minecraft.network.RegistryByteBuf
+import net.minecraft.registry.RegistryWrapper
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
+import org.ladysnake.cca.api.v3.component.Component
+import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent
 import java.util.*
 import kotlin.math.max
 
@@ -98,13 +100,13 @@ class HookedPlayerData(val player: PlayerEntity) : Component, AutoSyncedComponen
 
     var syncStatus: SyncStatus = SyncStatus()
 
-    override fun writeToNbt(tag: NbtCompound) {
+    override fun writeToNbt(tag: NbtCompound, p1: RegistryWrapper.WrapperLookup) {
         tag.putString("Type", HookTypes.HOOK_TYPE_REGISTRY.getId(type).toString())
         tag.put("Hooks", NbtList().also { it.addAll(hooks.values.map(::writeHook)) })
         tag.put("Controller", NbtCompound().also { controller.saveState(it) })
     }
 
-    override fun readFromNbt(tag: NbtCompound) {
+    override fun readFromNbt(tag: NbtCompound, p1: RegistryWrapper.WrapperLookup) {
         type = HookTypes.HOOK_TYPE_REGISTRY.get(Identifier.of(tag.getString("Type")))
         hooks = tag.getList("Hooks", NbtType.COMPOUND).map(::readHook).associateByTo(TreeMap()) { it.id }
         syncStatus.forceFullSyncToClient = true
@@ -161,7 +163,7 @@ class HookedPlayerData(val player: PlayerEntity) : Component, AutoSyncedComponen
         INIT, FULL, DIRTY
     }
 
-    override fun writeSyncPacket(buf: PacketByteBuf, recipient: ServerPlayerEntity) {
+    override fun writeSyncPacket(buf: RegistryByteBuf, recipient: ServerPlayerEntity) {
         writeFullPacket(buf, true)
     }
 
@@ -173,7 +175,7 @@ class HookedPlayerData(val player: PlayerEntity) : Component, AutoSyncedComponen
         }
     }
 
-    override fun applySyncPacket(buf: PacketByteBuf) {
+    override fun applySyncPacket(buf: RegistryByteBuf) {
         when(SyncType.values()[buf.readVarInt()]) {
             SyncType.INIT -> applyFullPacket(buf, true)
             SyncType.FULL -> applyFullPacket(buf, false)

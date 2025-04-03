@@ -9,7 +9,7 @@ import net.minecraft.util.Identifier
 import net.minecraft.world.World
 /*
 object HudRenderer {
-    private val HUD_TEXTURE = Identifier("hooked:textures/gui/cooldown.png")
+    private val HUD_TEXTURE = Identifier.of("hooked:textures/gui/cooldown.png")
 
     init {
         MinecraftForge.EVENT_BUS.register(this)

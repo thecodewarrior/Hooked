@@ -5,7 +5,7 @@ import net.minecraft.util.Identifier
 
 object HudSprites {
     @JvmStatic
-    private val mosaic = Mosaic(Identifier("hooked:textures/gui/hud.png"), 288, 27)
+    private val mosaic = Mosaic(Identifier.of("hooked:textures/gui/hud.png"), 288, 27)
     @JvmStatic
     val hotbarFrame by mosaic
     @JvmStatic

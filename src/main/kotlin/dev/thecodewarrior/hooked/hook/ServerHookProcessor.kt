@@ -1,6 +1,5 @@
 package dev.thecodewarrior.hooked.hook
 
-import com.teamwizardry.librarianlib.core.util.kotlin.getOrNull
 import dev.emi.trinkets.api.TrinketsApi
 import dev.thecodewarrior.hooked.HookStats
 import dev.thecodewarrior.hooked.Hooked
@@ -20,6 +19,7 @@ import net.minecraft.util.math.Vec3d
 import net.minecraft.world.GameMode
 import net.minecraft.world.World
 import java.util.*
+import kotlin.jvm.optionals.getOrNull
 
 /**
  * Processes hooks on the *logical* server. This is present in both the client and dedicated server environments.

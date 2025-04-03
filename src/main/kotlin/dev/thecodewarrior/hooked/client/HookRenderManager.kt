@@ -17,7 +17,6 @@ import dev.thecodewarrior.hooked.hook.HookPlayerController
 import dev.thecodewarrior.hooked.hook.HookType
 import dev.thecodewarrior.hooked.util.getWaistPos
 import dev.thecodewarrior.hooked.util.normal
-import dev.thecodewarrior.hooked.util.toMc
 import dev.thecodewarrior.hooked.util.vertex
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
@@ -29,18 +28,13 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.resource.ResourceManager
 import net.minecraft.resource.ResourceReloader
 import net.minecraft.util.Identifier
+import net.minecraft.util.math.RotationAxis
 import net.minecraft.util.profiler.Profiler
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 import kotlin.collections.component1
 import kotlin.collections.component2
-import kotlin.collections.forEach
-import kotlin.collections.map
-import kotlin.collections.maxByOrNull
-import kotlin.collections.mutableMapOf
-import kotlin.collections.mutableSetOf
 import kotlin.collections.set
-import kotlin.collections.toTypedArray
 import kotlin.math.sqrt
 
 object HookRenderManager: IdentifiableResourceReloadListener, WorldRenderEvents.BeforeEntities {
@@ -60,7 +54,7 @@ object HookRenderManager: IdentifiableResourceReloadListener, WorldRenderEvents.
     }
 
     override fun getFabricId(): Identifier {
-        return Identifier("hooked:hook_render_manager")
+        return Identifier.of("hooked:hook_render_manager")
     }
 
     override fun reload(
@@ -107,11 +101,12 @@ object HookRenderManager: IdentifiableResourceReloadListener, WorldRenderEvents.
     }
 
     override fun beforeEntities(context: WorldRenderContext) {
-        context.matrixStack().push()
+        val matrixStack = context.matrixStack()!!
+        matrixStack.push()
         val viewPos = context.gameRenderer().camera.pos
-        context.matrixStack().translate(-viewPos.x, -viewPos.y, -viewPos.z)
+        matrixStack.translate(-viewPos.x, -viewPos.y, -viewPos.z)
 
-        renderHooks(context.matrixStack(), context.tickDelta(), context.consumers()!!)
+        renderHooks(matrixStack, context.tickCounter().getTickDelta(true), context.consumers()!!)
 
         if(Client.minecraft.entityRenderDispatcher.shouldRenderHitboxes()) {
             val player = Client.minecraft.player!!
@@ -139,7 +134,7 @@ object HookRenderManager: IdentifiableResourceReloadListener, WorldRenderEvents.
             }
         }
 
-        context.matrixStack().pop()
+        matrixStack.pop()
         (context.consumers() as? VertexConsumerProvider.Immediate)?.draw()
     }
 
@@ -162,32 +157,33 @@ object HookRenderManager: IdentifiableResourceReloadListener, WorldRenderEvents.
             val hookPos = hook.posLastTick + (hook.pos - hook.posLastTick) * tickDelta
 
             val normal = (hookPos - waist).normalize()
-            consumer.vertex(matrices, waist).color(color).normal(matrices, normal).next()
-            consumer.vertex(matrices, hookPos).color(color).normal(matrices, normal).next()
+            consumer.vertex(matrices, waist).color(color).normal(matrices, normal)
+            consumer.vertex(matrices, hookPos).color(color).normal(matrices, normal)
 
             matrices.push()
             matrices.translate(hookPos.x, hookPos.y, hookPos.z)
-            matrices.multiply(Quaternion.fromAxesAnglesDeg(hook.pitch, -hook.yaw, 0f).toMc())
+            matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-hook.yaw))
+            matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(hook.pitch))
 
             val length = hook.type.hookLength
             val claw = length / 3
 
             val rt2 = sqrt(2.0)
 
-            consumer.vertex(matrices, 0, 0, 0).color(color).normal(matrices, 0, 0, 1).next()
-            consumer.vertex(matrices, 0, 0, length).color(color).normal(matrices, 0, 0, 1).next()
+            consumer.vertex(matrices, 0, 0, 0).color(color).normal(matrices, 0, 0, 1)
+            consumer.vertex(matrices, 0, 0, length).color(color).normal(matrices, 0, 0, 1)
 
-            consumer.vertex(matrices, -claw, 0, length - claw).color(color).normal(matrices, rt2, 0, rt2).next()
-            consumer.vertex(matrices, 0, 0, length).color(color).normal(matrices, rt2, 0, rt2).next()
+            consumer.vertex(matrices, -claw, 0, length - claw).color(color).normal(matrices, rt2, 0, rt2)
+            consumer.vertex(matrices, 0, 0, length).color(color).normal(matrices, rt2, 0, rt2)
 
-            consumer.vertex(matrices, 0, 0, length).color(color).normal(matrices, rt2, 0, rt2).next()
-            consumer.vertex(matrices, claw, 0, length - claw).color(color).normal(matrices, rt2, 0, rt2).next()
+            consumer.vertex(matrices, 0, 0, length).color(color).normal(matrices, rt2, 0, rt2)
+            consumer.vertex(matrices, claw, 0, length - claw).color(color).normal(matrices, rt2, 0, rt2)
 
-            consumer.vertex(matrices, 0, -claw, length - claw).color(color).normal(matrices, 0, rt2, rt2).next()
-            consumer.vertex(matrices, 0, 0, length).color(color).normal(matrices, 0, rt2, rt2).next()
+            consumer.vertex(matrices, 0, -claw, length - claw).color(color).normal(matrices, 0, rt2, rt2)
+            consumer.vertex(matrices, 0, 0, length).color(color).normal(matrices, 0, rt2, rt2)
 
-            consumer.vertex(matrices, 0, 0, length).color(color).normal(matrices, 0, rt2, rt2).next()
-            consumer.vertex(matrices, 0, claw, length - claw).color(color).normal(matrices, 0, rt2, rt2).next()
+            consumer.vertex(matrices, 0, 0, length).color(color).normal(matrices, 0, rt2, rt2)
+            consumer.vertex(matrices, 0, claw, length - claw).color(color).normal(matrices, 0, rt2, rt2)
 
             matrices.pop()
         }
