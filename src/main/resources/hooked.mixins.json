@@ -17,9 +17,7 @@
     "ClientPlayerEntityMixin",
     "IrisShadowRendererMixin",
     "MixinInGameHud",
-    "OtherClientPlayerEntityMixin",
-    "PlayerEntityRendererMixin",
-    "WorldRendererMixin"
+    "OtherClientPlayerEntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1
