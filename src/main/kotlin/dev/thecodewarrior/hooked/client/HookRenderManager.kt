@@ -37,7 +37,7 @@ import kotlin.collections.component2
 import kotlin.collections.set
 import kotlin.math.sqrt
 
-object HookRenderManager: IdentifiableResourceReloadListener, WorldRenderEvents.BeforeEntities {
+object HookRenderManager: IdentifiableResourceReloadListener, WorldRenderEvents.AfterEntities {
     private val registry = mutableMapOf<HookType, HookRenderer<*>>()
 
     fun register(type: HookType, renderer: HookRenderer<*>) {
@@ -50,7 +50,7 @@ object HookRenderManager: IdentifiableResourceReloadListener, WorldRenderEvents.
     }
 
     fun registerEvents() {
-        WorldRenderEvents.BEFORE_ENTITIES.register(this)
+        WorldRenderEvents.AFTER_ENTITIES.register(this)
     }
 
     override fun getFabricId(): Identifier {
@@ -100,7 +100,7 @@ object HookRenderManager: IdentifiableResourceReloadListener, WorldRenderEvents.
         }
     }
 
-    override fun beforeEntities(context: WorldRenderContext) {
+    override fun afterEntities(context: WorldRenderContext) {
         val matrixStack = context.matrixStack()!!
         matrixStack.push()
         val viewPos = context.gameRenderer().camera.pos
@@ -163,7 +163,7 @@ object HookRenderManager: IdentifiableResourceReloadListener, WorldRenderEvents.
             matrices.push()
             matrices.translate(hookPos.x, hookPos.y, hookPos.z)
             matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-hook.yaw))
-            matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(hook.pitch))
+            matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(hook.pitch))
 
             val length = hook.type.hookLength
             val claw = length / 3

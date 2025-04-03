@@ -77,7 +77,7 @@ abstract class SimpleHookRenderer<C: HookPlayerController>(val type: HookType): 
         val pitch = -Math.toDegrees(asin(chainDirection.y)).toFloat()
         // we add 90 to the pitch because the model is based on +y, but pitch/yaw are based on +z
         matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-yaw))
-        matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(pitch + 90))
+        matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(pitch + 90))
         matrices.translate(0.0, chainMargin, 0.0)
 
         val actualLength = chainLength - chainMargin
@@ -91,7 +91,7 @@ abstract class SimpleHookRenderer<C: HookPlayerController>(val type: HookType): 
         matrices.translate(hookPos.x - waist.x, hookPos.y - waist.y, hookPos.z - waist.z)
         // we add 90 to the pitch because the model is based on +y, but pitch/yaw are based on +z
         matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-hook.yaw))
-        matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(hook.pitch + 90))
+        matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(hook.pitch + 90))
 
         val consumer = consumers.getBuffer(RenderLayer.getEntityCutout(hookTexture))
         val lightmap = getBrightnessForRender(player.world, hookPos)
