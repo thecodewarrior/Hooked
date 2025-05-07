@@ -82,7 +82,7 @@ data class HookProperties(
         fun fromItemStack(stack: ItemStack): HookProperties? {
             val behavior = stack.get(ItemComponents.HOOK_BEHAVIOR) ?: return null
             return HookProperties(
-                count = max(1, stack.get(ItemComponents.HOOK_COUNT) ?: 1),
+                count = max(0, stack.get(ItemComponents.HOOK_COUNT) ?: 1),
                 range = max(0.0, stack.get(ItemComponents.HOOK_RANGE) ?: 8.0),
                 speed = max(0.0, stack.get(ItemComponents.HOOK_SPEED) ?: 0.5),
                 cooldown = max(0, stack.get(ItemComponents.FIRE_COOLDOWN) ?: 20),
