@@ -2,12 +2,12 @@ package dev.thecodewarrior.hooked.capability
 
 import com.teamwizardry.librarianlib.core.util.kotlin.NbtBuilder
 import com.teamwizardry.librarianlib.core.util.vec
-import dev.thecodewarrior.hooked.HookTypes
-import dev.thecodewarrior.hooked.HookedComponents
+import dev.thecodewarrior.hooked.Hooked
+import dev.thecodewarrior.hooked.HookedCardinalComponents
 import dev.thecodewarrior.hooked.hook.Hook
 import dev.thecodewarrior.hooked.hook.HookEvent
 import dev.thecodewarrior.hooked.hook.HookPlayerController
-import dev.thecodewarrior.hooked.hook.HookType
+import dev.thecodewarrior.hooked.item.HookProperties
 import dev.thecodewarrior.hooked.util.CircularArray
 import dev.thecodewarrior.hooked.util.CircularMap
 import net.fabricmc.fabric.api.util.NbtType
@@ -19,7 +19,6 @@ import net.minecraft.network.PacketByteBuf
 import net.minecraft.network.RegistryByteBuf
 import net.minecraft.registry.RegistryWrapper
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
 import org.ladysnake.cca.api.v3.component.Component
 import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent
@@ -30,14 +29,17 @@ import kotlin.math.max
  * A capability holding all the data and logic required for actually running the hooks.
  */
 class HookedPlayerData(val player: PlayerEntity) : Component, AutoSyncedComponent {
-    var type: HookType = HookType.NONE
+    var properties: HookProperties = HookProperties.NONE
         set(value) {
             if (value != field) {
                 controller.remove()
-                controller = value.createController(player)
+                controller = value.behavior.createController(player, value)
             }
             field = value
         }
+
+    val maxHooks: Int
+        get() = properties.count
 
     /**
      * The hooks mapped by ID and sorted by the order they were fired.
@@ -101,13 +103,16 @@ class HookedPlayerData(val player: PlayerEntity) : Component, AutoSyncedComponen
     var syncStatus: SyncStatus = SyncStatus()
 
     override fun writeToNbt(tag: NbtCompound, p1: RegistryWrapper.WrapperLookup) {
-        tag.putString("Type", HookTypes.HOOK_TYPE_REGISTRY.getId(type).toString())
+        val propertiesNbt = properties.toNBT()
+        if(propertiesNbt != null) {
+            tag.put("Properties", propertiesNbt)
+        }
         tag.put("Hooks", NbtList().also { it.addAll(hooks.values.map(::writeHook)) })
         tag.put("Controller", NbtCompound().also { controller.saveState(it) })
     }
 
     override fun readFromNbt(tag: NbtCompound, p1: RegistryWrapper.WrapperLookup) {
-        type = HookTypes.HOOK_TYPE_REGISTRY.get(Identifier.of(tag.getString("Type")))
+        properties = tag.get("Properties")?.let { HookProperties.fromNBT(it) } ?: HookProperties.NONE
         hooks = tag.getList("Hooks", NbtType.COMPOUND).map(::readHook).associateByTo(TreeMap()) { it.id }
         syncStatus.forceFullSyncToClient = true
         syncStatus.forceFullSyncToOthers = true
@@ -117,6 +122,7 @@ class HookedPlayerData(val player: PlayerEntity) : Component, AutoSyncedComponen
     private fun writeHook(hook: Hook): NbtCompound {
         return NbtBuilder.compound {
             "Id" %= int(hook.id)
+            "Len" %= float(hook.hookLength)
             "X" %= double(hook.pos.x)
             "Y" %= double(hook.pos.y)
             "Z" %= double(hook.pos.z)
@@ -135,11 +141,10 @@ class HookedPlayerData(val player: PlayerEntity) : Component, AutoSyncedComponen
     private fun readHook(tag: NbtElement): Hook {
         tag as NbtCompound
 
-        val posTag = tag.getCompound("Position")
         val blockTag = tag.getCompound("Block")
         return Hook(
             tag.getInt("Id"),
-            this.type,
+            tag.getFloat("Len"),
             vec(tag.getDouble("X"), tag.getDouble("Y"), tag.getDouble("Z")),
             tag.getFloat("Pitch"),
             tag.getFloat("Yaw"),
@@ -150,7 +155,7 @@ class HookedPlayerData(val player: PlayerEntity) : Component, AutoSyncedComponen
     }
 
     fun updateSync() {
-        HookedComponents.HOOK_DATA.sync(player, ::writeUpdatePacket) { player ->
+        HookedCardinalComponents.HOOK_DATA.sync(player, ::writeUpdatePacket) { player ->
             if(player == this.player) {
                 syncStatus.forceFullSyncToClient || syncStatus.dirtyHooks.isNotEmpty()
             } else {
@@ -185,13 +190,13 @@ class HookedPlayerData(val player: PlayerEntity) : Component, AutoSyncedComponen
 
     private fun writeFullPacket(buf: PacketByteBuf, initial: Boolean) {
         buf.writeVarInt(if(initial) SyncType.INIT.ordinal else SyncType.FULL.ordinal)
-        buf.writeIdentifier(HookTypes.HOOK_TYPE_REGISTRY.getId(type))
+        buf.writeNbt(properties.toNBT())
         buf.writeCollection(hooks.values, ::writeHook)
         controller.writeSyncState(buf, initial)
     }
 
     private fun applyFullPacket(buf: PacketByteBuf, initial: Boolean) {
-        type = HookTypes.HOOK_TYPE_REGISTRY.get(buf.readIdentifier())
+        properties = buf.readNbt()?.let { HookProperties.fromNBT(it) } ?: HookProperties.NONE
 
         val newHooks = buf.readCollection({ mutableListOf() }, ::readHook).associateByTo(TreeMap()) { it.id }
         syncStatus.recentHooks.putAll(hooks.filterKeys { it !in newHooks })
@@ -219,7 +224,7 @@ class HookedPlayerData(val player: PlayerEntity) : Component, AutoSyncedComponen
 
     private fun writeHook(buf: PacketByteBuf, hook: Hook) {
         buf.writeVarInt(hook.id)
-        // no hook.type - this set to this.type when reading
+        // no hook.hookLength - this is set to this.type when reading
         buf.writeDouble(hook.pos.x)
         buf.writeDouble(hook.pos.y)
         buf.writeDouble(hook.pos.z)
@@ -233,13 +238,17 @@ class HookedPlayerData(val player: PlayerEntity) : Component, AutoSyncedComponen
     private fun readHook(buf: PacketByteBuf): Hook {
         return Hook(
             buf.readVarInt(),
-            this.type,
+            properties.hookModel.hookLength,
             vec(buf.readDouble(), buf.readDouble(), buf.readDouble()),
             buf.readFloat(),
             buf.readFloat(),
-            Hook.State.values()[buf.readVarInt()],
+            Hook.State.entries[buf.readVarInt()],
             buf.readBlockPos(),
             buf.readVarInt()
         )
+    }
+
+    companion object {
+        val logger = Hooked.logManager.makeLogger<HookedPlayerData>()
     }
 }

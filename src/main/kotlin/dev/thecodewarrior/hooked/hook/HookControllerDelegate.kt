@@ -1,5 +1,6 @@
 package dev.thecodewarrior.hooked.hook
 
+import dev.thecodewarrior.hooked.item.HookProperties
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.sound.SoundEvent
 import net.minecraft.util.math.Vec3d
@@ -12,6 +13,7 @@ interface HookControllerDelegate {
     val player: PlayerEntity
     val world: World
     val hooks: Collection<Hook>
+    val properties: HookProperties
 
     val cooldown: Int
     fun triggerCooldown()

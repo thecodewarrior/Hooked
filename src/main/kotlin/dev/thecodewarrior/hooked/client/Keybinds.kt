@@ -3,7 +3,6 @@ package dev.thecodewarrior.hooked.client
 import com.teamwizardry.librarianlib.core.util.Client
 import dev.thecodewarrior.hooked.bridge.hookData
 import dev.thecodewarrior.hooked.hook.ClientHookProcessor
-import dev.thecodewarrior.hooked.hook.HookType
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.option.KeyBinding
 import net.minecraft.client.util.InputUtil
@@ -27,7 +26,7 @@ object Keybinds {
         val player = Client.player ?: return
         val data = player.hookData()
 
-        if(data.type != HookType.NONE) {
+        if(data.maxHooks > 0) {
             val sneakPressed = Client.minecraft.options.sneakKey.isPressed
             if (FIRE.wasPressed()) {
                 ClientHookProcessor.fireHook(player, data, player.eyePos, player.pitch, player.yaw, sneakPressed)

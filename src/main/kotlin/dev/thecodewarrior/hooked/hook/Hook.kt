@@ -13,9 +13,9 @@ data class Hook(
      */
     val id: Int,
     /**
-     * The type of the hook
+     * The length of the hook
      */
-    val type: HookType,
+    val hookLength: Float,
     /**
      * The position of the tail of the hook
      */
@@ -50,7 +50,7 @@ data class Hook(
      * The position of the tip of the hook, as computed from the pos and direction
      */
     val tipPos: Vec3d
-        get() = pos + direction * type.hookLength
+        get() = pos + direction * hookLength
 
     /**
      * Used when firing hooks on the client side to prevent them from rendering during the first tick.

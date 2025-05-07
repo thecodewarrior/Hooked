@@ -35,7 +35,7 @@
     "cardinal-components": [
       {
         "adapter": "kotlin",
-        "value": "dev.thecodewarrior.hooked.HookedComponents"
+        "value": "dev.thecodewarrior.hooked.HookedCardinalComponents"
       }
     ]
   },

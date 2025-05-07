@@ -13,7 +13,7 @@ import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.entity.player.PlayerEntity
 import java.awt.Color
 
-open class FlightHookRenderer(type: FlightHookType): SimpleHookRenderer<FlightHookPlayerController>(type) {
+open class FlightHookRenderer(): SimpleHookRenderer<FlightHookPlayerController>() {
     override fun render(
         matrices: MatrixStack,
         player: PlayerEntity,
@@ -25,19 +25,19 @@ open class FlightHookRenderer(type: FlightHookType): SimpleHookRenderer<FlightHo
         val waist = player.getWaistPos(tickDelta)
         matrices.push()
         matrices.translate(waist.x, waist.y, waist.z)
-        renderHooks(matrices, player, consumers, tickDelta, data, 2.5)
+        renderHooks(matrices, player, consumers, tickDelta, data)
         matrices.pop()
 
         if (controller.showHullTimer.value != 0.0) {
             val alpha = controller.showHullTimer.value.toFloat()
-            val frontColor = Color(1f, 0f, 0f, alpha)
-            val backColor = Color(0.5f, 0f, 0f, alpha)
+            val wireframeColor = controller.behavior.wireframeColor
 
-//            RenderSystem.depthFunc(GL11.GL_GREATER)
-//            RenderSystem.depthMask(false)
-//            drawWireframe(matrices, consumers, controller, backColor)
-
-            drawWireframe(matrices, consumers, controller, frontColor)
+            drawWireframe(
+                matrices,
+                consumers,
+                controller,
+                Color(wireframeColor.x, wireframeColor.y, wireframeColor.z, alpha)
+            )
         }
     }
 

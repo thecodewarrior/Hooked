@@ -1,58 +1,40 @@
-package dev.thecodewarrior.hooked.hooks
+package dev.thecodewarrior.hooked.client.glitter
 
 import com.teamwizardry.librarianlib.core.util.vec
 import com.teamwizardry.librarianlib.math.cross
-import dev.thecodewarrior.hooked.hook.Hook
-import dev.thecodewarrior.hooked.hook.HookControllerDelegate
-import dev.thecodewarrior.hooked.util.getWaistPos
-import com.teamwizardry.librarianlib.math.minus
 import com.teamwizardry.librarianlib.math.div
-import dev.thecodewarrior.hooked.client.glitter.EnderHookParticleSystem
-import net.minecraft.entity.player.PlayerEntity
+import com.teamwizardry.librarianlib.math.minus
+import dev.thecodewarrior.hooked.item.ChainAppearance
 import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.Vec3d
+import org.joml.Vector3f
+import kotlin.jvm.optionals.getOrNull
 import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
 
-class EnderHookPlayerController(player: PlayerEntity, type: BasicHookType): BasicHookPlayerController(player, type) {
-    override fun onHookHit(delegate: HookControllerDelegate, hook: Hook) {
-        super.onHookHit(delegate, hook)
-        if(delegate.player.world.isClient) {
-            particleEffect.spawnBurst(delegate.player.getWaistPos(), hook.pos)
-        }
+object ChainShatterParticleSpawner {
+    fun spawnBurst(start: Vec3d, end: Vec3d, appearance: ChainAppearance) {
+        this.impl.spawnBurst(start, end, appearance)
     }
 
-    override fun onHookMiss(delegate: HookControllerDelegate, hook: Hook) {
-        super.onHookMiss(delegate, hook)
-        if(delegate.player.world.isClient) {
-            particleEffect.spawnBurst(delegate.player.getWaistPos(), hook.pos)
-        }
+    var impl: ChainShatterParticleSpawnerImpl = ServerParticleImpl
+
+    interface ChainShatterParticleSpawnerImpl {
+        fun spawnBurst(start: Vec3d, end: Vec3d, appearance: ChainAppearance)
     }
 
-    override fun onHookDislodge(delegate: HookControllerDelegate, hook: Hook, reason: DislodgeReason) {
-        super.onHookDislodge(delegate, hook, reason)
-        if(delegate.player.world.isClient) {
-            particleEffect.spawnBurst(delegate.player.getWaistPos(), hook.pos)
-        }
-    }
-
-    companion object {
-        var particleEffect: ParticleEffect = NullParticleEffect
-    }
-
-    interface ParticleEffect {
-        fun spawnBurst(start: Vec3d, end: Vec3d)
-    }
-
-    object NullParticleEffect: ParticleEffect {
-        override fun spawnBurst(start: Vec3d, end: Vec3d) {
+    object ServerParticleImpl: ChainShatterParticleSpawnerImpl {
+        override fun spawnBurst(start: Vec3d, end: Vec3d, appearance: ChainAppearance) {
             /* nop */
         }
     }
 
-    object ClientParticleEffect: ParticleEffect {
-        override fun spawnBurst(start: Vec3d, end: Vec3d) {
+    object ClientParticleImpl: ChainShatterParticleSpawnerImpl {
+        override fun spawnBurst(start: Vec3d, end: Vec3d, appearance: ChainAppearance) {
+            val minColor = appearance.particleColorMin.getOrNull() ?: Vector3f(0f, 0f, 0f)
+            val maxColor = appearance.particleColorMax.getOrNull() ?: minColor
+
             val delta = end - start
             val length = delta.length()
             val normal = delta / length
@@ -89,7 +71,7 @@ class EnderHookPlayerController(player: PlayerEntity, type: BasicHookType): Basi
                 var axisX = right.x * sin + up.x * cos + normal.x * axisShift
                 var axisY = right.y * sin + up.y * cos + normal.y * axisShift
                 var axisZ = right.z * sin + up.z * cos + normal.z * axisShift
-                val invLength = MathHelper.fastInverseSqrt(axisX * axisX + axisY * axisY + axisZ * axisZ)
+                val invLength = MathHelper.inverseSqrt(axisX * axisX + axisY * axisY + axisZ * axisZ)
                 axisX *= invLength
                 axisY *= invLength
                 axisZ *= invLength
@@ -101,13 +83,12 @@ class EnderHookPlayerController(player: PlayerEntity, type: BasicHookType): Basi
                 var lifetime = startLifetime + (endLifetime - startLifetime) * (segmentStart / length)
                 lifetime += Math.random() * lifetimeVariance // only randomly live longer, not shorter
 
-                // the same particle color range as portal particles
-                val colorRandom = Math.random() * 0.6 + 0.4
-                val red = colorRandom * 0.9
-                val green = colorRandom * 0.3
-                val blue = colorRandom
+                val colorRandom = Math.random().toFloat()
+                val red = MathHelper.lerp(colorRandom, minColor.x, maxColor.x).toDouble()
+                val green = MathHelper.lerp(colorRandom, minColor.y, maxColor.y).toDouble()
+                val blue = MathHelper.lerp(colorRandom, minColor.z, maxColor.z).toDouble()
 
-                EnderHookParticleSystem.spawn(
+                ChainShatterParticleSystem.spawn(
                     (lifetime * 20).toInt(),
                     start.x + normal.x * segmentCenter,
                     start.y + normal.y * segmentCenter,
@@ -127,3 +108,4 @@ class EnderHookPlayerController(player: PlayerEntity, type: BasicHookType): Basi
         }
     }
 }
+

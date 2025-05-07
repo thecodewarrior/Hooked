@@ -17,7 +17,7 @@ import net.minecraft.network.PacketByteBuf
 import net.minecraft.util.math.Vec3d
 import kotlin.math.cos
 
-open class FlightHookPlayerController(val player: PlayerEntity, val type: FlightHookType): HookPlayerController() {
+open class FlightHookPlayerController(val player: PlayerEntity, val behavior: FlightHookBehavior): HookPlayerController() {
     val hull: DynamicHull = DynamicHull()
     var hasExternalFlight: Boolean = false
     var isFlightActive: Boolean = false
@@ -172,7 +172,7 @@ open class FlightHookPlayerController(val player: PlayerEntity, val type: Flight
             applyRestoringForce(
                 player,
                 target = player.fromWaistPos(constrained.position),
-                pullForce = type.pullStrength,
+                pullForce = 2.0,
                 enforcementForce = 2.0,
                 lockPlayer = false
             )

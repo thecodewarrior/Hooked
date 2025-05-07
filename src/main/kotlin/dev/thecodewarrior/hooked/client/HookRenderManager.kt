@@ -4,7 +4,6 @@ import com.teamwizardry.librarianlib.core.util.Client
 import com.teamwizardry.librarianlib.core.util.DistinctColors
 import com.teamwizardry.librarianlib.core.util.kotlin.color
 import com.teamwizardry.librarianlib.core.util.vec
-import com.teamwizardry.librarianlib.math.Quaternion
 import com.teamwizardry.librarianlib.math.minus
 import com.teamwizardry.librarianlib.math.plus
 import com.teamwizardry.librarianlib.math.times
@@ -13,8 +12,8 @@ import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.client.renderer.HookRenderer
 import dev.thecodewarrior.hooked.hook.ClientHookProcessor
 import dev.thecodewarrior.hooked.hook.Hook
+import dev.thecodewarrior.hooked.hook.HookBehaviorType
 import dev.thecodewarrior.hooked.hook.HookPlayerController
-import dev.thecodewarrior.hooked.hook.HookType
 import dev.thecodewarrior.hooked.util.getWaistPos
 import dev.thecodewarrior.hooked.util.normal
 import dev.thecodewarrior.hooked.util.vertex
@@ -37,14 +36,14 @@ import kotlin.collections.component2
 import kotlin.collections.set
 import kotlin.math.sqrt
 
-object HookRenderManager: IdentifiableResourceReloadListener, WorldRenderEvents.AfterEntities {
-    private val registry = mutableMapOf<HookType, HookRenderer<*>>()
+object HookRenderManager: WorldRenderEvents.AfterEntities {
+    private val registry = mutableMapOf<HookBehaviorType<*>, HookRenderer<*>>()
 
-    fun register(type: HookType, renderer: HookRenderer<*>) {
+    fun register(type: HookBehaviorType<*>, renderer: HookRenderer<*>) {
         registry[type] = renderer
     }
 
-    fun getRenderer(type: HookType): HookRenderer<in HookPlayerController>? {
+    fun getRenderer(type: HookBehaviorType<*>): HookRenderer<in HookPlayerController>? {
         @Suppress("UNCHECKED_CAST")
         return registry[type] as HookRenderer<in HookPlayerController>?
     }
@@ -53,32 +52,13 @@ object HookRenderManager: IdentifiableResourceReloadListener, WorldRenderEvents.
         WorldRenderEvents.AFTER_ENTITIES.register(this)
     }
 
-    override fun getFabricId(): Identifier {
-        return Identifier.of("hooked:hook_render_manager")
-    }
-
-    override fun reload(
-        synchronizer: ResourceReloader.Synchronizer,
-        manager: ResourceManager,
-        prepareProfiler: Profiler,
-        applyProfiler: Profiler,
-        prepareExecutor: Executor,
-        applyExecutor: Executor
-    ): CompletableFuture<Void> {
-        return CompletableFuture.allOf(
-            *registry.map { (_, renderer) ->
-                renderer.reload(synchronizer, manager, prepareProfiler, applyProfiler, prepareExecutor, applyExecutor)
-            }.toTypedArray()
-        )
-    }
-
     fun renderPlayer(player: AbstractClientPlayerEntity, matrices: MatrixStack, tickDelta: Float, consumers: VertexConsumerProvider) {
         val data = player.hookData()
-        if (data.type != HookType.NONE) {
+        if (data.maxHooks > 0) {
             val visibleToTeam = !player.isInvisibleTo(Client.player)
             if(!player.isInvisible || visibleToTeam) {
                 matrices.push()
-                getRenderer(data.type)?.render(
+                getRenderer(data.properties.behavior.type)?.render(
                     matrices,
                     player,
                     consumers,
@@ -165,7 +145,7 @@ object HookRenderManager: IdentifiableResourceReloadListener, WorldRenderEvents.
             matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-hook.yaw))
             matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(hook.pitch))
 
-            val length = hook.type.hookLength
+            val length = hook.hookLength
             val claw = length / 3
 
             val rt2 = sqrt(2.0)

@@ -10,7 +10,7 @@ import org.ladysnake.cca.api.v3.entity.EntityComponentInitializer
 /**
  * Cardinal components entrypoint
  */
-object HookedComponents : EntityComponentInitializer {
+object HookedCardinalComponents : EntityComponentInitializer {
     @JvmField
     val HOOK_DATA = ComponentRegistry.getOrCreate(Identifier.of("hooked:hook_data"), HookedPlayerData::class.java)
 

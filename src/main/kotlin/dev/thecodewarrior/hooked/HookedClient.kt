@@ -4,7 +4,9 @@ import com.teamwizardry.librarianlib.glitter.ParticleSystemManager
 import dev.thecodewarrior.hooked.bridge.hookData
 import dev.thecodewarrior.hooked.client.HookRenderManager
 import dev.thecodewarrior.hooked.client.Keybinds
-import dev.thecodewarrior.hooked.client.glitter.EnderHookParticleSystem
+import dev.thecodewarrior.hooked.client.glitter.ChainShatterParticleSpawner
+import dev.thecodewarrior.hooked.client.glitter.ChainShatterParticleSystem
+import dev.thecodewarrior.hooked.client.renderer.HookModelLoader
 import dev.thecodewarrior.hooked.hook.ClientHookProcessor
 import dev.thecodewarrior.hooked.hooks.*
 import dev.thecodewarrior.hooked.item.HookItem
@@ -27,20 +29,16 @@ object HookedClient: ClientModInitializer {
         registerHookRenderers()
         registerNetworking()
         registerKeybinds()
-        EnderHookPlayerController.particleEffect = EnderHookPlayerController.ClientParticleEffect
+        ChainShatterParticleSpawner.impl = ChainShatterParticleSpawner.ClientParticleImpl
         HookItem.hasShiftDown = Screen::hasShiftDown
     }
 
     private fun registerHookRenderers() {
-        ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(HookRenderManager)
-        HookTypes.types.forEach {
-            when(it) {
-                is FlightHookType -> HookRenderManager.register(it, FlightHookRenderer(it))
-                is BasicHookType -> HookRenderManager.register(it, BasicHookRenderer(it))
-            }
-        }
+        ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(HookModelLoader)
+        HookRenderManager.register(HookBehaviors.BASIC, BasicHookRenderer())
+        HookRenderManager.register(HookBehaviors.FLIGHT, FlightHookRenderer())
         HookRenderManager.registerEvents()
-        ParticleSystemManager.add(EnderHookParticleSystem)
+        ParticleSystemManager.add(ChainShatterParticleSystem)
     }
 
     private fun registerKeybinds() {

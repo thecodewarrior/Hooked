@@ -3,7 +3,6 @@ package dev.thecodewarrior.hooked.client.renderer
 import com.teamwizardry.librarianlib.core.util.Client
 import dev.thecodewarrior.hooked.bridge.hookData
 import dev.thecodewarrior.hooked.client.HookRenderManager
-import dev.thecodewarrior.hooked.hook.HookType
 import net.minecraft.client.render.RenderLayer
 import net.minecraft.client.render.VertexConsumer
 import net.minecraft.client.render.VertexConsumerProvider

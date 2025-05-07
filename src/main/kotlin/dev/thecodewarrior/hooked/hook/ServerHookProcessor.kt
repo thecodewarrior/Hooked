@@ -5,7 +5,8 @@ import dev.thecodewarrior.hooked.HookStats
 import dev.thecodewarrior.hooked.Hooked
 import dev.thecodewarrior.hooked.bridge.hookData
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
-import dev.thecodewarrior.hooked.capability.IHookItem
+import dev.thecodewarrior.hooked.item.HookProperties
+import dev.thecodewarrior.hooked.item.ItemComponents
 import dev.thecodewarrior.hooked.network.HookEventsS2CPacket
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup
@@ -26,7 +27,7 @@ import kotlin.jvm.optionals.getOrNull
  */
 object ServerHookProcessor: CommonHookProcessor() {
     class Context(override val data: HookedPlayerData): HookProcessorContext {
-        override val type: HookType get() = data.type
+        override val properties: HookProperties get() = data.properties
         override val controller: HookPlayerController get() = data.controller
         override val player: PlayerEntity get() = data.player
         override val world: World get() = data.player.world
@@ -79,7 +80,7 @@ object ServerHookProcessor: CommonHookProcessor() {
         sneaking: Boolean,
         ids: List<Int>
     ) {
-        if (data.type == HookType.NONE || player.interactionManager.gameMode == GameMode.SPECTATOR) {
+        if (data.maxHooks <= 0 || player.interactionManager.gameMode == GameMode.SPECTATOR) {
             // they seem to think they can fire hooks
             data.syncStatus.forceFullSyncToClient = true
         } else {
@@ -100,7 +101,7 @@ object ServerHookProcessor: CommonHookProcessor() {
                     }
                 }
                 val hook = Hook(
-                    id, data.type,
+                    id, data.properties.hookModel.hookLength,
                     hookPos, hookPitch, hookYaw,
                     Hook.State.EXTENDING,
                     BlockPos(0, 0, 0),
@@ -121,7 +122,7 @@ object ServerHookProcessor: CommonHookProcessor() {
     }
 
     fun jump(data: HookedPlayerData, doubleJump: Boolean, sneaking: Boolean) {
-        if (data.type != HookType.NONE) {
+        if (data.maxHooks > 0) {
             data.controller.jump(Context(data), doubleJump, sneaking)
         }
     }
@@ -130,10 +131,10 @@ object ServerHookProcessor: CommonHookProcessor() {
         player as ServerPlayerEntity
         val data = player.hookData()
 
-        val equippedType = getEquippedHook(player)?.hookType ?: HookType.NONE
-        if (data.type != equippedType) {
+        val equippedProperties = getEquippedHook(player) ?: HookProperties.NONE
+        if (data.properties != equippedProperties) {
             data.hooks.clear()
-            data.type = equippedType
+            data.properties = equippedProperties
             data.syncStatus.forceFullSyncToClient = true
             data.syncStatus.forceFullSyncToOthers = true
         }
@@ -164,10 +165,12 @@ object ServerHookProcessor: CommonHookProcessor() {
         return data.controller.isActive(Context(data), reason)
     }
 
-    private fun getEquippedHook(player: PlayerEntity): IHookItem? {
+    private fun getEquippedHook(player: PlayerEntity): HookProperties? {
         val component = TrinketsApi.getTrinketComponent(player).getOrNull() ?: return null
-        val stack = component.getEquipped { it.item is IHookItem }.firstOrNull()?.right
-        return stack?.item as? IHookItem
+        return component.allEquipped
+            .mapNotNull { it.right }
+            .mapNotNull { HookProperties.fromItemStack(it) }
+            .firstOrNull()
     }
 
     private val logger = Hooked.logManager.makeLogger<ServerHookProcessor>()

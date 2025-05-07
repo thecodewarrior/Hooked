@@ -16,7 +16,7 @@ import net.minecraft.util.math.Vec3d
 import kotlin.math.acos
 import kotlin.math.sqrt
 
-open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHookType): HookPlayerController() {
+open class BasicHookPlayerController(val player: PlayerEntity, val behavior: BasicHookBehavior): HookPlayerController() {
     override fun fireHooks(
         delegate: HookControllerDelegate,
         pos: Vec3d,
@@ -91,14 +91,14 @@ open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHo
             isStuck(delegate) || player.actualMotion == Vec3d.ZERO -> {
                 boostAABB = player.boundingBox
             }
-            deltaPos.length() < type.pullStrength * 3 -> {
+            deltaPos.length() < behavior.pullStrength * 3 -> {
                 boostAABB = player.boundingBox.offset(deltaPos) // the player's bounding box centered around the targetPos
             }
             else -> return null
         }
 
         return boostTestOffsets.map {
-            boostAABB.offset(JumpHeightUtil.computeStepTarget(player, boostAABB, it, type.boostHeight))
+            boostAABB.offset(JumpHeightUtil.computeStepTarget(player, boostAABB, it, 2.5))
         }
     }
 
@@ -128,7 +128,7 @@ open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHo
         val targetPos = getTargetPoint(delegate.hooks)
         val deltaPos = targetPos - waist
         // if we don't do anything special, just give them a bit of a boost
-        player.velocity += deltaPos.normalize() * (type.pullStrength * 0.2)
+        player.velocity += deltaPos.normalize() * (behavior.pullStrength * 0.2)
     }
 
     override fun update(delegate: HookControllerDelegate) {
@@ -140,7 +140,7 @@ open class BasicHookPlayerController(val player: PlayerEntity, val type: BasicHo
         clearFlyingKickTimer(player)
 
         val targetPlayerPos = player.fromWaistPos(getTargetPoint(delegate.hooks))
-        applyRestoringForce(player, targetPlayerPos, type.pullStrength)
+        applyRestoringForce(player, targetPlayerPos, behavior.pullStrength)
         if(isStuck(delegate) || player.actualMotion == Vec3d.ZERO) {
             player.stopFallFlying()
         }

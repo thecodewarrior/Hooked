@@ -6,6 +6,7 @@ import dev.thecodewarrior.hooked.Hooked
 import dev.thecodewarrior.hooked.bridge.hookData
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.hooks.BasicHookPlayerController
+import dev.thecodewarrior.hooked.item.HookProperties
 import dev.thecodewarrior.hooked.network.FireHookC2SPacket
 import dev.thecodewarrior.hooked.network.HookJumpC2SPacket
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
@@ -27,7 +28,7 @@ object ClientHookProcessor: CommonHookProcessor() {
     private var cooldownCounter: Int = 0
 
     class Context(override val data: HookedPlayerData): HookProcessorContext {
-        override val type: HookType get() = data.type
+        override val properties: HookProperties get() = data.properties
         override val controller: HookPlayerController get() = data.controller
         override val player: PlayerEntity get() = data.player
         override val world: World get() = data.player.world
@@ -36,7 +37,7 @@ object ClientHookProcessor: CommonHookProcessor() {
         // Note: in the interest of being resistant server-side lag, cooldowns are entirely on the client side.
         override val cooldown: Int get() = cooldownCounter
         override fun triggerCooldown() {
-            cooldownCounter = type.cooldown
+            cooldownCounter = properties.cooldown
         }
 
         override fun markDirty(hook: Hook) {}
@@ -74,13 +75,13 @@ object ClientHookProcessor: CommonHookProcessor() {
         if(player.isFallFlying && !player.world.gameRules.getBoolean(HookGameRules.ALLOW_HOOKS_WHILE_FLYING)) {
             return
         }
-        if (data.type != HookType.NONE && Client.minecraft.interactionManager?.currentGameMode != GameMode.SPECTATOR) {
+        if (data.maxHooks > 0 && Client.minecraft.interactionManager?.currentGameMode != GameMode.SPECTATOR) {
             val ids = arrayListOf<Int>()
             val shouldSend = data.controller.fireHooks(Context(data), pos, pitch, yaw, sneaking) { hookPos, hookPitch, hookYaw ->
                 val id = data.nextId()
                 ids.add(id)
                 val hook = Hook(
-                    id, data.type,
+                    id, data.properties.hookModel.hookLength,
                     hookPos, hookPitch, hookYaw,
                     Hook.State.EXTENDING,
                     BlockPos(0, 0, 0),
@@ -99,7 +100,7 @@ object ClientHookProcessor: CommonHookProcessor() {
     }
 
     fun jump(data: HookedPlayerData, doubleJump: Boolean, sneaking: Boolean) {
-        if (data.type != HookType.NONE) {
+        if (data.maxHooks > 0) {
             data.controller.jump(Context(data), doubleJump, sneaking)
 
             ClientPlayNetworking.send(HookJumpC2SPacket(doubleJump, sneaking))
@@ -113,7 +114,7 @@ object ClientHookProcessor: CommonHookProcessor() {
 
         if(player == Client.player) {
             data.controller.update(Context(data))
-            if(data.type.cooldown == 0 || cooldownCounter > data.type.cooldown) {
+            if(data.properties.cooldown == 0 || cooldownCounter > data.properties.cooldown) {
                 cooldownCounter = 0
                 hudCooldown = 0.0
             } else if(cooldownCounter > 0) {
@@ -122,7 +123,7 @@ object ClientHookProcessor: CommonHookProcessor() {
                 if(cooldownCounter == 0) {
                     hudCooldown = 0.01 // make sure there's one last frame with a full cooldown
                 } else {
-                    hudCooldown = cooldownCounter / data.type.cooldown.toDouble()
+                    hudCooldown = cooldownCounter / data.properties.cooldown.toDouble()
                 }
             } else {
                 hudCooldown = 0.0

@@ -2,6 +2,8 @@ package dev.thecodewarrior.hooked
 
 import dev.thecodewarrior.hooked.bridge.hookData
 import dev.thecodewarrior.hooked.hook.ServerHookProcessor
+import dev.thecodewarrior.hooked.hooks.HookBehaviors
+import dev.thecodewarrior.hooked.item.ItemComponents
 import dev.thecodewarrior.hooked.network.*
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
@@ -13,7 +15,8 @@ object HookedCommon: ModInitializer {
     private val logger = Hooked.logManager.makeLogger<HookedCommon>()
 
     override fun onInitialize() {
-        HookTypes.registerTypes()
+        ItemComponents // static initializer
+        HookBehaviors // static initializer
         HookItems.registerItems()
         HookSounds.registerSounds()
         registerNetworking()

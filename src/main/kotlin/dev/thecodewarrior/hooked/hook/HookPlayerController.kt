@@ -8,8 +8,10 @@ import com.teamwizardry.librarianlib.math.plus
 import com.teamwizardry.librarianlib.math.times
 import dev.thecodewarrior.hooked.HookSounds
 import dev.thecodewarrior.hooked.HookTags
+import dev.thecodewarrior.hooked.client.glitter.ChainShatterParticleSpawner
 import dev.thecodewarrior.hooked.mixin.EntityAccessMixin
 import dev.thecodewarrior.hooked.mixin.FloatingTicksAccess
+import dev.thecodewarrior.hooked.util.getWaistPos
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.PacketByteBuf
@@ -107,6 +109,7 @@ abstract class HookPlayerController {
     open fun onHookHit(delegate: HookControllerDelegate, hook: Hook) {
         delegate.playWorldSound(Hook.hitSound(delegate.world, hook.block), hook.pos, 1f, 1f)
         delegate.playFeedbackSound(HookSounds.HOOK_HIT_EVENT, 1f, 1f)
+        spawnChainShatterParticleEffect(delegate, hook)
     }
 
     /**
@@ -114,6 +117,7 @@ abstract class HookPlayerController {
      */
     open fun onHookMiss(delegate: HookControllerDelegate, hook: Hook) {
         delegate.playFeedbackSound(HookSounds.HOOK_MISS_EVENT, 1f, 1f)
+        spawnChainShatterParticleEffect(delegate, hook)
     }
 
     /**
@@ -133,6 +137,7 @@ abstract class HookPlayerController {
                 delegate.playFeedbackSound(HookSounds.RETRACT_HOOK_EVENT, 1f, 1f)
             }
         }
+        spawnChainShatterParticleEffect(delegate, hook)
     }
 
     /**
@@ -205,6 +210,13 @@ abstract class HookPlayerController {
         val allowedOffset = mixinCast<EntityAccessMixin>(player).invokeAdjustMovementForCollisions(offset)
         val newPos = player.pos + allowedOffset
         player.setPosition(newPos.x, newPos.y, newPos.z)
+    }
+
+    protected fun spawnChainShatterParticleEffect(delegate: HookControllerDelegate, hook: Hook) {
+        val appearance = delegate.properties.chainAppearance
+        if(appearance.particleColorMin.isPresent && delegate.player.world.isClient) {
+            ChainShatterParticleSpawner.spawnBurst(delegate.player.getWaistPos(), hook.pos, appearance)
+        }
     }
 
     enum class DislodgeReason {

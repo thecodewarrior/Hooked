@@ -7,7 +7,7 @@ import net.minecraft.client.render.VertexConsumerProvider
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.entity.player.PlayerEntity
 
-open class BasicHookRenderer(type: BasicHookType): SimpleHookRenderer<BasicHookPlayerController>(type) {
+open class BasicHookRenderer(): SimpleHookRenderer<BasicHookPlayerController>() {
     override fun render(
         matrices: MatrixStack,
         player: PlayerEntity,
@@ -18,6 +18,6 @@ open class BasicHookRenderer(type: BasicHookType): SimpleHookRenderer<BasicHookP
     ) {
         val waist = player.getWaistPos(tickDelta)
         matrices.translate(waist.x, waist.y, waist.z)
-        renderHooks(matrices, player, consumers, tickDelta, data, 0.0)
+        renderHooks(matrices, player, consumers, tickDelta, data)
     }
 }

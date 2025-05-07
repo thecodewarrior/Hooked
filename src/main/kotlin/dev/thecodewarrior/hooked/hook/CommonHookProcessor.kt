@@ -59,9 +59,9 @@ abstract class CommonHookProcessor : HookProcessor {
             if (hook.state != Hook.State.EXTENDING)
                 continue
 
-            val distanceLeft = context.type.range - (hook.pos - context.player.getWaistPos()).length()
+            val distanceLeft = context.properties.range - (hook.pos - context.player.getWaistPos()).length()
 
-            val castDistance = min(context.type.speed, distanceLeft) + context.type.hookLength
+            val castDistance = min(context.properties.speed, distanceLeft) + context.properties.hookModel.hookLength
 
             val request = Raycaster.RaycastRequest(
                 context.world,
@@ -74,7 +74,7 @@ abstract class CommonHookProcessor : HookProcessor {
             context.controller.configureRaycast(request)
             raycaster.cast(request)
 
-            hook.pos += hook.direction * (castDistance * raycaster.fraction - hook.type.hookLength)
+            hook.pos += hook.direction * (castDistance * raycaster.fraction - hook.hookLength)
 
             when (raycaster.hitType) {
                 Raycaster.HitType.BLOCK -> {
@@ -87,7 +87,7 @@ abstract class CommonHookProcessor : HookProcessor {
                 }
                 else -> {
                     // we missed. if we reached max extension, transition to the retracting state
-                    if (distanceLeft <= context.type.speed) {
+                    if (distanceLeft <= context.properties.speed) {
                         hook.state = Hook.State.RETRACTING
                         context.markDirty(hook)
                         context.fireEvent(HookEvent(HookEvent.EventType.MISS, hook.id, 0))
@@ -120,7 +120,7 @@ abstract class CommonHookProcessor : HookProcessor {
 
         // a bit of wiggle room before a hook breaks off.
         val breakEpsilon: Double = 1 / 16.0
-        val breakRangeSq = (context.type.range + breakEpsilon).pow(2)
+        val breakRangeSq = (context.properties.range + breakEpsilon).pow(2)
 
         for(hook in context.hooks) {
             if (hook.state != Hook.State.PLANTED) {
@@ -146,7 +146,7 @@ abstract class CommonHookProcessor : HookProcessor {
         for ((_, hook) in context.data.hooks.descendingMap()) {
             if (hook.state == Hook.State.PLANTED) {
                 plantedCount++
-                if (plantedCount > context.type.count) {
+                if (plantedCount > context.properties.count) {
                     hook.state = Hook.State.RETRACTING
                     context.markDirty(hook)
                     context.fireEvent(
@@ -168,14 +168,14 @@ abstract class CommonHookProcessor : HookProcessor {
             val delta = hook.pos - context.player.getWaistPos()
             val distance = delta.length()
 
-            if (distance < max(context.type.speed, 1.0)) {
+            if (distance < max(context.properties.speed, 1.0)) {
                 context.data.syncStatus.addRecentHook(hook)
                 iterator.remove()
                 hook.state = Hook.State.REMOVED
                 context.markDirty(hook)
             } else {
                 val direction = delta / distance
-                hook.pos -= direction * min(context.type.speed, distance)
+                hook.pos -= direction * min(context.properties.speed, distance)
                 hook.yaw = -Math.toDegrees(atan2(direction.x, direction.z)).toFloat()
                 hook.pitch = -Math.toDegrees(asin(direction.y)).toFloat()
             }

@@ -10,9 +10,7 @@ import com.teamwizardry.librarianlib.glitter.modules.SpriteRenderOptions
 import com.teamwizardry.librarianlib.math.Easing
 import net.minecraft.util.Identifier
 
-object EnderHookParticleSystem: ParticleSystem(Identifier.of("hooked:ender_hook")) {
-    val defaultColor: Color = Color(0.9f, 0.3f, 1.0f, 1.0f)
-
+object ChainShatterParticleSystem: ParticleSystem(Identifier.of("hooked:chain_shatter")) {
     override fun configure() {
         val position = bind(3)
         val previousPosition = bind(3)
