@@ -1,0 +1,25 @@
+# Item components
+
+- `hooked:hook_count` - `int`
+  - The maximum number of hooks
+- `hooked:hook_range` - `double`
+  - The maximum range of the hooks
+- `hooked:hook_speed` - `double`
+  - The hook speed in blocks per tick
+- `hooked:fire_cooldown` - `int`
+  - The fire cooldown in ticks
+- `hooked:hook_behavior` - one of:
+  - `{type:"hooked:basic",pullStrength:double}`
+    - `pullStrength` - max speed to pull the player in blocks per tick
+  - `{type:"hooked:flight",wireframeColor:[r,g,b]}`
+    - `wireframeColor` - the color of the wireframe guide, three floats
+- `hooked:hook_model` - object with keys:
+  - `model` - optional location for the hook .obj file (default `hooked:models/hook/base.obj`)
+  - `texture` - required location for the hook texture file (reference map: `hooked:textures/hook/base/hook.png`)
+  - `hookLength` - optional length of the hook model, used for positioning (default `0.5`)
+- `hooked:chain_appearance` - object with keys:
+  - `texture1` - texture location for the main chain axis
+  - `texture2` - texture location for the cross chain axis
+  - `playerGap` - gap between the player and where the chain starts rendering
+  - `particleColorMin` - optional three-component vector defining the minimum rgb values for the chain particles (particles will be used if this is set)
+  - `particleColorMax` - optional three-component vector defining the maximum rgb values for the chain particles
