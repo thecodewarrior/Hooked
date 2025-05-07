@@ -1,6 +1,7 @@
 package dev.thecodewarrior.hooked.item
 
 import dev.emi.trinkets.api.TrinketItem
+import net.minecraft.component.DataComponentTypes
 import net.minecraft.item.ItemStack
 import net.minecraft.item.tooltip.TooltipType
 import net.minecraft.text.Text
@@ -16,7 +17,9 @@ class HookItem(settings: Settings): TrinketItem(settings) {
     ) {
         val hookProperties = HookProperties.fromItemStack(stack)
         if (hookProperties != null) {
-            tooltip.add(Text.translatable("$translationKey.tip"))
+            if (stack.get(DataComponentTypes.ITEM_NAME) == null) {
+                tooltip.add(Text.translatable("$translationKey.tip"))
+            }
             if (hasShiftDown()) {
                 val fireKeyName = Text.keybind("key.hooked.fire").formatted(Formatting.BOLD)
                 tooltip.addAll(hookProperties.behavior.controlsHelpText(hookProperties, fireKeyName))
