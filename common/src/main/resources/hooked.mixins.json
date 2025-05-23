@@ -1,0 +1,24 @@
+{
+  "minVersion": "0.8.2",
+  "required": true,
+  "package": "dev.thecodewarrior.hooked.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "EntityAccessMixin",
+    "EntityTrackerEntryMixin",
+    "FloatingTicksAccess",
+    "PlayerEntityMixin",
+    "PlayerManagerMixin",
+    "ServerPlayerEntityMixin",
+    "ServerPlayNetworkHandlerMixin"
+  ],
+  "client": [
+    "AbstractClientPlayerEntityMixin",
+    "ClientPlayerEntityMixin",
+    "MixinInGameHud",
+    "OtherClientPlayerEntityMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

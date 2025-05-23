@@ -1,122 +1,86 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
-    id 'fabric-loom' version '1.9.2'
-    id 'maven-publish'
-    id 'eclipse'
-    id 'idea'
-    id 'java'
-    id 'org.jetbrains.kotlin.jvm' version '2.1.0'
+    id 'dev.architectury.loom' version '1.7-SNAPSHOT' apply false
+    id 'architectury-plugin' version '3.4-SNAPSHOT'
+    id 'com.gradleup.shadow' version '8.3.6' apply false
+
+    id 'org.jetbrains.kotlin.jvm' version '2.0.21' apply false
+    id 'com.google.devtools.ksp' version '2.0.21-1.0.28' apply false
 }
 
-sourceCompatibility = JavaVersion.VERSION_21
-targetCompatibility = JavaVersion.VERSION_21
-
-archivesBaseName = project.archivesBaseName
-version = project.mod_version
-group = 'com.teamwizardry.wizardry'
-
-repositories {
-    mavenCentral()
-    maven {
-        name = "TerraformersMC"
-        url = "https://maven.terraformersmc.com/"
-    }
-    maven {
-        name = "Ladysnake Libs"
-        url = "https://maven.ladysnake.org/releases"
-    }
-    maven { url = "https://s01.oss.sonatype.org/content/repositories/snapshots" }
-    maven { url = "https://cursemaven.com" }
-    mavenLocal()
+architectury {
+    minecraft = project.minecraft_version
+    compileOnly()
 }
 
-dependencies {
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-    modCompileOnly "curse.maven:irisshaders-455508:6213635" // Iris v1.8.8
-
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-    modImplementation "net.fabricmc:fabric-language-kotlin:${project.fabric_kotlin_version}"
-    modImplementation "dev.emi:trinkets:${project.trinkets_version}"
-    modImplementation "org.ladysnake.cardinal-components-api:cardinal-components-base:${project.cardinal_components_version}"
-    modImplementation "org.ladysnake.cardinal-components-api:cardinal-components-entity:${project.cardinal_components_version}"
-    include "org.ladysnake.cardinal-components-api:cardinal-components-base:${project.cardinal_components_version}"
-    include "org.ladysnake.cardinal-components-api:cardinal-components-entity:${project.cardinal_components_version}"
-
-    [
-            "com.teamwizardry.librarianlib:mosaic:${liblib_version}",
-            "com.teamwizardry.librarianlib:glitter:${liblib_version}",
-            "com.teamwizardry.librarianlib:etcetera:${liblib_version}"
-    ].each {
-        modImplementation(it)
-    }
+allprojects {
+    group = rootProject.maven_group
+    version = rootProject.mod_version
 }
 
-loom {
-    mixin.defaultRefmapName.set("hooked.refmap.json")
+subprojects {
+    apply plugin: 'dev.architectury.loom'
+    apply plugin: 'architectury-plugin'
 
-    runConfigs.configureEach {
-        vmArg("-javaagent:$buildDir/agent/mixin.jar")
-    }
-}
+    apply plugin: 'org.jetbrains.kotlin.jvm'
+    apply plugin: 'com.google.devtools.ksp'
 
-processResources {
-    inputs.property "version", project.version
-
-    filesMatching("fabric.mod.json") {
-        expand "version": project.version
-    }
-}
-
-tasks.withType(JavaCompile).configureEach {
-    it.options.encoding = "UTF-8"
-    it.options.release = 21
-}
-
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-    it.kotlinOptions {
-        jvmTarget = 21
-        javaParameters = true
-        freeCompilerArgs = ['-Xjvm-default=all']
-    }
-}
-
-java {
-    withSourcesJar()
-}
-
-jar {
-    from("LICENSE") {
-        rename { "${it}_${project.archivesBaseName}" }
-    }
-}
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            artifact(remapJar) {
-                builtBy remapJar
-            }
-            artifact(sourcesJar) {
-                builtBy remapSourcesJar
-            }
-        }
+    base {
+        // Set up a suffixed format for the mod jar names, e.g. `example-fabric`.
+        archivesName = "$rootProject.archives_name-$project.name"
     }
 
     repositories {
-
+        mavenCentral()
+        maven { url = "https://maven.terraformersmc.com/" }
+        maven { url = "https://maven.ladysnake.org/releases" }
+        maven { url = "https://s01.oss.sonatype.org/content/repositories/snapshots" }
+        maven { url = "https://cursemaven.com" }
+        mavenLocal()
     }
-}
 
-tasks.register("copyMixinAgent", Sync) {
-    from(configurations.runtimeClasspath)
-    include("sponge-mixin-*")
-    into(file("$buildDir/agent"))
-    eachFile {
-        name = "mixin.jar"
+    dependencies {
+        minecraft "net.minecraft:minecraft:$rootProject.minecraft_version"
+        mappings loom.layered {
+            it.mappings("net.fabricmc:yarn:$rootProject.yarn_mappings:v2")
+            it.mappings("dev.architectury:yarn-mappings-patch-neoforge:$rootProject.yarn_mappings_patch_neoforge_version")
+        }
+
+        ksp "dev.zacsweers.autoservice:auto-service-ksp:1.2.0"
+        implementation "com.google.auto.service:auto-service-annotations:1.1.0"
     }
-}
 
-processResources {
-    dependsOn(copyMixinAgent)
+    java {
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        it.options.release = 21
+    }
+
+    tasks.withType(KotlinCompile.class).configureEach {
+        compilerOptions {
+            languageVersion = KotlinVersion.KOTLIN_2_0
+            apiVersion = KotlinVersion.KOTLIN_2_0
+
+            jvmTarget = JvmTarget.JVM_21
+            javaParameters = true
+            optIn.addAll(
+                    "kotlin.ExperimentalStdlibApi",
+                    "kotlin.ExperimentalUnsignedTypes",
+                    "kotlin.contracts.ExperimentalContracts",
+            )
+            freeCompilerArgs.addAll(
+                    "-Xjvm-default=all"
+            )
+        }
+    }
+
+    ksp {
+        useKsp2 = true
+    }
 }

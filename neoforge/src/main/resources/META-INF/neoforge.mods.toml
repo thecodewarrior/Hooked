@@ -1,0 +1,41 @@
+modLoader="kotlinforforge"
+loaderVersion="[4,)"
+
+license="BSD 2-Clause"
+issueTrackerURL="https://github.com/thecodewarrior/Hooked/issues"
+
+[[mods]]
+modId="hooked"
+version="${file.jarVersion}"
+displayName="Hooked"
+logoFile="hooked_banner.png"
+credits="Much thanks to QuickHull3d"
+authors="thecodewarrior"
+description='''
+Hooked: Grappling hooks done simple, natural, and useful.
+'''
+
+[[dependencies.hooked]]
+modId="forge"
+mandatory=true
+versionRange="[35,)"
+ordering="NONE"
+side="BOTH"
+[[dependencies.hooked]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.16.4,1.17)"
+ordering="NONE"
+side="BOTH"
+[[dependencies.hooked]]
+modId="librarianlib"
+mandatory=true
+versionRange="[5.0.0a3]"
+ordering="NONE"
+side="BOTH"
+[[dependencies.hooked]]
+modId="curios"
+mandatory=true
+versionRange="[1.16.4-4.0.3.5,)"
+ordering="NONE"
+side="BOTH"

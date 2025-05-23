@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "id": "hooked",
+  "version": "${version}",
+
+  "name": "Hooked",
+  "description": "Hooked: Grappling hooks done simple, natural, and useful.",
+  "authors": [
+    "thecodewarrior"
+  ],
+  "contact": {
+    "homepage": "https://curseforge.com/minecraft/mc-mods/hooked",
+    "sources": "https://github.com/thecodewarrior/Hooked",
+    "issues": "https://github.com/thecodewarrior/Hooked/issues",
+    "discord": "https://discord.gg/wsk2PBR"
+  },
+
+  "license": "",
+  "icon": "hooked_logo.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      {
+        "adapter": "kotlin",
+        "value": "dev.thecodewarrior.hooked.fabric.HookedFabricCommon"
+      }
+    ],
+    "client": [
+      {
+        "adapter": "kotlin",
+        "value": "dev.thecodewarrior.hooked.fabric.HookedFabricClient"
+      }
+    ],
+    "server": [
+      {
+        "adapter": "kotlin",
+        "value": "dev.thecodewarrior.hooked.fabric.HookedFabricServer"
+      }
+    ],
+    "cardinal-components": [
+      {
+        "adapter": "kotlin",
+        "value": "dev.thecodewarrior.hooked.fabric.HookedCardinalComponents"
+      }
+    ]
+  },
+  "mixins": [
+    "hooked.mixins.json"
+  ],
+
+  "depends": {
+    "fabric-api": ">=0.115.3+1.21.1",
+    "fabric-language-kotlin": ">=1.12.3+kotlin.2.0.21",
+    "minecraft": "1.21.x",
+    "liblib_mosaic": ">=5.0.0-alpha.14",
+    "liblib_glitter": ">=5.0.0-alpha.14",
+    "liblib_etcetera": ">=5.0.0-alpha.14",
+    "trinkets": "3.10.0",
+    "fabric-key-binding-api-v1": "*"
+  },
+  "custom": {
+    "cardinal-components": [
+      "hooked:hook_data"
+    ]
+  }
+}

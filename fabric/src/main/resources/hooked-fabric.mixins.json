@@ -1,0 +1,14 @@
+{
+  "minVersion": "0.8.2",
+  "required": true,
+  "package": "dev.thecodewarrior.hooked.fabric.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+  ],
+  "client": [
+    "IrisShadowRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
