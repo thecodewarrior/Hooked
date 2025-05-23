@@ -14,6 +14,7 @@ import net.minecraft.util.math.Box
 import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.Vec3d
 import kotlin.math.acos
+import kotlin.math.max
 import kotlin.math.sqrt
 
 open class BasicHookPlayerController(val player: PlayerEntity, val behavior: BasicHookBehavior): HookPlayerController() {
@@ -110,7 +111,7 @@ open class BasicHookPlayerController(val player: PlayerEntity, val behavior: Bas
         if(jumpTarget != null) {
             // the height relative to the player's current position
             val jumpHeight = jumpTarget.maxOf { it.minY } - player.y
-            val gravity = 0.08
+            val gravity = max(0.0, player.finalGravity)
 
             player.jump()
             if(jumpHeight > 0) {
