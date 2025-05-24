@@ -7,8 +7,5 @@
   ],
   "client": [
     "IrisShadowRendererMixin"
-  ],
-  "injectors": {
-    "defaultRequire": 1
-  }
+  ]
 }

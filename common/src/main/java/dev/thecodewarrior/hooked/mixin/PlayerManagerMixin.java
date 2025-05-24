@@ -24,7 +24,8 @@ public class PlayerManagerMixin {
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/server/PlayerManager;sendStatusEffects(Lnet/minecraft/server/network/ServerPlayerEntity;)V"
-            )
+            ),
+            require = 1
     )
     private void onPlayerLogIn(ClientConnection connection, ServerPlayerEntity player, ConnectedClientData clientData, CallbackInfo ci) {
         NetworkManager.sendToPlayer(player, GameRuleSyncS2CPacket.from(player.getWorld().getGameRules()));
@@ -33,7 +34,8 @@ public class PlayerManagerMixin {
 
     @Inject(
             method = "respawnPlayer",
-            at = @At("RETURN")
+            at = @At("RETURN"),
+            require = 1
     )
     private void respawnPlayer(ServerPlayerEntity player, boolean alive, Entity.RemovalReason removalReason, CallbackInfoReturnable<ServerPlayerEntity> cir) {
         ServerHookProcessor.INSTANCE.doInitialSync(cir.getReturnValue(), cir.getReturnValue());

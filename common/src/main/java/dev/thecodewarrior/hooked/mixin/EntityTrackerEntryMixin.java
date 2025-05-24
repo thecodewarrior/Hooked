@@ -20,7 +20,7 @@ public abstract class EntityTrackerEntryMixin {
     @Final
     private Entity entity;
 
-    @Inject(method = "startTracking", at = @At("RETURN"))
+    @Inject(method = "startTracking", at = @At("RETURN"), require = 1)
     private void onStartedTracking(ServerPlayerEntity player, CallbackInfo ci) {
         if (this.entity instanceof ServerPlayerEntity) {
             ServerHookProcessor.INSTANCE.doInitialSync(player, (ServerPlayerEntity) this.entity);

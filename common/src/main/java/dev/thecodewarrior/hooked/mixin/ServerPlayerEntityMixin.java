@@ -41,7 +41,7 @@ public abstract class ServerPlayerEntityMixin implements PlayerMixinBridge {
      * neoforge has no equivalent to {@code ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD}, so we have to mix
      * in ourselves
      */
-    @Inject(method = "worldChanged(Lnet/minecraft/server/world/ServerWorld;)V", at = @At("TAIL"))
+    @Inject(method = "worldChanged(Lnet/minecraft/server/world/ServerWorld;)V", at = @At("TAIL"), require = 1)
     private void afterWorldChanged(ServerWorld origin, CallbackInfo ci) {
         ServerHookProcessor.INSTANCE.onPlayerWorldChanged((ServerPlayerEntity) (Object) this);
     }

@@ -17,8 +17,5 @@
     "ClientPlayerEntityMixin",
     "MixinInGameHud",
     "OtherClientPlayerEntityMixin"
-  ],
-  "injectors": {
-    "defaultRequire": 1
-  }
+  ]
 }
