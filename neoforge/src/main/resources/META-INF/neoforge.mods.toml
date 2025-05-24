@@ -1,12 +1,12 @@
-modLoader="kotlinforforge"
-loaderVersion="[4,)"
+modLoader="javafml"
+loaderVersion="[1,)"
 
 license="BSD 2-Clause"
 issueTrackerURL="https://github.com/thecodewarrior/Hooked/issues"
 
 [[mods]]
 modId="hooked"
-version="${file.jarVersion}"
+version="${version}"
 displayName="Hooked"
 logoFile="hooked_banner.png"
 credits="Much thanks to QuickHull3d"
@@ -15,27 +15,61 @@ description='''
 Hooked: Grappling hooks done simple, natural, and useful.
 '''
 
+[[mixins]]
+config = "hooked.mixins.json"
+
 [[dependencies.hooked]]
-modId="forge"
+modId = "neoforge"
+type = "required"
+versionRange = "[21.1,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.hooked]]
+modId = "minecraft"
+type = "required"
+versionRange = "[1.21.1,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.hooked]]
+modId = "architectury"
+type = "required"
+versionRange = "[13.0.8,)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.hooked]]
+modId="kotlinforforge"
 mandatory=true
-versionRange="[35,)"
+versionRange="[5.4.0,)"
 ordering="NONE"
 side="BOTH"
+
 [[dependencies.hooked]]
-modId="minecraft"
+modId="liblib_mosaic"
 mandatory=true
-versionRange="[1.16.4,1.17)"
+versionRange="[5.0.0-alpha.14,)"
 ordering="NONE"
 side="BOTH"
+
 [[dependencies.hooked]]
-modId="librarianlib"
+modId="liblib_glitter"
 mandatory=true
-versionRange="[5.0.0a3]"
+versionRange="[5.0.0-alpha.14,)"
 ordering="NONE"
 side="BOTH"
+
+[[dependencies.hooked]]
+modId="liblib_etcetera"
+mandatory=true
+versionRange="[5.0.0-alpha.14,)"
+ordering="NONE"
+side="BOTH"
+
 [[dependencies.hooked]]
 modId="curios"
 mandatory=true
-versionRange="[1.16.4-4.0.3.5,)"
+versionRange="[9.5.1+1.21.1,)"
 ordering="NONE"
 side="BOTH"

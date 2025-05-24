@@ -36,6 +36,21 @@ dependencies {
 
     modImplementation "dev.architectury:architectury-neoforge:$project.architectury_api_version"
 
+    implementation("thedarkcolour:kotlinforforge-neoforge:$project.kotlin_for_forge_version") {
+        exclude(group: "net.neoforged")
+        exclude(group: "net.neoforged.fancymodloader")
+    }
+
+    modImplementation "com.teamwizardry.librarianlib:mosaic-neoforge:${liblib_version}"
+    modImplementation "com.teamwizardry.librarianlib:glitter-neoforge:${liblib_version}"
+    modImplementation "com.teamwizardry.librarianlib:etcetera-neoforge:${liblib_version}"
+
+    // We need this because curios adds `remap = false` to its mixin annotations, which means architectury (rightly)
+    // won't remap them to yarn mappings. I built a custom jar with that flag removed, and it works.
+    modImplementation files("curios-neoforge-9.5.1+1.21.1.jar")
+    //modCompileOnly "top.theillusivec4.curios:curios-neoforge:${curios_version}:api"
+    //modRuntimeOnly "top.theillusivec4.curios:curios-neoforge:${curios_version}"
+
     common(project(path: ':common', configuration: 'namedElements')) { transitive false }
     shadowBundle project(path: ':common', configuration: 'transformProductionNeoForge')
 }

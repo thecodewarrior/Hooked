@@ -1,6 +1,7 @@
 package dev.thecodewarrior.hooked
 
 import com.teamwizardry.librarianlib.glitter.ParticleSystemManager
+import dev.architectury.registry.client.keymappings.KeyMappingRegistry
 import dev.thecodewarrior.hooked.client.HookRenderManager
 import dev.thecodewarrior.hooked.client.Keybinds
 import dev.thecodewarrior.hooked.client.glitter.ChainShatterParticleSpawner
@@ -25,8 +26,7 @@ object HookedClient {
     }
 
     private fun registerHookRenderers() {
-        HookedPlatformClient.instance.registerResourceReloader(
-            ResourceType.CLIENT_RESOURCES,
+        HookedPlatformClient.instance.registerClientResourceReloader(
             HookModelLoader,
             Identifier.of(Hooked.MOD_ID, "hook_model_loader")
         )
@@ -37,7 +37,7 @@ object HookedClient {
     }
 
     private fun registerKeybinds() {
-        HookedPlatformClient.instance.registerKeybind { Keybinds.FIRE }
+        KeyMappingRegistry.register(Keybinds.FIRE)
         HookedPlatformClient.instance.registerKeybindTickEvent(Keybinds::tick)
     }
 

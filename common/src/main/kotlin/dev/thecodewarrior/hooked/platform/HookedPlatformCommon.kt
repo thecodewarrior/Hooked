@@ -6,6 +6,7 @@ import dev.thecodewarrior.hooked.item.HookProperties
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.Item
+import net.minecraft.network.packet.CustomPayload
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.world.GameRules
@@ -31,11 +32,7 @@ interface HookedPlatformCommon {
 
     fun getHookedPlayerData(player: PlayerEntity): HookedPlayerData
 
-    /**
-     * Returns the players tracking the given entity. If the target is a player, the returned list will not include
-     * that player.
-     */
-    fun getTrackingPlayers(target: Entity): List<ServerPlayerEntity>
+    fun sendToPlayersTrackingEntity(target: Entity, packets: List<CustomPayload>)
     /* endregion == Runtime stuff == */
 
     companion object {

@@ -174,10 +174,7 @@ object ServerHookProcessor: CommonHookProcessor() {
         }
 
         if (sendToOthers.isNotEmpty()) {
-            val tracking = HookedPlatformCommon.instance.getTrackingPlayers(player)
-            for (packet in sendToOthers) {
-                NetworkManager.sendToPlayers(tracking, packet)
-            }
+            HookedPlatformCommon.instance.sendToPlayersTrackingEntity(player, sendToOthers)
         }
 
         data.syncStatus.forceFullSyncToClient = false

@@ -39,6 +39,8 @@ subprojects {
         maven { url = "https://maven.ladysnake.org/releases" }
         maven { url = "https://s01.oss.sonatype.org/content/repositories/snapshots" }
         maven { url = "https://cursemaven.com" }
+        maven { url = 'https://thedarkcolour.github.io/KotlinForForge/' }
+        maven { url = "https://maven.theillusivec4.top/" } // curios
         mavenLocal()
     }
 

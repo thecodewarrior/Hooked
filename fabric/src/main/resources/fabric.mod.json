@@ -46,7 +46,8 @@
     ]
   },
   "mixins": [
-    "hooked.mixins.json"
+    "hooked.mixins.json",
+    "hooked-fabric.mixins.json"
   ],
 
   "depends": {
