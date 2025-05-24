@@ -1,6 +1,7 @@
 package dev.thecodewarrior.hooked.fabric.platform
 
 import com.google.auto.service.AutoService
+import dev.architectury.networking.NetworkManager
 import dev.emi.trinkets.api.TrinketsApi
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.fabric.HookItemFabric
@@ -56,7 +57,7 @@ class HookedPlatformCommonFabric : HookedPlatformCommon {
         for (player in PlayerLookup.tracking(target)) {
             if (player != target) {
                 for (packet in packets) {
-                    ServerPlayNetworking.send(player, packet)
+                    NetworkManager.sendToPlayer(player, packet)
                 }
             }
         }

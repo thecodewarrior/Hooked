@@ -1,7 +1,8 @@
 package dev.thecodewarrior.hooked.neoforge.platform
 
 import com.google.auto.service.AutoService
-import dev.thecodewarrior.hooked.HookItems
+import dev.architectury.networking.NetworkManager
+import dev.architectury.networking.transformers.PacketSink
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.item.HookProperties
 import dev.thecodewarrior.hooked.neoforge.HookItemNeoForge
@@ -10,11 +11,10 @@ import dev.thecodewarrior.hooked.platform.HookedPlatformCommon
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
 import net.minecraft.network.packet.CustomPayload
 import net.minecraft.server.MinecraftServer
+import net.minecraft.server.world.ServerChunkManager
 import net.minecraft.world.GameRules
-import net.neoforged.neoforge.network.PacketDistributor
 import top.theillusivec4.curios.api.CuriosApi
 import kotlin.jvm.optionals.getOrNull
 
@@ -53,11 +53,15 @@ class HookedPlatformCommonNeoForge : HookedPlatformCommon {
     }
 
     override fun sendToPlayersTrackingEntity(target: Entity, packets: List<CustomPayload>) {
-        if (!packets.isEmpty()) {
-            PacketDistributor.sendToPlayersTrackingEntity(
-                target,
-                packets[0],
-                *packets.subList(1, packets.size).toTypedArray()
+        val chunkManager = target.world.chunkManager as? ServerChunkManager ?: return
+        for (packet in packets) {
+            // Architectury does its own packet wrapping, so we can't use
+            // `PacketDistributor.sendToPlayersTrackingEntity` directly
+            NetworkManager.collectPackets(
+                { chunkManager.sendToOtherNearbyPlayers(target, it) },
+                NetworkManager.Side.S2C,
+                packet,
+                target.world.registryManager
             )
         }
     }
