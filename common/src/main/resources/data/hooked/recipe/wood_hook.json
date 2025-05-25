@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "TTP",
+    " ST",
+    "S T"
+  ],
+  "key": {
+    "T": {"item": "minecraft:stick"},
+    "P": {"item": "minecraft:wooden_pickaxe"},
+    "S": {"item": "minecraft:string"}
+  },
+  "result": {
+    "id": "hooked:wood_hook",
+    "count": 1
+  }
+}

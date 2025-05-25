@@ -1,0 +1,14 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": ["hooked:wood_hook"]
+  },
+  "criteria": {
+    "has_string": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [{"item": "minecraft:string"}]
+      }
+    }
+  }
+}

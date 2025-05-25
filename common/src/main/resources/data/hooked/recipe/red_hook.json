@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "PDB",
+    " HD",
+    "C P"
+  ],
+  "key": {
+    "P": {"item": "minecraft:piston"},
+    "D": {"item": "minecraft:redstone"},
+    "B": {"item": "minecraft:redstone_block"},
+    "H": {"item": "hooked:diamond_hook"},
+    "C": {"item": "minecraft:comparator"}
+  },
+  "result": {
+    "id": "hooked:red_hook",
+    "count": 1
+  }
+}

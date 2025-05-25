@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    " DD",
+    " HD",
+    "D  "
+  ],
+  "key": {
+    "D": {"item": "minecraft:diamond"},
+    "H": {"item": "hooked:iron_hook"}
+  },
+  "result": {
+    "id": "hooked:diamond_hook",
+    "count": 1
+  }
+}

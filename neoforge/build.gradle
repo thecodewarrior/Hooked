@@ -58,6 +58,11 @@ dependencies {
 processResources {
     inputs.property 'version', project.version
 
+    // minecraft won't load recipes from the common module
+    from(project(":common").files("src/main/resources/data")) {
+        into("data")
+    }
+
     filesMatching('META-INF/neoforge.mods.toml') {
         expand version: project.version
     }
