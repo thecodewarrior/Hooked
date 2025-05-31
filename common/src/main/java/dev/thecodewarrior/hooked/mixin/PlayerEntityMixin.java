@@ -1,20 +1,13 @@
 package dev.thecodewarrior.hooked.mixin;
 
-import dev.thecodewarrior.hooked.Hooked;
 import dev.thecodewarrior.hooked.bridge.PlayerMixinBridge;
 import dev.thecodewarrior.hooked.hook.HookActiveReason;
 import dev.thecodewarrior.hooked.hook.HookProcessor;
 import dev.thecodewarrior.hooked.hook.NullHookProcessor;
-import net.minecraft.block.BlockState;
-import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.registry.tag.FluidTags;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
@@ -47,26 +40,6 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerMi
     private void hooked$clipAtLedgeHookedMixin(CallbackInfoReturnable<Boolean> cir) {
         if(this.isHookActive(HookActiveReason.DISABLE_CLIP_AT_LEDGE)) {
             cir.setReturnValue(false);
-        }
-    }
-
-    @Inject(method = "getBlockBreakingSpeed", at = @At("RETURN"), cancellable = true)
-    private void hooked$fixBreakSpeed(BlockState block, CallbackInfoReturnable<Float> cir) {
-        if(this.isHookActive(HookActiveReason.BREAK_SPEED)) {
-            var f = cir.getReturnValueF();
-
-            if (this.isSubmergedIn(FluidTags.WATER)) {
-                var submergedSpeed = this.getAttributeInstance(EntityAttributes.PLAYER_SUBMERGED_MINING_SPEED).getValue();
-                if (submergedSpeed > 0.0) {
-                    f /= (float) submergedSpeed;
-                }
-            }
-
-            if (!this.isOnGround()) {
-                f *= 5.0F;
-            }
-
-            cir.setReturnValue(f);
         }
     }
 

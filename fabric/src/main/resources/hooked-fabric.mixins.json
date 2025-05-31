@@ -4,6 +4,7 @@
   "package": "dev.thecodewarrior.hooked.fabric.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
+    "PlayerEntityMixin"
   ],
   "client": [
     "IrisShadowRendererMixin"
