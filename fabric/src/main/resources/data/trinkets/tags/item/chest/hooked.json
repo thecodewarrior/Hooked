@@ -5,6 +5,7 @@
     "hooked:iron_hook",
     "hooked:diamond_hook",
     "hooked:ender_hook",
-    "hooked:red_hook"
+    "hooked:red_hook",
+    "hooked:custom_hook"
   ]
 }

@@ -64,6 +64,15 @@ object HookItems {
         behavior = FlightHookBehavior(wireframeColor = Vector3f(1f, 0f, 0f)),
         playerGap = 2.5,
     )
+    val CUSTOM_HOOK = createItem(
+        Identifier.of(Hooked.MOD_ID, "custom_hook"),
+        count = 4,
+        range = 24.0,
+        speed = 1.2,
+        cooldown = 8,
+        behavior = BasicHookBehavior(pullStrength = 1.0),
+        addToCreativeTab = false
+    )
 
     private fun createItem(
         id: Identifier,
@@ -75,9 +84,13 @@ object HookItems {
         playerGap: Double = 0.0,
         particleColorMin: Optional<Vector3f> = Optional.empty(),
         particleColorMax: Optional<Vector3f> = Optional.empty(),
+        addToCreativeTab: Boolean = true
     ): RegistrySupplier<Item> {
         val settings = Item.Settings().maxCount(1)
-        settings.`arch$tab`(itemGroup)
+
+        if (addToCreativeTab) {
+            settings.`arch$tab`(itemGroup)
+        }
 
         settings.component(ItemComponents.HOOK_COUNT, count)
         settings.component(ItemComponents.HOOK_RANGE, range)
