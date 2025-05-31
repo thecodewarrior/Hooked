@@ -7,8 +7,9 @@
     "has_iron_hook": {
       "trigger": "minecraft:inventory_changed",
       "conditions": {
-        "items": [{"item": "hooked:iron_hook"}]
+        "items": [{"items": "hooked:iron_hook"}]
       }
     }
-  }
+  },
+  "requirements": [["has_iron_hook"]]
 }

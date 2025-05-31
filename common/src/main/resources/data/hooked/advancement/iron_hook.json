@@ -4,11 +4,12 @@
     "recipes": ["hooked:iron_hook"]
   },
   "criteria": {
-    "has_iron": {
+    "has_pickaxe": {
       "trigger": "minecraft:inventory_changed",
       "conditions": {
-        "items": [{"item": "minecraft:iron_pickaxe"}]
+        "items": [{"items": "minecraft:iron_pickaxe"}]
       }
     }
-  }
+  },
+  "requirements": [["has_pickaxe"]]
 }

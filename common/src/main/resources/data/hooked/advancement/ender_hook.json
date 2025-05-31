@@ -7,8 +7,9 @@
     "has_diamond_hook": {
       "trigger": "minecraft:inventory_changed",
       "conditions": {
-        "items": [{"item": "hooked:diamond_hook"}]
+        "items": [{"items": "hooked:diamond_hook"}]
       }
     }
-  }
+  },
+  "requirements": [["has_diamond_hook"]]
 }
