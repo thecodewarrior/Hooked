@@ -29,5 +29,6 @@
   "key.hooked.fire": "Fire Hook",
   "stat.hooked.hook_one_cm": "Distance by Grappling Hook",
   "stat.hooked.hooks_fired": "Grappling Hooks Fired",
-  "trinkets.slot.chest.hooked": "Grappling Hook"
+  "trinkets.slot.chest.hooked": "Grappling Hook",
+  "curios.identifier.hooked_hook": "Grappling Hook"
 }
