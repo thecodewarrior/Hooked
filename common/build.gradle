@@ -2,6 +2,11 @@ architectury {
     common project.enabled_platforms.split(',')
 }
 
+// the run configs hard-code the `build/devlibs/...-dev.jar` path, which includes the project version.
+// (see `fabric/.gradle/architectury/.properties`)
+// This file is only re-generated when closing and opening the project, so bumping the version breaks builds.
+project.version = "0.0.0"
+
 dependencies {
     modImplementation "dev.architectury:architectury:$project.architectury_api_version"
 
