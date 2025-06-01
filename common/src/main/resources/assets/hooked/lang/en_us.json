@@ -14,6 +14,8 @@
   "hooked.subtitle.hook_hit": "Grappling hook hits",
   "hooked.subtitle.hook_miss": "Grappling hook misses",
   "hooked.subtitle.retract_hook": "Grappling hook retracts",
+  "item.hooked.custom_hook": "Custom Hook",
+  "item.hooked.custom_hook.tip": "Blank template for data packs",
   "item.hooked.diamond_hook": "Diamond Hook",
   "item.hooked.diamond_hook.tip": "Plenty of hooks, plenty of speed",
   "item.hooked.ender_hook": "Ender Hook",
