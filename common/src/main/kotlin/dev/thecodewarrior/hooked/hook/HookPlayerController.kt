@@ -6,6 +6,7 @@ import com.teamwizardry.librarianlib.etcetera.Raycaster
 import com.teamwizardry.librarianlib.math.minus
 import com.teamwizardry.librarianlib.math.plus
 import com.teamwizardry.librarianlib.math.times
+import dev.thecodewarrior.hooked.HookGameEvents
 import dev.thecodewarrior.hooked.HookSounds
 import dev.thecodewarrior.hooked.HookTags
 import dev.thecodewarrior.hooked.client.glitter.ChainShatterParticleSpawner
@@ -121,6 +122,7 @@ abstract class HookPlayerController {
      */
     open fun onHookHit(delegate: HookControllerDelegate, hook: Hook) {
         delegate.playWorldSound(Hook.hitSound(delegate.world, hook.block), hook.pos, 1f, 1f)
+        delegate.world.emitGameEvent(delegate.player, HookGameEvents.HOOK_LAND, hook.pos)
         delegate.playFeedbackSound(HookSounds.HOOK_HIT, 1f, 1f)
         spawnChainShatterParticleEffect(delegate, hook)
     }

@@ -2,7 +2,6 @@ package dev.thecodewarrior.hooked.neoforge.platform
 
 import com.google.auto.service.AutoService
 import dev.architectury.networking.NetworkManager
-import dev.architectury.networking.transformers.PacketSink
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.item.HookProperties
 import dev.thecodewarrior.hooked.neoforge.HookItemNeoForge
@@ -12,9 +11,13 @@ import net.minecraft.entity.Entity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.Item
 import net.minecraft.network.packet.CustomPayload
+import net.minecraft.registry.RegistryKey
+import net.minecraft.registry.entry.RegistryEntry
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.world.ServerChunkManager
+import net.minecraft.util.Identifier
 import net.minecraft.world.GameRules
+import net.minecraft.world.event.GameEvent
 import top.theillusivec4.curios.api.CuriosApi
 import kotlin.jvm.optionals.getOrNull
 
@@ -38,6 +41,14 @@ class HookedPlatformCommonNeoForge : HookedPlatformCommon {
         changedCallback: (MinecraftServer, GameRules.BooleanRule) -> Unit
     ): GameRules.Type<GameRules.BooleanRule> {
         return GameRules.BooleanRule.create(defaultValue, changedCallback)
+    }
+
+    override fun registerVibrationFrequencyFabric(event: RegistryKey<GameEvent>, frequency: Int) {
+        // nop
+    }
+
+    override fun registerGameEvent(id: Identifier, supplier: () -> GameEvent): RegistryEntry<GameEvent> {
+        return HookedNeoForgeCommon.GAME_EVENTS.register(id.path, supplier)
     }
 
     override fun getEquippedHook(player: PlayerEntity): HookProperties? {

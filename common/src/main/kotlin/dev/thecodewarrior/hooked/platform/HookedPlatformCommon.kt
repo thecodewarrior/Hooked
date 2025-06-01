@@ -7,9 +7,12 @@ import net.minecraft.entity.Entity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.Item
 import net.minecraft.network.packet.CustomPayload
+import net.minecraft.registry.RegistryKey
+import net.minecraft.registry.entry.RegistryEntry
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.util.Identifier
 import net.minecraft.world.GameRules
+import net.minecraft.world.event.GameEvent
 
 interface HookedPlatformCommon {
     /* region == Registries and stuff == */
@@ -25,6 +28,18 @@ interface HookedPlatformCommon {
         defaultValue: Boolean,
         changedCallback: (MinecraftServer, GameRules.BooleanRule) -> Unit
     ): GameRules.Type<GameRules.BooleanRule>
+
+    /**
+     * Register the vibration frequency in fabric. NeoForge uses a data map at
+     * `data/neoforge/data_maps/game_event/vibration_frequencies.json`
+     */
+    fun registerVibrationFrequencyFabric(event: RegistryKey<GameEvent>, frequency: Int)
+
+    /**
+     * We need this because architectury's registrar registry entry wrapper doesn't forward neoforge's
+     * `RegistryEntry.getData()` interface extension. That method is required to get the vibration frequency
+     */
+    fun registerGameEvent(id: Identifier, supplier: () -> GameEvent): RegistryEntry<GameEvent>
     /* endregion == Registries and stuff == */
 
     /* region == Runtime stuff == */

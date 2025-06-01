@@ -13,6 +13,7 @@ object HookedCommon {
         HookSounds
         HookStats
         HookGameRules
+        HookGameEvents
         HookTags
         HookCommonNetworking.registerNetworking()
     }

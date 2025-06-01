@@ -6,7 +6,9 @@ import dev.thecodewarrior.hooked.bridge.bridge
 import dev.thecodewarrior.hooked.hook.HookActiveReason
 import net.minecraft.entity.attribute.EntityAttributes
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.registry.Registries
 import net.minecraft.registry.tag.FluidTags
+import net.minecraft.world.event.GameEvent
 import net.neoforged.bus.api.EventPriority
 import net.neoforged.bus.api.IEventBus
 import net.neoforged.bus.api.SubscribeEvent
@@ -24,6 +26,7 @@ class HookedNeoForgeCommon(modEventBus: IEventBus) {
     init {
         HookedCommon.init()
         ATTACHMENT_TYPES.register(modEventBus)
+        GAME_EVENTS.register(modEventBus)
         NeoForge.EVENT_BUS.register(this)
     }
 
@@ -47,6 +50,8 @@ class HookedNeoForgeCommon(modEventBus: IEventBus) {
     companion object {
         val ATTACHMENT_TYPES: DeferredRegister<AttachmentType<*>> =
             DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, Hooked.MOD_ID)
+        val GAME_EVENTS: DeferredRegister<GameEvent> =
+            DeferredRegister.create(Registries.GAME_EVENT, Hooked.MOD_ID)
 
         val HOOK_DATA: Supplier<AttachmentType<HookedPlayerDataAttachment>> =
             ATTACHMENT_TYPES.register("hook_data", Supplier {
