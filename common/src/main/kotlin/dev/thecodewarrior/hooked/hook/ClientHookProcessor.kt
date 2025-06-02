@@ -8,7 +8,7 @@ import dev.thecodewarrior.hooked.bridge.hookData
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.hooks.BasicHookPlayerController
 import dev.thecodewarrior.hooked.item.HookProperties
-import dev.thecodewarrior.hooked.network.FireHookC2SPacket
+import dev.thecodewarrior.hooked.network.ClientHookSyncC2SPacket
 import dev.thecodewarrior.hooked.network.HookJumpC2SPacket
 import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.entity.player.PlayerEntity
@@ -34,13 +34,35 @@ object ClientHookProcessor: CommonHookProcessor() {
         override val world: World get() = data.player.world
         override val hooks: Collection<Hook> get() = data.hooks.values
 
+        override val isSelfClient: Boolean
+            get() = data.player == Client.player
+
         // Note: in the interest of being resistant server-side lag, cooldowns are entirely on the client side.
         override val cooldown: Int get() = cooldownCounter
         override fun triggerCooldown() {
             cooldownCounter = properties.cooldown
         }
 
-        override fun markDirty(hook: Hook) {}
+        override fun fireHook(pos: Vec3d, pitch: Float, yaw: Float, modifyFn: (Hook) -> Unit) {
+            val hook = Hook(
+                data.nextId(), data.properties.hookModel.hookLength,
+                pos, pitch, yaw,
+                Hook.State.EXTENDING,
+                BlockPos(0, 0, 0),
+                0
+            )
+            hook.firstTick = true
+            data.hooks[hook.id] = hook
+            data.syncStatus.syncToServer(hook)
+            modifyFn(hook)
+        }
+
+        override fun syncHook(hook: Hook, sendToServer: Boolean, sendToClient: Boolean, sendToOthers: Boolean) {
+            if (sendToServer) {
+                data.syncStatus.syncToServer(hook)
+            }
+        }
+
         override fun forceFullSyncToClient() {}
         override fun forceFullSyncToOthers() {}
 
@@ -77,25 +99,7 @@ object ClientHookProcessor: CommonHookProcessor() {
         }
         if (data.maxHooks > 0 && Client.minecraft.interactionManager?.currentGameMode != GameMode.SPECTATOR) {
             val ids = arrayListOf<Int>()
-            val shouldSend = data.controller.fireHooks(Context(data), pos, pitch, yaw, sneaking) { hookPos, hookPitch, hookYaw ->
-                val id = data.nextId()
-                ids.add(id)
-                val hook = Hook(
-                    id, data.properties.hookModel.hookLength,
-                    hookPos, hookPitch, hookYaw,
-                    Hook.State.EXTENDING,
-                    BlockPos(0, 0, 0),
-                    0
-                )
-                hook.firstTick = true
-                data.hooks[id] = hook
-
-                hook
-            }
-
-            if(shouldSend) {
-                NetworkManager.sendToServer(FireHookC2SPacket(pos, pitch, yaw, sneaking, ids))
-            }
+            data.controller.fireHooks(Context(data), pos, pitch, yaw, sneaking)
         }
     }
 
@@ -128,7 +132,13 @@ object ClientHookProcessor: CommonHookProcessor() {
             } else {
                 hudCooldown = 0.0
             }
+            if (data.syncStatus.syncToServerHooks.isNotEmpty()) {
+                NetworkManager.sendToServer(ClientHookSyncC2SPacket(
+                    data.syncStatus.syncToServerHooks.values.toList()
+                ))
+            }
         }
+        data.syncStatus.syncToServerHooks.clear()
     }
 
     override fun isHookActive(player: PlayerEntity, reason: HookActiveReason): Boolean {

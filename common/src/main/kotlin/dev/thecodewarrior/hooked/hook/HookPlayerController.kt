@@ -45,8 +45,7 @@ abstract class HookPlayerController {
     abstract fun fireHooks(
         delegate: HookControllerDelegate,
         pos: Vec3d, pitch: Float, yaw: Float, sneaking: Boolean,
-        addHook: (pos: Vec3d, pitch: Float, yaw: Float) -> Hook
-    ): Boolean
+    )
 
     /**
      * Called when the jump key is pressed on the client
@@ -269,9 +268,7 @@ abstract class HookPlayerController {
                 delegate: HookControllerDelegate,
                 pos: Vec3d, pitch: Float, yaw: Float,
                 sneaking: Boolean,
-                addHook: (pos: Vec3d, pitch: Float, yaw: Float) -> Hook
-            ): Boolean {
-                return false
+            ) {
             }
 
             override fun isActive(delegate: HookControllerDelegate, reason: HookActiveReason): Boolean = false

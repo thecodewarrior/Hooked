@@ -23,21 +23,16 @@ open class BasicHookPlayerController(val player: PlayerEntity, val behavior: Bas
         pos: Vec3d,
         pitch: Float,
         yaw: Float,
-        sneaking: Boolean,
-        addHook: (pos: Vec3d, pitch: Float, yaw: Float) -> Hook
-    ): Boolean {
-        if(delegate.cooldown == 0) {
+        sneaking: Boolean
+    ) {
+        if(delegate.cooldown <= 0) {
             val tag = if(sneaking) {
                 0
             } else {
                 (delegate.hooks.maxOfOrNull { it.tag } ?: 0) + 1
             }
-            val hook = addHook(pos, pitch, yaw)
-            hook.tag = tag
+            delegate.fireHook(pos, pitch, yaw) { it.tag = tag }
             delegate.triggerCooldown()
-            return true
-        } else {
-            return false
         }
     }
 

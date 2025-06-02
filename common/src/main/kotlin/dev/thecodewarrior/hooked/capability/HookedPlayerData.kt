@@ -64,11 +64,11 @@ class HookedPlayerData(val player: PlayerEntity) {
         /**
          * Events queued to be sent to the client
          */
-        val queuedEvents: MutableList<HookEvent> = mutableListOf()
-        /**
-         * Hooks queued to be synced to clients
-         */
-        val dirtyHooks: MutableMap<Int, Hook> = mutableMapOf()
+        val queuedEvents = mutableListOf<HookEvent>()
+        val syncToClientHooks = mutableMapOf<Int, Hook>()
+        val syncToOthersHooks = mutableMapOf<Int, Hook>()
+        val syncToServerHooks = mutableMapOf<Int, Hook>()
+
         var forceFullSyncToClient: Boolean = false
         var forceFullSyncToOthers: Boolean = false
 
@@ -76,18 +76,28 @@ class HookedPlayerData(val player: PlayerEntity) {
          * Used on the client to store recently fired events. If the client receives an identical event from the server,
          * that event will be ignored
          */
-        val recentEvents: CircularArray<HookEvent> = CircularArray(25)
+        val recentEvents = CircularArray<HookEvent>(25)
 
         /**
          * Used on the client to store references to recently removed hooks in case an event references them
          */
-        val recentHooks: MutableMap<Int, Hook> = CircularMap(25)
+        val recentHooks = CircularMap<Int, Hook>(25)
 
         fun addRecentHook(hook: Hook) {
             recentHooks[hook.id] = hook
         }
         fun addRecentHooks(hooks: Collection<Hook>) {
             hooks.forEach { addRecentHook(it) }
+        }
+
+        fun syncToClient(hook: Hook) {
+            syncToClientHooks[hook.id] = hook
+        }
+        fun syncToOthers(hook: Hook) {
+            syncToOthersHooks[hook.id] = hook
+        }
+        fun syncToServer(hook: Hook) {
+            syncToServerHooks[hook.id] = hook
         }
     }
 
@@ -124,10 +134,17 @@ class HookedPlayerData(val player: PlayerEntity) {
         controllerState = controller.writeSyncState(initial)
     )
 
-    fun createPartialSyncPacket() = HookedPlayerDataPartialSyncS2CPacket(
-        entityId = player.id,
-        dirtyHooks = syncStatus.dirtyHooks.values.toList(),
-    )
+    fun createPartialSyncPacket(toClient: Boolean): HookedPlayerDataPartialSyncS2CPacket {
+        val dirtySet = if (toClient) {
+            syncStatus.syncToClientHooks
+        } else {
+            syncStatus.syncToOthersHooks
+        }
+        return HookedPlayerDataPartialSyncS2CPacket(
+            entityId = player.id,
+            dirtyHooks = dirtySet.values.toList(),
+        )
+    }
 
     companion object {
         val logger = Hooked.logManager.makeLogger<HookedPlayerData>()

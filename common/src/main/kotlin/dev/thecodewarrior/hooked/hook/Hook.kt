@@ -20,7 +20,7 @@ import net.minecraft.world.World
 
 data class Hook(
     /**
-     * The id of the hook. Assigned by the server. Temporary client-side hooks will have negative ids
+     * The id of the hook. Assigned by the client.
      */
     val id: Int,
     /**

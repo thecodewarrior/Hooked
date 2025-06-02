@@ -15,10 +15,17 @@ interface HookControllerDelegate {
     val hooks: Collection<Hook>
     val properties: HookProperties
 
+    /**
+     * Returns true only if the current hook controller is on the client and for the current player
+     */
+    val isSelfClient: Boolean
+
     val cooldown: Int
     fun triggerCooldown()
 
-    fun markDirty(hook: Hook)
+    fun fireHook(pos: Vec3d, pitch: Float, yaw: Float, modifyFn: (Hook) -> Unit = {})
+
+    fun syncHook(hook: Hook, sendToServer: Boolean = true, sendToClient: Boolean = true, sendToOthers: Boolean = true)
     fun forceFullSyncToClient()
     fun forceFullSyncToOthers()
     fun fireEvent(event: HookEvent)
@@ -31,12 +38,13 @@ interface HookControllerDelegate {
     }
 
     fun retractHook(hook: Hook, reason: HookPlayerController.DislodgeReason, silently: Boolean = false) {
+        if (!isSelfClient) return
         if(hook.state == Hook.State.RETRACTING)
             return
         if(hook.state == Hook.State.PLANTED && !silently) {
             fireEvent(HookEvent(HookEvent.EventType.DISLODGE, hook.id, reason.ordinal))
         }
         hook.state = Hook.State.RETRACTING
-        markDirty(hook)
+        syncHook(hook)
     }
 }

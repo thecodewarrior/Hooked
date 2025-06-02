@@ -74,8 +74,7 @@ open class FlightHookPlayerController(val player: PlayerEntity, val behavior: Fl
         pitch: Float,
         yaw: Float,
         sneaking: Boolean,
-        addHook: (pos: Vec3d, pitch: Float, yaw: Float) -> Hook
-    ): Boolean {
+    ) {
         if(sneaking) {
             val direction = Vec3d.fromPolar(pitch, yaw)
             val closestHook = delegate.hooks
@@ -86,13 +85,9 @@ open class FlightHookPlayerController(val player: PlayerEntity, val behavior: Fl
             if(closestHook != null) {
                 delegate.retractHook(closestHook)
             }
-            return true
         } else if(delegate.cooldown == 0) {
-            addHook(pos, pitch, yaw)
+            delegate.fireHook(pos, pitch, yaw)
             delegate.triggerCooldown()
-            return true
-        } else {
-            return false
         }
     }
 
