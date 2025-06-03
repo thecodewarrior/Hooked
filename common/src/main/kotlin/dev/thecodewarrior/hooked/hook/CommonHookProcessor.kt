@@ -83,7 +83,6 @@ abstract class CommonHookProcessor : HookProcessor {
                     hook.block = block(raycaster.blockX, raycaster.blockY, raycaster.blockZ)
                     context.syncHook(hook, sendToClient = false)
                     context.fireEvent(HookEvent(HookEvent.EventType.HIT, hook.id, 0))
-                    context.controller.onHookHit(context, hook)
                 }
                 else -> {
                     // we missed. if we reached max extension, transition to the retracting state
