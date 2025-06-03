@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "hooked:item/red_hook"
+    "layer0": "hooked:item/redstone_hook"
   }
 }

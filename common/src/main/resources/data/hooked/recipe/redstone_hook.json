@@ -14,7 +14,7 @@
     "C": {"item": "minecraft:comparator"}
   },
   "result": {
-    "id": "hooked:red_hook",
+    "id": "hooked:redstone_hook",
     "count": 1
   }
 }

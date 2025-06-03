@@ -1,7 +1,7 @@
 {
   "parent": "minecraft:recipes/root",
   "rewards": {
-    "recipes": ["hooked:red_hook"]
+    "recipes": ["hooked:redstone_hook"]
   },
   "criteria": {
     "has_diamond_hook": {

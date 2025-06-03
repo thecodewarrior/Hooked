@@ -55,8 +55,8 @@ object HookItems {
         particleColorMin = Optional.of(Vector3f(0.36f, 0.12f, 0.4f)),
         particleColorMax = Optional.of(Vector3f(0.9f, 0.3f, 1.0f)),
     )
-    val RED_HOOK = createItem(
-        Identifier.of(Hooked.MOD_ID, "red_hook"),
+    val REDSTONE_HOOK = createItem(
+        Identifier.of(Hooked.MOD_ID, "redstone_hook"),
         count = 8,
         range = 48.0,
         speed = 1.2,
