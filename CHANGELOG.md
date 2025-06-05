@@ -1,3 +1,7 @@
+# 2.0.0-beta.3
+- Increase redstone hook max range
+- Make flight hooks increase break range of planted hooks
+
 # 2.0.0-beta.2
 - Fix duplicate hook hit sounds in singleplayer
 - Rename Red Hook to Redstone Hook
