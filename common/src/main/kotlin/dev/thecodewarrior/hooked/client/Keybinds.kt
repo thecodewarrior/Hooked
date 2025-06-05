@@ -13,7 +13,7 @@ object Keybinds {
     val FIRE = HookedPlatformClient.instance.createInGameKeybind(
         "key.hooked.fire",
         InputUtil.Type.KEYSYM,
-        GLFW.GLFW_KEY_R,
+        GLFW.GLFW_KEY_C,
         "key.category.hooked"
     )
     var jumpWasDown = false
@@ -29,9 +29,10 @@ object Keybinds {
 
         if(data.maxHooks > 0) {
             val sneakPressed = Client.minecraft.options.sneakKey.isPressed
-            if (FIRE.wasPressed()) {
+            val fireBinding = HookedPlatformClient.instance.getActualFireKeybinding()
+            if (fireBinding.wasPressed()) {
                 ClientHookProcessor.fireHook(player, data, player.eyePos, player.pitch, player.yaw, sneakPressed)
-                while(FIRE.wasPressed()) { /* consume excess keypresses */ }
+                while(fireBinding.wasPressed()) { /* consume excess keypresses */ }
             }
 
             if (jumpPressed) {

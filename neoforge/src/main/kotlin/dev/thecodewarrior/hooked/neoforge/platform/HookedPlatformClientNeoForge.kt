@@ -1,6 +1,7 @@
 package dev.thecodewarrior.hooked.neoforge.platform
 
 import com.google.auto.service.AutoService
+import dev.thecodewarrior.hooked.client.Keybinds
 import dev.thecodewarrior.hooked.neoforge.HookedNeoForgeClient
 import dev.thecodewarrior.hooked.platform.HookedPlatformClient
 import net.minecraft.client.MinecraftClient
@@ -23,6 +24,10 @@ class HookedPlatformClientNeoForge : HookedPlatformClient {
         category: String
     ): KeyBinding {
         return KeyBinding(translationKey, KeyConflictContext.IN_GAME, type, code, category)
+    }
+
+    override fun getActualFireKeybinding(): KeyBinding {
+        return Keybinds.FIRE
     }
 
     override fun registerKeybindTickEvent(hook: () -> Unit) {
