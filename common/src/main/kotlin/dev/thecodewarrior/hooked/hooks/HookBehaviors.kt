@@ -60,7 +60,8 @@ data class BasicHookBehavior(
 }
 
 data class FlightHookBehavior(
-    val wireframeColor: Vector3f
+    val wireframeColor: Vector3f,
+    val breakRangeFactor: Double
 ) : HookBehavior {
     override val type: HookBehaviorType<*>
         get() = HookBehaviors.FLIGHT
@@ -78,9 +79,11 @@ data class FlightHookBehavior(
     }
 
     companion object {
+        val DEFAULT_RANGE_FACTOR = 4.0
         val CODEC = RecordCodecBuilder.mapCodec { builder ->
             builder.group(
-                Codecs.VECTOR_3F.fieldOf("wireframeColor").forGetter(FlightHookBehavior::wireframeColor)
+                Codecs.VECTOR_3F.fieldOf("wireframeColor").forGetter(FlightHookBehavior::wireframeColor),
+                Codec.DOUBLE.optionalFieldOf("breakRangeFactor", DEFAULT_RANGE_FACTOR).forGetter(FlightHookBehavior::breakRangeFactor)
             ).apply(builder, ::FlightHookBehavior)
         }
     }

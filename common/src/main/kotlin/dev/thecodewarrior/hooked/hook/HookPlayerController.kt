@@ -67,6 +67,10 @@ abstract class HookPlayerController {
             }
     }
 
+    open fun modifyHookRange(baseRange: Double, hook: Hook): Double {
+        return baseRange
+    }
+
     /**
      * Called after the hook processor updates the hooks
      */

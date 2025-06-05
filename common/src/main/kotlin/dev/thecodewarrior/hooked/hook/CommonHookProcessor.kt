@@ -59,7 +59,8 @@ abstract class CommonHookProcessor : HookProcessor {
             if (hook.state != Hook.State.EXTENDING)
                 continue
 
-            val distanceLeft = context.properties.range - (hook.pos - context.player.getWaistPos()).length()
+            val distanceLeft = context.controller.modifyHookRange(context.properties.range, hook) -
+                    (hook.pos - context.player.getWaistPos()).length()
 
             val castDistance = min(context.properties.speed, distanceLeft) + context.properties.hookModel.hookLength
 
@@ -124,15 +125,16 @@ abstract class CommonHookProcessor : HookProcessor {
 
         // a bit of wiggle room before a hook breaks off.
         val breakEpsilon: Double = 1 / 16.0
-        val breakRangeSq = (context.properties.range + breakEpsilon).pow(2)
 
         for(hook in context.hooks) {
             if (hook.state != Hook.State.PLANTED) {
                 continue
             }
 
+            val hookRange = context.controller.modifyHookRange(context.properties.range, hook) + breakEpsilon
+
             val reason = when {
-                hook.pos.squaredDistanceTo(context.player.getWaistPos()) > breakRangeSq -> {
+                hook.pos.distanceTo(context.player.getWaistPos()) > hookRange -> {
                     HookPlayerController.DislodgeReason.DISTANCE
                 }
                 context.world.isAir(hook.block) -> {

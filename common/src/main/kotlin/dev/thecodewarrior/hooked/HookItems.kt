@@ -58,10 +58,13 @@ object HookItems {
     val REDSTONE_HOOK = createItem(
         Identifier.of(Hooked.MOD_ID, "redstone_hook"),
         count = 8,
-        range = 48.0,
-        speed = 1.2,
+        range = 64.0,
+        speed = 2.5,
         cooldown = 5,
-        behavior = FlightHookBehavior(wireframeColor = Vector3f(1f, 0f, 0f)),
+        behavior = FlightHookBehavior(
+            wireframeColor = Vector3f(1f, 0f, 0f),
+            breakRangeFactor = FlightHookBehavior.DEFAULT_RANGE_FACTOR
+        ),
         playerGap = 2.5,
     )
     val CUSTOM_HOOK = createItem(

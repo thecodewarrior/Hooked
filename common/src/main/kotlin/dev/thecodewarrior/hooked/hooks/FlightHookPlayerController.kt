@@ -178,6 +178,14 @@ open class FlightHookPlayerController(val player: PlayerEntity, val behavior: Fl
         }
     }
 
+    override fun modifyHookRange(baseRange: Double, hook: Hook): Double {
+        if (hook.state == Hook.State.PLANTED) {
+            return baseRange * behavior.breakRangeFactor
+        } else {
+            return baseRange
+        }
+    }
+
     override fun isActive(delegate: HookControllerDelegate, reason: HookActiveReason): Boolean {
         return when(reason) {
             // we should still be able to sneak to avoid ledges
