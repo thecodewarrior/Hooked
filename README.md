@@ -1,4 +1,12 @@
-# Item components
+# Datapacks
+
+Example commands:
+- A diamond hook with 100 block range and 20 hooks:  
+  `/give @p hooked:diamond_hook[hooked:hook_range=100,hooked:hook_count=20]`
+- An ender hook with 999 block range: (the speed is equal to the range so it still reaches the target in one tick)  
+  `/give @p hooked:ender_hook[hooked:hook_range=999,hooked:hook_speed=999]` 
+
+## Item components
 
 - `hooked:hook_count` - `int`
   - The maximum number of hooks
@@ -11,8 +19,9 @@
 - `hooked:hook_behavior` - one of:
   - `{type:"hooked:basic",pullStrength:double}`
     - `pullStrength` - max speed to pull the player in blocks per tick
-  - `{type:"hooked:flight",wireframeColor:[r,g,b]}`
+  - `{type:"hooked:flight",wireframeColor:[r,g,b],breakRangeFactor:double}`
     - `wireframeColor` - the color of the wireframe guide, three floats
+    - `breakRangeFactor` - optional multiplication factor for the break range of planted hooks (default `4`)
 - `hooked:hook_model` - object with keys:
   - `model` - optional location for the hook .obj file (default `hooked:models/hook/base.obj`)
   - `texture` - required location for the hook texture file (reference map: `hooked:textures/hook/base/hook.png`)
