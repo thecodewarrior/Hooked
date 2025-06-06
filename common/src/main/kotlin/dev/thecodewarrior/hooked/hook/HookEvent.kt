@@ -1,5 +1,6 @@
 package dev.thecodewarrior.hooked.hook
 
+import dev.thecodewarrior.hooked.util.CustomPacketCodecs
 import net.minecraft.network.RegistryByteBuf
 import net.minecraft.network.codec.PacketCodec
 import net.minecraft.network.codec.PacketCodecs
@@ -14,10 +15,7 @@ data class HookEvent(
         HIT, MISS, DISLODGE;
 
         companion object {
-            val CODEC = PacketCodec.of<RegistryByteBuf, EventType>(
-                { value, buffer -> buffer.writeVarInt(value.ordinal) },
-                { buffer -> EventType.entries[buffer.readVarInt()] }
-            )
+            val CODEC = CustomPacketCodecs.forEnum(entries)
         }
     }
 

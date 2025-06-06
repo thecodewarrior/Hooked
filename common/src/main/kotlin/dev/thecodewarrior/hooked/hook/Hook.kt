@@ -5,11 +5,8 @@ import com.mojang.serialization.DataResult
 import com.mojang.serialization.codecs.RecordCodecBuilder
 import com.teamwizardry.librarianlib.math.plus
 import com.teamwizardry.librarianlib.math.times
-import dev.thecodewarrior.hooked.hook.HookEvent.EventType
-import dev.thecodewarrior.hooked.item.ChainAppearance
-import dev.thecodewarrior.hooked.item.HookModelInfo
-import dev.thecodewarrior.hooked.item.HookProperties
-import dev.thecodewarrior.hooked.network.CustomCodecs
+import dev.thecodewarrior.hooked.util.CustomCodecs
+import dev.thecodewarrior.hooked.util.CustomPacketCodecs
 import net.minecraft.network.RegistryByteBuf
 import net.minecraft.network.codec.PacketCodec
 import net.minecraft.network.codec.PacketCodecs
@@ -74,21 +71,8 @@ data class Hook(
         EXTENDING("Extending"), PLANTED("Planted"), RETRACTING("Retracting"), REMOVED("Removed");
 
         companion object {
-            fun fromKey(key: String): State? {
-                return State.entries.find { it.key == key }
-            }
-
-            val CODEC = Codec.STRING.comapFlatMap<State>(
-                { key ->
-                    fromKey(key)?.let { DataResult.success(it) }
-                        ?: DataResult.error { "Invalid state '$key'" }
-                },
-                State::key
-            )
-            val PACKET_CODEC = PacketCodec.of<RegistryByteBuf, State>(
-                { value, buffer -> buffer.writeVarInt(value.ordinal) },
-                { buffer -> State.entries[buffer.readVarInt()] }
-            )
+            val CODEC = CustomCodecs.forEnum(entries, State::key)
+            val PACKET_CODEC = CustomPacketCodecs.forEnum(entries)
         }
     }
 
@@ -115,7 +99,7 @@ data class Hook(
             { value, buffer ->
                 PacketCodecs.VAR_INT.encode(buffer, value.id)
                 PacketCodecs.FLOAT.encode(buffer, value.hookLength)
-                CustomCodecs.VEC3D.encode(buffer, value.pos)
+                CustomPacketCodecs.VEC3D.encode(buffer, value.pos)
                 PacketCodecs.FLOAT.encode(buffer, value.pitch)
                 PacketCodecs.FLOAT.encode(buffer, value.yaw)
                 State.PACKET_CODEC.encode(buffer, value.state)
@@ -126,7 +110,7 @@ data class Hook(
                 Hook(
                     PacketCodecs.VAR_INT.decode(buffer),
                     PacketCodecs.FLOAT.decode(buffer),
-                    CustomCodecs.VEC3D.decode(buffer),
+                    CustomPacketCodecs.VEC3D.decode(buffer),
                     PacketCodecs.FLOAT.decode(buffer),
                     PacketCodecs.FLOAT.decode(buffer),
                     State.PACKET_CODEC.decode(buffer),
@@ -135,8 +119,5 @@ data class Hook(
                 )
             }
         )
-//        tuple(
-//            ::Hook
-//        )
     }
 }

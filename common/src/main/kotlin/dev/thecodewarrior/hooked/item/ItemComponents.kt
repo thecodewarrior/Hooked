@@ -5,6 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder
 import dev.thecodewarrior.hooked.Hooked
 import dev.thecodewarrior.hooked.HookedRegistries
 import dev.thecodewarrior.hooked.hook.HookBehavior
+import dev.thecodewarrior.hooked.hook.HookBehaviorType
 import dev.thecodewarrior.hooked.hooks.NullHookBehavior
 import net.minecraft.component.ComponentType
 import net.minecraft.item.ItemStack
@@ -16,7 +17,6 @@ import net.minecraft.util.dynamic.Codecs
 import org.joml.Vector3f
 import java.util.Optional
 import kotlin.jvm.optionals.getOrElse
-import kotlin.jvm.optionals.getOrNull
 import kotlin.math.max
 
 object ItemComponents {
@@ -41,10 +41,12 @@ object ItemComponents {
     val FIRE_COOLDOWN = register(Identifier.of(Hooked.MOD_ID, "fire_cooldown"), Codec.INT)
 
     val HOOK_MODEL = register(Identifier.of(Hooked.MOD_ID, "hook_model"), HookModelInfo.CODEC)
-
     val CHAIN_APPEARANCE = register(Identifier.of(Hooked.MOD_ID, "chain_appearance"), ChainAppearance.CODEC)
 
-    val HOOK_BEHAVIOR = register(Identifier.of(Hooked.MOD_ID, "behavior"), HookBehavior.CODEC)
+    val HOOK_BEHAVIOR = register(Identifier.of(Hooked.MOD_ID, "behavior"), HookBehaviorType.CODEC)
+    val PULL_STRENGTH = register(Identifier.of(Hooked.MOD_ID, "pull_strength"), Codec.DOUBLE)
+    val BREAK_RANGE_FACTOR = register(Identifier.of(Hooked.MOD_ID, "break_range_factor"), Codec.DOUBLE)
+    val WIREFRAME_COLOR = register(Identifier.of(Hooked.MOD_ID, "wireframe_color"), Codecs.VECTOR_3F)
 
     private fun <T> register(id: Identifier, codec: Codec<T>): ComponentType<T> {
         val componentType = ComponentType.builder<T>().codec(codec).build()
@@ -81,7 +83,8 @@ data class HookProperties(
         }
 
         fun fromItemStack(stack: ItemStack): HookProperties? {
-            val behavior = stack.get(ItemComponents.HOOK_BEHAVIOR) ?: return null
+            val behaviorType = stack.get(ItemComponents.HOOK_BEHAVIOR) ?: return null
+            val behavior = behaviorType.fromItemStack(stack)
             return HookProperties(
                 count = max(0, stack.get(ItemComponents.HOOK_COUNT) ?: 1),
                 range = max(0.0, stack.get(ItemComponents.HOOK_RANGE) ?: 8.0),

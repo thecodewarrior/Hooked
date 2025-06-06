@@ -1,10 +1,14 @@
 # Datapacks
 
 Example commands:
-- A diamond hook with 100 block range and 20 hooks:  
+- A diamond hook with 100 block range and 20 hooks:
   `/give @p hooked:diamond_hook[hooked:hook_range=100,hooked:hook_count=20]`
 - An ender hook with 999 block range: (the speed is equal to the range so it still reaches the target in one tick)  
   `/give @p hooked:ender_hook[hooked:hook_range=999,hooked:hook_speed=999]` 
+- An ender hook that pulls the user 10 times faster than normal:
+  `/give @p hooked:ender_hook[hooked:pull_strength=22.5]`
+- A diamond hook that grants flight like the redstone hook:
+  `/give @p hooked:diamond_hook[hooked:behavior="hooked:flight",hooked:wireframe_color=[0.42,0.83,0.85]]`
 
 ## Item components
 
@@ -16,12 +20,12 @@ Example commands:
   - The hook speed in blocks per tick
 - `hooked:fire_cooldown` - `int`
   - The fire cooldown in ticks
-- `hooked:hook_behavior` - one of:
-  - `{type:"hooked:basic",pullStrength:double}`
-    - `pullStrength` - max speed to pull the player in blocks per tick
-  - `{type:"hooked:flight",wireframeColor:[r,g,b],breakRangeFactor:double}`
-    - `wireframeColor` - the color of the wireframe guide, three floats
-    - `breakRangeFactor` - optional multiplication factor for the break range of planted hooks (default `4`)
+- `hooked:behavior` - one of:
+  - `"hooked:basic"` - the standard hook behavior (configured using `hooked:pull_strength`)
+  - `"hooked:flight"` - the flight hook behavior (configured using `hooked:wireframe_color` and `hooked:break_range_factor`)
+- `hooked:pull_strength` - (basic behavior) optional max speed to pull the player in blocks per tick (default `1`)
+- `hooked:wireframe_color` - (flight behavior) optional three-component vector defining the rgb color of the wireframe guide (default `[1,0,0]`)
+- `hooked:break_range_factor` - (flight behavior) optional multiplication factor for the break range of planted hooks (default `4`)
 - `hooked:hook_model` - object with keys:
   - `model` - optional location for the hook .obj file (default `hooked:models/hook/base.obj`)
   - `texture` - required location for the hook texture file (reference map: `hooked:textures/hook/base/hook.png`)

@@ -99,10 +99,13 @@ object HookItems {
         settings.component(ItemComponents.HOOK_RANGE, range)
         settings.component(ItemComponents.HOOK_SPEED, speed)
         settings.component(ItemComponents.FIRE_COOLDOWN, cooldown)
-        settings.component(ItemComponents.HOOK_BEHAVIOR, behavior)
+        settings.component(ItemComponents.HOOK_BEHAVIOR, behavior.type)
+        behavior.applyToItemSettings(settings)
         settings.component(
             ItemComponents.HOOK_MODEL,
-            HookModelInfo.DEFAULT.copy(texture = Identifier.of(Hooked.MOD_ID, "textures/hook/${id.path}/hook.png"))
+            HookModelInfo.DEFAULT.copy(
+                texture = Identifier.of(Hooked.MOD_ID, "textures/hook/${id.path}/hook.png")
+            )
         )
         settings.component(ItemComponents.CHAIN_APPEARANCE, ChainAppearance(
             texture1 = Identifier.of(Hooked.MOD_ID, "textures/hook/${id.path}/chain1.png"),
