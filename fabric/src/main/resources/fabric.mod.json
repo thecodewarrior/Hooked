@@ -51,13 +51,14 @@
   ],
 
   "depends": {
-    "fabric-api": ">=0.115.3+1.21.1",
-    "fabric-language-kotlin": ">=1.12.3+kotlin.2.0.21",
-    "minecraft": "1.21.x",
-    "liblib_mosaic": ">=5.0.0-alpha.14",
-    "liblib_glitter": ">=5.0.0-alpha.14",
-    "liblib_etcetera": ">=5.0.0-alpha.14",
-    "trinkets": "3.10.0",
+    "fabric-api": "${dep_fabric_api}",
+    "fabric-language-kotlin": "${dep_fabric_language_kotlin}",
+    "minecraft": "${dep_minecraft}",
+    "architectury": "${dep_architectury}",
+    "liblib_mosaic": "${dep_liblib}",
+    "liblib_glitter": "${dep_liblib}",
+    "liblib_etcetera": "${dep_liblib}",
+    "trinkets": "${dep_trinkets}",
     "fabric-key-binding-api-v1": "*"
   },
   "custom": {

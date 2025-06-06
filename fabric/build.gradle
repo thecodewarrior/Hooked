@@ -50,11 +50,20 @@ dependencies {
     shadowBundle project(path: ':common', configuration: 'transformProductionFabric')
 }
 
+def expansions = [
+        version: project.version,
+        dep_minecraft: project.property('fabric.mod_deps.minecraft'),
+        dep_fabric_api: project.property('fabric.mod_deps.fabric_api'),
+        dep_fabric_language_kotlin: project.property('fabric.mod_deps.fabric_language_kotlin'),
+        dep_architectury: project.property('fabric.mod_deps.architectury'),
+        dep_trinkets: project.property('fabric.mod_deps.trinkets'),
+        dep_liblib: project.property('fabric.mod_deps.liblib'),
+]
 processResources {
-    inputs.property 'version', project.version
+    inputs.properties(expansions)
 
     filesMatching('fabric.mod.json') {
-        expand version: project.version
+        expand(expansions)
     }
 }
 

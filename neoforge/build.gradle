@@ -55,11 +55,20 @@ dependencies {
     shadowBundle project(path: ':common', configuration: 'transformProductionNeoForge')
 }
 
+def expansions = [
+        version: project.version,
+        dep_neoforge: project.property('neoforge.mod_deps.neoforge'),
+        dep_minecraft: project.property('neoforge.mod_deps.minecraft'),
+        dep_kotlinforforge: project.property('neoforge.mod_deps.kotlinforforge'),
+        dep_architectury: project.property('neoforge.mod_deps.architectury'),
+        dep_curios: project.property('neoforge.mod_deps.curios'),
+        dep_liblib: project.property('neoforge.mod_deps.liblib'),
+]
 processResources {
-    inputs.property 'version', project.version
+    inputs.properties(expansions)
 
     filesMatching('META-INF/neoforge.mods.toml') {
-        expand version: project.version
+        expand(expansions)
     }
 }
 
