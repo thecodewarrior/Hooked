@@ -12,6 +12,7 @@ import dev.thecodewarrior.hooked.network.ClientHookSyncC2SPacket
 import dev.thecodewarrior.hooked.network.HookJumpC2SPacket
 import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvent
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Box
@@ -66,16 +67,22 @@ object ClientHookProcessor: CommonHookProcessor() {
         override fun forceFullSyncToClient() {}
         override fun forceFullSyncToOthers() {}
 
-        private val playedSounds = mutableSetOf<SoundEvent>()
-
         override fun playFeedbackSound(sound: SoundEvent, volume: Float, pitch: Float) {
-            if(!playedSounds.add(sound))
-                return
-            player.playSound(sound, volume, pitch)
+            if (player == Client.player) {
+                logger.debug("Playing feedback sound {}", sound.id)
+                player.playSoundToPlayer(sound, player.soundCategory, volume, pitch)
+            } else {
+                logger.debug("Skipping feedback sound for other player {}", sound.id)
+            }
         }
 
         override fun playWorldSound(sound: SoundEvent, pos: Vec3d, volume: Float, pitch: Float) {
-            // world sounds are played on the server
+            if (player == Client.player) {
+                logger.debug("Playing client world sound {}", sound.id)
+                player.world.playSound(player, pos.x, pos.y, pos.z, sound, SoundCategory.PLAYERS, volume, pitch)
+            } else {
+                logger.debug("Skipping client world sound for other player {}", sound.id)
+            }
         }
 
         override fun fireEvent(event: HookEvent) {

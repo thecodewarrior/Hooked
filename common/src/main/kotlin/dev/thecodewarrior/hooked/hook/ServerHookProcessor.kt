@@ -58,7 +58,8 @@ object ServerHookProcessor: CommonHookProcessor() {
         }
 
         override fun playWorldSound(sound: SoundEvent, pos: Vec3d, volume: Float, pitch: Float) {
-            data.player.world.playSound(null, pos.x, pos.y, pos.z, sound, SoundCategory.PLAYERS, volume, pitch)
+            logger.debug("Playing server world sound {}", sound.id)
+            player.world.playSound(player, pos.x, pos.y, pos.z, sound, SoundCategory.PLAYERS, volume, pitch)
         }
 
         override fun fireEvent(event: HookEvent) {
@@ -118,7 +119,6 @@ object ServerHookProcessor: CommonHookProcessor() {
 
         if (data.syncStatus.queuedEvents.isNotEmpty()) {
             val packet = HookEventsS2CPacket(player.id, ArrayList(data.syncStatus.queuedEvents))
-            sendToSelf.add(packet)
             sendToOthers.add(packet)
         }
 
