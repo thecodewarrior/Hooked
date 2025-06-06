@@ -126,7 +126,11 @@ abstract class HookPlayerController {
     open fun onHookHit(delegate: HookControllerDelegate, hook: Hook) {
         delegate.playWorldSound(Hook.hitSound(delegate.world, hook.block), hook.pos, 1f, 1f)
         delegate.world.emitGameEvent(delegate.player, HookGameEvents.HOOK_LAND, hook.pos)
-        delegate.playFeedbackSound(HookSounds.HOOK_HIT, 1f, 1f)
+        delegate.playFeedbackSound(
+            HookSounds.HOOK_HIT,
+            1f,
+            1.2f / (Math.random() * 0.2 + 0.9).toFloat() // same variation as arrow hit sound
+        )
         spawnChainShatterParticleEffect(delegate, hook)
     }
 
