@@ -10,6 +10,13 @@ Example commands:
 - A diamond hook that grants flight like the redstone hook:
   `/give @p hooked:diamond_hook[hooked:behavior="hooked:flight",hooked:wireframe_color=[0.42,0.83,0.85]]`
 
+Hooked includes a blank hook item (`hooked:custom_hook`) specifically for data packs to use:
+- The item model can be configured using [`minecraft:item_model`](https://minecraft.wiki/w/Data_component_format#item_model)
+- The item name can be configured using [`minecraft:item_name`](https://minecraft.wiki/w/Data_component_format#item_name)
+  - When a custom item name is applied to a hook, the hook's flair text is not shown
+- The hook model can be configured using `hooked:hook_model`, which only requires the `texture` key
+- The hook chain can be configured using `hooked:chain_appearance`, which only requires the `texture1` and `texture2` keys
+
 ## Item components
 
 - `hooked:hook_count` - `int`
@@ -33,6 +40,6 @@ Example commands:
 - `hooked:chain_appearance` - object with keys:
   - `texture1` - texture location for the main chain axis
   - `texture2` - texture location for the cross chain axis
-  - `playerGap` - gap between the player and where the chain starts rendering
-  - `particleColorMin` - optional three-component vector defining the minimum rgb values for the chain particles (particles will be used if this is set)
-  - `particleColorMax` - optional three-component vector defining the maximum rgb values for the chain particles
+  - `playerGap` - optional gap between the player and where the chain starts rendering (default `0`)
+  - `particleColorMin` - optional three-component vector defining the minimum rgb values for the chain shatter particles (particles will be spawned if this is set)
+  - `particleColorMax` - optional three-component vector defining the maximum rgb values for the chain shatter particles
