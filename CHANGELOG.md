@@ -1,3 +1,8 @@
+# 2.0.0-beta.4
+- Flattened hook behavior item components (instead of `hooked:behavior={"type":"hooked:basic","pullStrength":1.5}` you can just do `hooked:pull_strength=1.5`)
+- Expanded datapack docs in readme
+- Fix duplicate hook audio for real this time
+
 # 2.0.0-beta.3
 - Increase redstone hook max range
 - Make flight hooks increase break range of planted hooks
