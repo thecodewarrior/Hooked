@@ -11,6 +11,7 @@ import dev.thecodewarrior.hooked.util.DynamicHull
 import dev.thecodewarrior.hooked.util.FadeTimer
 import dev.thecodewarrior.hooked.util.fromWaistPos
 import dev.thecodewarrior.hooked.util.getWaistPos
+import net.minecraft.entity.player.PlayerAbilities
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.PacketByteBuf
@@ -20,7 +21,7 @@ import kotlin.math.cos
 open class FlightHookPlayerController(val player: PlayerEntity, val behavior: FlightHookBehavior): HookPlayerController() {
     val hull: DynamicHull = DynamicHull()
     var hasExternalFlight: Boolean = false
-    var isFlightActive: Boolean = false
+    var isFlightEnabled: Boolean = false
     var stopFallDamage: Boolean = false
     var isInsideHull: Boolean = false
 
@@ -33,13 +34,13 @@ open class FlightHookPlayerController(val player: PlayerEntity, val behavior: Fl
 
     override fun saveState(tag: NbtCompound) {
         tag.putBoolean("HasExternalFlight", hasExternalFlight)
-        tag.putBoolean("IsFlightActive", isFlightActive)
+        tag.putBoolean("IsFlightEnabled", isFlightEnabled)
         tag.putBoolean("StopFallDamage", stopFallDamage)
     }
 
     override fun loadState(tag: NbtCompound) {
         hasExternalFlight = tag.getBoolean("HasExternalFlight")
-        isFlightActive = tag.getBoolean("IsFlightActive")
+        isFlightEnabled = tag.getBoolean("IsFlightEnabled")
         stopFallDamage = tag.getBoolean("StopFallDamage")
     }
 
@@ -47,7 +48,7 @@ open class FlightHookPlayerController(val player: PlayerEntity, val behavior: Fl
         buf.writeBoolean(hasExternalFlight)
         buf.writeBoolean(stopFallDamage)
         if(initial) {
-            buf.writeBoolean(isFlightActive)
+            buf.writeBoolean(isFlightEnabled)
         }
     }
 
@@ -55,7 +56,7 @@ open class FlightHookPlayerController(val player: PlayerEntity, val behavior: Fl
         hasExternalFlight = buf.readBoolean()
         stopFallDamage = buf.readBoolean()
         if(initial) {
-            isFlightActive = buf.readBoolean()
+            isFlightEnabled = buf.readBoolean()
         }
     }
 
@@ -100,7 +101,6 @@ open class FlightHookPlayerController(val player: PlayerEntity, val behavior: Fl
             for(hook in delegate.hooks) {
                 delegate.retractHook(hook)
             }
-            stopFallDamage = true
         }
 
         if(doubleJump && delegate.hooks.any { it.state == Hook.State.PLANTED }) {
@@ -146,21 +146,7 @@ open class FlightHookPlayerController(val player: PlayerEntity, val behavior: Fl
         val constrained = hull.constrain(waist)
         isInsideHull = waist.squaredDistanceTo(constrained.position) < allowedFlightRange * allowedFlightRange
 
-        // if the player isn't flying, allow or disallow flight based upon whether they're inside the hull
-        if(!player.abilities.flying) {
-            if(isInsideHull != isFlightActive) {
-                showHullTimer.start(10)
-                if(!isInsideHull) {
-                    stopFallDamage = true
-                }
-            }
-
-            if(isInsideHull) {
-                enableFlight()
-            } else {
-                disableFlight()
-            }
-        }
+        updateFlightEnabled()
 
         // when flying, keep the player's position in check
         if(player.abilities.flying && waist != constrained.position) {
@@ -175,6 +161,30 @@ open class FlightHookPlayerController(val player: PlayerEntity, val behavior: Fl
                 player.velocity -= constrained.normal * (player.velocity dot constrained.normal)
             }
             showHullTimer.start(10)
+        }
+    }
+
+    private var wasFlying = false
+
+    private fun updateFlightEnabled() {
+        // player stopped flying, start blocking fall damage
+        if (wasFlying && !player.abilities.flying) {
+            stopFallDamage = true
+        }
+        wasFlying = player.abilities.flying
+
+        // if the player isn't currently flying, allow or disallow flight based upon whether they're inside the hull
+        if(!player.abilities.flying) {
+            // the player is passing into or out of the bounding region
+            if(isInsideHull != isFlightEnabled) {
+                showHullTimer.start(10)
+            }
+
+            if(isInsideHull) {
+                enableFlight()
+            } else {
+                disableFlight()
+            }
         }
     }
 
@@ -198,24 +208,35 @@ open class FlightHookPlayerController(val player: PlayerEntity, val behavior: Fl
         }
     }
 
-    protected fun enableFlight() {
-        if(!isFlightActive) {
-            hasExternalFlight = player.abilities.allowFlying
+    private fun updatePlayerAbilities(fn: PlayerAbilities.() -> Unit) {
+        if (!player.world.isClient) {
+            fn(player.abilities)
+            player.sendAbilitiesUpdate()
         }
+    }
 
-        player.abilities.allowFlying = true
-        isFlightActive = true
+    protected fun enableFlight() {
+        if(!isFlightEnabled) {
+            hasExternalFlight = player.abilities.allowFlying
+
+            updatePlayerAbilities {
+                allowFlying = true
+            }
+            isFlightEnabled = true
+        }
     }
 
     /**
      * Disable flight, restoring it to its previous state
      */
     protected fun disableFlight() {
-        if(!isFlightActive) return
-
-        player.abilities.allowFlying = hasExternalFlight
-        player.abilities.flying = false
-        isFlightActive = false
+        if(isFlightEnabled) {
+            updatePlayerAbilities {
+                allowFlying = hasExternalFlight
+                flying = false
+            }
+            isFlightEnabled = false
+        }
     }
 
     /**
@@ -223,14 +244,16 @@ open class FlightHookPlayerController(val player: PlayerEntity, val behavior: Fl
      * This fixes that.
      */
     protected fun fixExternalFlight() {
-        if(!isFlightActive) return
+        if(!isFlightEnabled) return
 
         // something external disallowed flight. Set it back to true, making sure we know to reset it to false after
         // we're done
         if(!player.abilities.allowFlying) {
             hasExternalFlight = false
-            player.abilities.allowFlying = true
-            player.abilities.flying = true
+            updatePlayerAbilities {
+                allowFlying = true
+                flying = true
+            }
         }
     }
 }
