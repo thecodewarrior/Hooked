@@ -1,3 +1,8 @@
+# Hooked
+
+[![CurseForge Downloads](https://img.shields.io/curseforge/dt/297209?label=CurseForge&color=e05d44&link=https%3A%2F%2Fwww.curseforge.com%2Fminecraft%2Fmc-mods%2Fhooked)](https://www.curseforge.com/minecraft/mc-mods/hooked)
+[![Modrinth Downloads](https://img.shields.io/modrinth/dt/RoLsCIqN?label=Modrinth&color=4c1&link=https%3A%2F%2Fmodrinth.com%2Fmod%2Fhooked)](https://modrinth.com/mod/hooked)
+
 # Datapacks
 
 Example commands:
