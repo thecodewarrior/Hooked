@@ -85,28 +85,18 @@ object HookRenderManager {
         )
 
         if(Client.minecraft.entityRenderDispatcher.shouldRenderHitboxes()) {
-            val player = Client.minecraft.player!!
-            val playerBox = player.boundingBox
-            val playerBoxMin = vec(playerBox.minX, playerBox.minY, playerBox.minZ)
-            val targets = ClientHookProcessor.previewJumpTarget(player)
-            if(!targets.isNullOrEmpty()) {
-                val targetY = targets.maxOf { it.minY }
-                val jumpPreview = targets.filter { it.minY == targetY }.minByOrNull {
-                    vec(it.minX, it.minY, it.minZ).squaredDistanceTo(playerBoxMin)
-                }
-
-                if (jumpPreview != null && targetY > player.y) {
-                    val color = DistinctColors.yellow
-                    WorldRenderer.drawBox(
-                        matrixStack,
-                        consumers.getBuffer(RenderLayer.getLines()),
-                        jumpPreview,
-                        color.red / 255f,
-                        color.green / 255f,
-                        color.blue / 255f,
-                        1f
-                    )
-                }
+            val targets = ClientHookProcessor.previewJumpTargets(Client.minecraft.player!!)
+            for ((i, target) in targets.withIndex()) {
+                val color = if(i == 0) DistinctColors.yellow else DistinctColors.grey
+                WorldRenderer.drawBox(
+                    matrixStack,
+                    consumers.getBuffer(RenderLayer.getLines()),
+                    target,
+                    color.red / 255f,
+                    color.green / 255f,
+                    color.blue / 255f,
+                    1f
+                )
             }
         }
 

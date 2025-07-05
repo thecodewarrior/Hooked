@@ -72,15 +72,15 @@ open class BasicHookPlayerController(val player: PlayerEntity, val behavior: Bas
     }
 
     /**
-     * Returns the bounding box of the jump target
+     * Returns the bounding boxes of the jump targets. The returned list is sorted from highest to lowest
+     * priority. That is, the first element should be used as the final jump target.
      */
     fun computeJumpTargets(
         delegate: HookControllerDelegate
-    ): List<Box>? {
+    ): List<Box> {
         val waist = player.getWaistPos()
         val targetPos = getTargetPoint(delegate.hooks)
         val deltaPos = targetPos - waist
-        val deltaNormal = deltaPos.normalize()
 
         val boostAABB: Box
         when {
@@ -90,22 +90,22 @@ open class BasicHookPlayerController(val player: PlayerEntity, val behavior: Bas
             deltaPos.length() < behavior.pullStrength * 3 -> {
                 boostAABB = player.boundingBox.offset(deltaPos) // the player's bounding box centered around the targetPos
             }
-            else -> return null
+            else -> return emptyList()
         }
 
-        return boostTestOffsets.map {
+        return JumpHeightUtil.computeJumpTargetOffsets(player).map {
             boostAABB.offset(JumpHeightUtil.computeStepTarget(player, boostAABB, it, 2.5))
-        }
+        }.sortedByDescending { it.minY }.filter { it.minY > player.y }
     }
 
     private fun performJump(
         delegate: HookControllerDelegate
     ) {
-        val jumpTarget = this.computeJumpTargets(delegate)
+        val jumpTargets = this.computeJumpTargets(delegate)
 
-        if(jumpTarget != null) {
+        if(jumpTargets.isNotEmpty()) {
             // the height relative to the player's current position
-            val jumpHeight = jumpTarget.maxOf { it.minY } - player.y
+            val jumpHeight = jumpTargets.maxOf { it.minY } - player.y
             val gravity = max(0.0, player.finalGravity)
 
             player.jump()

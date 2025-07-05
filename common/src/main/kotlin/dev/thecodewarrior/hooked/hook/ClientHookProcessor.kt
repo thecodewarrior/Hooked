@@ -153,12 +153,12 @@ object ClientHookProcessor: CommonHookProcessor() {
         return data.controller.isActive(Context(data), reason)
     }
 
-    fun previewJumpTarget(player: ClientPlayerEntity): List<Box>? {
+    fun previewJumpTargets(player: ClientPlayerEntity): List<Box> {
         val data = player.hookData()
-        val controller = data.controller as? BasicHookPlayerController ?: return null
-        if(data.hooks.values.none { it.state == Hook.State.PLANTED }) return null
+        val controller = data.controller as? BasicHookPlayerController ?: return emptyList()
+        if(data.hooks.values.none { it.state == Hook.State.PLANTED }) return emptyList()
 
-        return controller.computeJumpTargets(Context(data))?.filter { it.minY > player.y }
+        return controller.computeJumpTargets(Context(data))
     }
 
     private val logger = Hooked.logManager.makeLogger<ClientHookProcessor>()

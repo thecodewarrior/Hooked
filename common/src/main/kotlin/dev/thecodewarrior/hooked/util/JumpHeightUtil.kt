@@ -1,10 +1,12 @@
 package dev.thecodewarrior.hooked.util
 
 import com.teamwizardry.librarianlib.core.util.vec
+import com.teamwizardry.librarianlib.math.times
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.math.Box
 import net.minecraft.util.math.Vec3d
+import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -86,7 +88,27 @@ object JumpHeightUtil {
         if (forward * forward + sideways * sideways < 1.0E-7) {
             return vec(-s, 0, c)
         }
-        return vec(sideways * c - forward * s, 0, forward * c + sideways * s).normalize()
+        return vec(
+            sideways * c - forward * s,
+            0,
+            forward * c + sideways * s
+        ).normalize()
     }
 
+    fun computeJumpTargetOffsets(player: PlayerEntity): List<Vec3d> {
+        val direction = movementToDirection(player.forwardSpeed, player.sidewaysSpeed, player.yaw)
+
+        val sampleAngles = listOf(45).map { it * PI.toFloat() / 180f }
+        val sampleDistance = 1.0
+
+        val samples = mutableListOf<Vec3d>()
+        samples.add(direction * sampleDistance)
+
+        for (angle in sampleAngles) {
+            samples.add(direction.rotateY(angle) * sampleDistance)
+            samples.add(direction.rotateY(-angle) * sampleDistance)
+        }
+
+        return samples
+    }
 }
