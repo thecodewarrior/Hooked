@@ -7,6 +7,12 @@ architectury {
     fabric()
 }
 
+loom {
+    runs.configureEach {
+        vmArg("-Dlibrarianlib.logging.debug=hooked")
+    }
+}
+
 configurations {
     common {
         canBeResolved = true
