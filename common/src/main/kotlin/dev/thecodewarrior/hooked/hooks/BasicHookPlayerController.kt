@@ -73,11 +73,12 @@ open class BasicHookPlayerController(val player: PlayerEntity, val behavior: Bas
 
     /**
      * Returns the bounding boxes of the jump targets. The returned list is sorted from highest to lowest
-     * priority. That is, the first element should be used as the final jump target.
+     * priority. That is, the first element should be used as the final jump target. Null if the player is in a state
+     * where they aren't allowed to jump.
      */
     fun computeJumpTargets(
         delegate: HookControllerDelegate
-    ): List<Box> {
+    ): List<Box>? {
         val waist = player.getWaistPos()
         val targetPos = getTargetPoint(delegate.hooks)
         val deltaPos = targetPos - waist
@@ -90,7 +91,7 @@ open class BasicHookPlayerController(val player: PlayerEntity, val behavior: Bas
             deltaPos.length() < behavior.pullStrength * 3 -> {
                 boostAABB = player.boundingBox.offset(deltaPos) // the player's bounding box centered around the targetPos
             }
-            else -> return emptyList()
+            else -> return null // not allowed to jump
         }
 
         return JumpHeightUtil.computeJumpTargetOffsets(player).map {
@@ -103,18 +104,22 @@ open class BasicHookPlayerController(val player: PlayerEntity, val behavior: Bas
     ) {
         val jumpTargets = this.computeJumpTargets(delegate)
 
-        if(jumpTargets.isNotEmpty()) {
-            // the height relative to the player's current position
-            val jumpHeight = jumpTargets.maxOf { it.minY } - player.y
-            val gravity = max(0.0, player.finalGravity)
-
+        if(jumpTargets != null) {
             player.jump()
-            if(jumpHeight > 0) {
-                player.velocity = vec(
-                    player.velocity.x,
-                    sqrt(2 * gravity * jumpHeight),
-                    player.velocity.z
-                )
+
+            if (jumpTargets.isNotEmpty()) {
+                // the height relative to the player's current position
+                val jumpHeight = jumpTargets.first().minY - player.y
+                val gravity = max(0.0, player.finalGravity)
+                val jumpVelocity = sqrt(2 * gravity * jumpHeight)
+
+                if(jumpVelocity > player.velocity.y) {
+                    player.velocity = vec(
+                        player.velocity.x,
+                        jumpVelocity,
+                        player.velocity.z
+                    )
+                }
             }
 
             return

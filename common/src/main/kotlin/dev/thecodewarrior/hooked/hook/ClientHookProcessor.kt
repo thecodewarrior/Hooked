@@ -158,7 +158,7 @@ object ClientHookProcessor: CommonHookProcessor() {
         val controller = data.controller as? BasicHookPlayerController ?: return emptyList()
         if(data.hooks.values.none { it.state == Hook.State.PLANTED }) return emptyList()
 
-        return controller.computeJumpTargets(Context(data))
+        return controller.computeJumpTargets(Context(data)) ?: emptyList()
     }
 
     private val logger = Hooked.logManager.makeLogger<ClientHookProcessor>()
