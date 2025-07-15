@@ -2,6 +2,7 @@ package dev.thecodewarrior.hooked.util
 
 import com.teamwizardry.librarianlib.core.util.vec
 import com.teamwizardry.librarianlib.math.*
+import dev.thecodewarrior.hooked.Hooked
 import dev.thecodewarrior.hooked.shade.quickhull3d.Point3d
 import dev.thecodewarrior.hooked.shade.quickhull3d.QuickHull3D
 import net.minecraft.util.math.Vec3d
@@ -40,30 +41,25 @@ class DynamicHull: BoundingShape {
         val uniquePoints = newPoints.toSet()
         if (uniquePoints == pointSet) return false
         pointSet = uniquePoints
-        if (points.isEmpty()) {
-            shape = NoBoundingShape
-            return true
+        shape = if (points.isEmpty()) {
+            NoBoundingShape
+        } else if (points.size == 1) {
+            Point(points[0])
+        } else {
+            try {
+                toLine(0.5)
+                    ?: toPolygon(0.1)
+                    ?: toHull(0.5)
+                    ?: NoBoundingShape
+            } catch (e: IllegalArgumentException) { // thrown by QuickHull3D
+                logger.warn(
+                    "Error creating hull with points [{}]",
+                    points.joinToString(", ") { e -> "(${e.x},${e.y},${e.z})" },
+                    e
+                )
+                NoBoundingShape
+            }
         }
-        if (points.size == 1) {
-            shape = Point(points[0])
-            return true
-        }
-        val line = toLine(0.5)
-        if (line != null) {
-            shape = line
-            return true
-        }
-        val polygon = toPolygon(0.1)
-        if (polygon != null) {
-            shape = polygon
-            return true
-        }
-        val hull = toHull(0.5)
-        if (hull != null) {
-            shape = hull
-            return true
-        }
-        shape = NoBoundingShape
         return true
     }
 
@@ -204,6 +200,10 @@ class DynamicHull: BoundingShape {
         } catch (e: Exception) {
             return null
         }
+    }
+
+    companion object {
+        val logger = Hooked.logManager.makeLogger(DynamicHull::class.java)
     }
 }
 
