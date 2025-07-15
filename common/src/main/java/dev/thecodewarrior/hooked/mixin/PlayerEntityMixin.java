@@ -7,6 +7,7 @@ import dev.thecodewarrior.hooked.hook.NullHookProcessor;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
@@ -31,7 +32,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerMi
 
     @Inject(method = "isInvulnerableTo", at = @At("HEAD"), cancellable = true)
     private void hooked$isInvulnerableToMixin(DamageSource damageSource, CallbackInfoReturnable<Boolean> cir) {
-        if(this.isHookActive(HookActiveReason.ELYTRA_DAMAGE)) {
+        if(damageSource.isOf(DamageTypes.FLY_INTO_WALL) && this.isHookActive(HookActiveReason.ELYTRA_DAMAGE)) {
             cir.setReturnValue(true);
         }
     }
