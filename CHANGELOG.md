@@ -1,3 +1,14 @@
+# 2.0.1
+- Improve jump assist reliability
+- Improve jump assist game feel (the jump assist won't reduce jump height below default)
+- Fix a couple of texture inconsistencies
+- (Fabric) Allow swapping hooks by right-clicking the hook item
+- Fix a missing damage type check causing the player to be immune to all damage when using a hook (#43)
+- Fix coplanar redstone hooks sometimes leading to errors ticking the player (#44)
+
+# 2.0.0
+- No changes from beta.4
+
 # 2.0.0-beta.4
 - Flattened hook behavior item components (instead of `hooked:behavior={"type":"hooked:basic","pullStrength":1.5}` you can just do `hooked:pull_strength=1.5`)
 - Expanded datapack docs in readme
