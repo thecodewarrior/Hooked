@@ -49,8 +49,7 @@ class DynamicHull: BoundingShape {
             try {
                 toLine(0.5)
                     ?: toPolygon(0.1)
-                    ?: toHull(0.5)
-                    ?: NoBoundingShape
+                    ?: toHull()
             } catch (e: IllegalArgumentException) { // thrown by QuickHull3D
                 logger.warn(
                     "Error creating hull with points [{}]",
@@ -194,12 +193,8 @@ class DynamicHull: BoundingShape {
         })
     }
 
-    fun toHull(threshold: Double): Hull? {
-        try {
-            return Hull(points, threshold)
-        } catch (e: Exception) {
-            return null
-        }
+    fun toHull(): Hull {
+        return Hull(points)
     }
 
     companion object {
@@ -356,7 +351,6 @@ data class Hull(val points: List<Vec3d>): BoundingShape {
     init {
         val origin = points[0]
         val quickHull = QuickHull3D()
-        quickHull.explicitDistanceTolerance = threshold / 100.0
         quickHull.build(points.map { (it - origin).toPoint3d() }.toTypedArray())
         val vertices = quickHull.vertices.map { it.toVec3d() + origin }
         faces = quickHull.faces.map { indices ->
