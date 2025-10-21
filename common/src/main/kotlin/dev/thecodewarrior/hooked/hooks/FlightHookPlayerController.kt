@@ -9,6 +9,7 @@ import dev.thecodewarrior.hooked.hook.HookControllerDelegate
 import dev.thecodewarrior.hooked.hook.HookPlayerController
 import dev.thecodewarrior.hooked.util.DynamicHull
 import dev.thecodewarrior.hooked.util.FadeTimer
+import dev.thecodewarrior.hooked.util.NoBoundingShape
 import dev.thecodewarrior.hooked.util.fromWaistPos
 import dev.thecodewarrior.hooked.util.getWaistPos
 import net.minecraft.entity.player.PlayerAbilities
@@ -144,7 +145,9 @@ open class FlightHookPlayerController(val player: PlayerEntity, val behavior: Fl
 
         val waist = player.getWaistPos()
         val constrained = hull.constrain(waist)
-        isInsideHull = waist.squaredDistanceTo(constrained.position) < allowedFlightRange * allowedFlightRange
+        // fail shut
+        isInsideHull = hull.shape !is NoBoundingShape &&
+            waist.squaredDistanceTo(constrained.position) < allowedFlightRange * allowedFlightRange
 
         updateFlightEnabled()
 
