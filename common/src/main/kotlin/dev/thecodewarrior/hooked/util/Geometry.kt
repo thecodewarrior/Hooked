@@ -18,7 +18,7 @@ object NoBoundingShape: BoundingShape {
     override val wireframe: Set<WireframeEdge> = emptySet()
 
     override fun constrain(point: Vec3d): ConstraintResult {
-        return ConstraintResult(point, Vec3d.ZERO)
+        return ConstraintResult(point, Vec3d.ZERO, Double.POSITIVE_INFINITY)
     }
 }
 
@@ -211,7 +211,9 @@ data class Point(val point: Vec3d): BoundingShape {
     override val wireframe: Set<WireframeEdge> = emptySet()
 
     override fun constrain(point: Vec3d): ConstraintResult {
-        return ConstraintResult(this.point, (point - this.point).normalize())
+        val delta = point - this.point
+        val deltaLength = delta.length()
+        return ConstraintResult(this.point, delta / deltaLength, deltaLength)
     }
 }
 
@@ -223,9 +225,11 @@ data class LineSegment(val a: Vec3d, val b: Vec3d): BoundingShape {
 
     override fun constrain(point: Vec3d): ConstraintResult {
         val dot = (point - a) dot normalized
+        val newPoint = a + normalized * dot.clamp(0.0, length)
         return ConstraintResult(
-            a + normalized * dot.clamp(0.0, length),
-            (point - (a + normalized * dot)).normalize()
+            newPoint,
+            (point - (a + normalized * dot)).normalize(),
+            point.distanceTo(newPoint)
         )
     }
 }
@@ -323,11 +327,12 @@ data class Polygon(val points: List<Vec3d>): BoundingShape {
         val point2d = pointToPlane(point)
         if (point2d in this) {
             val constrainedPoint = planeToPoint(point2d)
-            val normal = (point - constrainedPoint).normalize()
-            return ConstraintResult(constrainedPoint, normal)
+            val delta = point - constrainedPoint
+            val deltaLength = delta.length()
+            return ConstraintResult(constrainedPoint, delta / deltaLength, deltaLength)
         }
 
-        return edges.map { it.constrain(point) }.minByOrNull { (it.position - point).lengthSquared() }!!
+        return edges.map { it.constrain(point) }.minBy { it.distanceOutside }
     }
 
     // https://stackoverflow.com/a/8721483
@@ -345,7 +350,7 @@ data class Polygon(val points: List<Vec3d>): BoundingShape {
     }
 }
 
-data class Hull(val points: List<Vec3d>, val threshold: Double): BoundingShape {
+data class Hull(val points: List<Vec3d>): BoundingShape {
     val faces: List<Polygon>
 
     init {
@@ -361,8 +366,8 @@ data class Hull(val points: List<Vec3d>, val threshold: Double): BoundingShape {
 
     override fun constrain(point: Vec3d): ConstraintResult {
         if (faces.all { (point - it.a) dot it.normal <= 0 }) // point is inside the hull
-            return ConstraintResult(point, Vec3d.ZERO)
-        return faces.map { it.constrain(point) }.minByOrNull { (point - it.position).lengthSquared() }!!
+            return ConstraintResult(point, Vec3d.ZERO, 0.0)
+        return faces.map { it.constrain(point) }.minBy { it.distanceOutside }
     }
 
     override val wireframe: Set<WireframeEdge> by lazy {
@@ -402,4 +407,18 @@ class WireframeEdge(val a: Vec3d, val b: Vec3d) {
     }
 }
 
-class ConstraintResult(val position: Vec3d, val normal: Vec3d)
+class ConstraintResult(
+    /**
+     * The constrained point
+     */
+    val position: Vec3d,
+    /**
+     * The normal of the polygon that constrained the point. May be zero.
+     */
+    val normal: Vec3d,
+    /**
+     * How far outside the bounding shape was the target point, or zero if inside the bounding shape.
+     */
+    val distanceOutside: Double
+) {
+}
