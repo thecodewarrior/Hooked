@@ -1,3 +1,7 @@
+# 2.0.2
+- Fix exploit allowing unlimited creative flight by corrupting the red hook's bounding region
+- Make the red hook's bounding box harder to corrupt
+
 # 2.0.1
 - Improve jump assist reliability
 - Improve jump assist game feel (the jump assist won't reduce jump height below default)
