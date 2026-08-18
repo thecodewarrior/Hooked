@@ -1,8 +1,5 @@
 {
-  "curios.identifier.hooked": "Grappling Hook",
-  "hooked.controller.basic.tooltip.controls": "Press '%1$s' to fire hooks. Jump to retract all hooks.",
-  "hooked.controller.flight.tooltip.controls": "Press '%1$s' to fire hooks. Sneak and double jump to retract all hooks.",
-  "hooked.controller.universal.tooltip.collapsed": "<Shift を長押し>",
+  "hooked.controller.universal.controls.collapsed": "<Shift を長押し>",
   "hooked.subtitle.fire_hook": "Grappling hook fires",
   "hooked.subtitle.hook_dislodge": "Grappling hook dislodges",
   "hooked.subtitle.hook_hit": "Grappling hook hits",

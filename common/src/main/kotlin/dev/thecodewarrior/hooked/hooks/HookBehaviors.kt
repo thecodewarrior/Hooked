@@ -14,6 +14,7 @@ import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.registry.Registry
 import net.minecraft.text.Text
+import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import net.minecraft.util.dynamic.Codecs
 import org.joml.Vector3f
@@ -46,17 +47,17 @@ data class BasicHookBehavior(
     override val type: HookBehaviorType<*>
         get() = HookBehaviors.BASIC
 
-    override fun controlsHelpText(hookProperties: HookProperties, fireKeyBindText: Text): List<Text> {
+    override fun controlsHelpText(hookProperties: HookProperties, fireKeyBindText: Text, vararg formatting: Formatting): List<Text> {
         return if(hookProperties.count > 1) {
             listOf(
-                Text.translatable("hooked.controller.basic.controls.multi.fire", fireKeyBindText),
-                Text.translatable("hooked.controller.basic.controls.multi.fire_extra", fireKeyBindText),
-                Text.translatable("hooked.controller.basic.controls.multi.jump"),
+                Text.translatable("hooked.controller.basic.controls.multi.fire", fireKeyBindText).formatted(*formatting),
+                Text.translatable("hooked.controller.basic.controls.multi.fire_extra", fireKeyBindText).formatted(*formatting),
+                Text.translatable("hooked.controller.basic.controls.multi.jump").formatted(*formatting),
             )
         } else {
             listOf(
-                Text.translatable("hooked.controller.basic.controls.single.fire", fireKeyBindText),
-                Text.translatable("hooked.controller.basic.controls.single.jump"),
+                Text.translatable("hooked.controller.basic.controls.single.fire", fireKeyBindText).formatted(*formatting),
+                Text.translatable("hooked.controller.basic.controls.single.jump").formatted(*formatting),
             )
         }
     }
@@ -91,11 +92,12 @@ data class FlightHookBehavior(
     override val type: HookBehaviorType<*>
         get() = HookBehaviors.FLIGHT
 
-    override fun controlsHelpText(hookProperties: HookProperties, fireKeyBindText: Text): List<Text> {
+    override fun controlsHelpText(hookProperties: HookProperties, fireKeyBindText: Text, vararg formatting: Formatting): List<Text> {
         return listOf(
-            Text.translatable("hooked.controller.flight.controls.fire", fireKeyBindText),
-            Text.translatable("hooked.controller.flight.controls.retract", fireKeyBindText),
-            Text.translatable("hooked.controller.flight.controls.jump"),
+            Text.translatable("hooked.controller.flight.controls.tutorial").formatted(*formatting),
+            Text.translatable("hooked.controller.flight.controls.fire", fireKeyBindText).formatted(*formatting),
+            Text.translatable("hooked.controller.flight.controls.retract", fireKeyBindText).formatted(*formatting),
+            Text.translatable("hooked.controller.flight.controls.jump").formatted(*formatting),
         )
     }
 
@@ -131,7 +133,7 @@ object NullHookBehavior : HookBehavior {
     override val type: HookBehaviorType<*>
         get() = HookBehaviors.NONE
 
-    override fun controlsHelpText(hookProperties: HookProperties, fireKeyBindText: Text): List<Text> {
+    override fun controlsHelpText(hookProperties: HookProperties, fireKeyBindText: Text, vararg formatting: Formatting): List<Text> {
         return emptyList()
     }
 

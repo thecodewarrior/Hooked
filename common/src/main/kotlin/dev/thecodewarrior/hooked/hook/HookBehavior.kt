@@ -12,6 +12,7 @@ import net.minecraft.item.ItemStack
 import net.minecraft.registry.RegistryKey
 import net.minecraft.registry.SimpleRegistry
 import net.minecraft.text.Text
+import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import kotlin.jvm.optionals.getOrNull
 
@@ -21,7 +22,7 @@ interface HookBehavior {
     /**
      * The language keys to add to the item tooltip
      */
-    fun controlsHelpText(hookProperties: HookProperties, fireKeyBindText: Text): List<Text>
+    fun controlsHelpText(hookProperties: HookProperties, fireKeyBindText: Text, vararg formatting: Formatting): List<Text>
 
     /**
      * Create a new player controller

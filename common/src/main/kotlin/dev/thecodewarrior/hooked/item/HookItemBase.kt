@@ -31,8 +31,8 @@ object HookItemBase {
                 tooltip.add(Text.translatable("${item.translationKey}.tip"))
             }
             if (hasShiftDown()) {
-                val fireKeyName = Text.keybind("key.hooked.fire").formatted(Formatting.BOLD)
-                tooltip.addAll(hookProperties.behavior.controlsHelpText(hookProperties, fireKeyName))
+                val fireKeyName = Text.keybind("key.hooked.fire").formatted(Formatting.BOLD, Formatting.WHITE)
+                tooltip.addAll(hookProperties.behavior.controlsHelpText(hookProperties, fireKeyName, Formatting.GRAY))
             } else {
                 tooltip.add(
                     Text.translatable("hooked.controller.universal.controls.collapsed").formatted(Formatting.GRAY)
