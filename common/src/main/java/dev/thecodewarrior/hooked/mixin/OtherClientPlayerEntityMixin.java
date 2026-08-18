@@ -12,6 +12,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class OtherClientPlayerEntityMixin implements PlayerMixinBridge {
     @Inject(method = "tickMovement", at = @At("RETURN"), require = 1)
     private void hooked$tickHooks(CallbackInfo ci) {
-        getHookProcessor().tick((PlayerEntity) (Object) this);
+        getHookProcessor().safeTick((PlayerEntity) (Object) this);
     }
 }

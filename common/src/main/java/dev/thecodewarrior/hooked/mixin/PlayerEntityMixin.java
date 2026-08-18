@@ -52,6 +52,6 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerMi
 
     @Inject(method = "tickMovement", at = @At("RETURN"), require = 1)
     private void hooked$tickHooks(CallbackInfo ci) {
-        getHookProcessor().tick((PlayerEntity) (Object) this);
+        getHookProcessor().safeTick((PlayerEntity) (Object) this);
     }
 }
