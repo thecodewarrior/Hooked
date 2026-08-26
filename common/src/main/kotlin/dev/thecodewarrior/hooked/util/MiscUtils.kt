@@ -9,6 +9,8 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.Vec3d
 import java.awt.Color
+import kotlin.math.asin
+import kotlin.math.atan2
 
 fun PlayerEntity.fromWaistPos(waist: Vec3d): Vec3d {
     return waist - vec(0, this.standingEyeHeight / 2, 0)
@@ -29,4 +31,10 @@ val Entity.actualMotion: Vec3d get() = vec(this.x - this.prevX, this.y - this.pr
 
 fun Vec3d.isFinite(): Boolean {
     return x.isFinite() && y.isFinite() && z.isFinite()
+}
+
+fun Vec3d.toAngles(): Pair<Float, Float> {
+    val pitch = -Math.toDegrees(asin(y)).toFloat()
+    val yaw = -Math.toDegrees(atan2(x, z)).toFloat()
+    return pitch to yaw
 }

@@ -1,8 +1,10 @@
 package dev.thecodewarrior.hooked.hook
 
+import dev.ryanhcode.sable.companion.SableCompanion
 import dev.thecodewarrior.hooked.item.HookProperties
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.sound.SoundEvent
+import net.minecraft.util.math.Position
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
 
@@ -45,6 +47,11 @@ interface HookControllerDelegate {
             fireEvent(HookEvent(HookEvent.EventType.DISLODGE, hook.id, reason.ordinal))
         }
         hook.state = Hook.State.RETRACTING
+        hook.moveOutOfSubLevel(SableCompanion.INSTANCE.getContaining(world, hook.pos))
         syncHook(hook)
+    }
+
+    fun project(pos: Vec3d): Vec3d {
+        return SableCompanion.INSTANCE.projectOutOfSubLevel(world, pos as Position)
     }
 }

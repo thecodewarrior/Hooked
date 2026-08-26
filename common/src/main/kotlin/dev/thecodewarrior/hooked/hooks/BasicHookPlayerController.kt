@@ -66,7 +66,7 @@ open class BasicHookPlayerController(val player: PlayerEntity, val behavior: Bas
     }
 
     fun isStuck(delegate: HookControllerDelegate): Boolean {
-        val delta = getTargetPoint(delegate.hooks) - player.getWaistPos()
+        val delta = getTargetPoint(delegate) - player.getWaistPos()
 
         return delta == Vec3d.ZERO || acos(player.actualMotion.normalize() dot delta.normalize()) > Math.toRadians(80.0)
     }
@@ -80,7 +80,7 @@ open class BasicHookPlayerController(val player: PlayerEntity, val behavior: Bas
         delegate: HookControllerDelegate
     ): List<Box>? {
         val waist = player.getWaistPos()
-        val targetPos = getTargetPoint(delegate.hooks)
+        val targetPos = getTargetPoint(delegate)
         val deltaPos = targetPos - waist
 
         val boostAABB: Box
@@ -126,7 +126,7 @@ open class BasicHookPlayerController(val player: PlayerEntity, val behavior: Bas
         }
 
         val waist = player.getWaistPos()
-        val targetPos = getTargetPoint(delegate.hooks)
+        val targetPos = getTargetPoint(delegate)
         val deltaPos = targetPos - waist
         // if we don't do anything special, just give them a bit of a boost
         player.velocity += deltaPos.normalize() * (behavior.pullStrength * 0.2)
@@ -140,19 +140,19 @@ open class BasicHookPlayerController(val player: PlayerEntity, val behavior: Bas
         player.fallDistance = 0f
         clearFlyingKickTimer(player)
 
-        val targetPlayerPos = player.fromWaistPos(getTargetPoint(delegate.hooks))
+        val targetPlayerPos = player.fromWaistPos(getTargetPoint(delegate))
         applyRestoringForce(player, targetPlayerPos, behavior.pullStrength)
         if(isStuck(delegate) || player.actualMotion == Vec3d.ZERO) {
             player.stopFallFlying()
         }
     }
 
-    protected fun getTargetPoint(hooks: Collection<Hook>): Vec3d {
+    protected fun getTargetPoint(delegate: HookControllerDelegate): Vec3d {
         var plantedCount = 0
         var targetPoint = Vec3d.ZERO
-        hooks.forEach { hook ->
+        delegate.hooks.forEach { hook ->
             if (hook.state == Hook.State.PLANTED) {
-                targetPoint += hook.pos
+                targetPoint += delegate.project(hook.pos)
                 plantedCount++
             }
         }

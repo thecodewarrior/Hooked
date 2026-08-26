@@ -3,9 +3,11 @@ package dev.thecodewarrior.hooked.hook
 import com.teamwizardry.librarianlib.core.util.block
 import com.teamwizardry.librarianlib.etcetera.Raycaster
 import com.teamwizardry.librarianlib.math.*
+import dev.ryanhcode.sable.companion.SableCompanion
 import dev.thecodewarrior.hooked.HookGameRules
 import dev.thecodewarrior.hooked.Hooked
 import dev.thecodewarrior.hooked.util.getWaistPos
+import net.minecraft.util.math.Vec3d
 import kotlin.math.*
 
 /**
@@ -59,6 +61,7 @@ abstract class CommonHookProcessor : HookProcessor {
             if (hook.state != Hook.State.EXTENDING)
                 continue
 
+            hook.moveOutOfSubLevel(SableCompanion.INSTANCE.getContaining(context.world, hook.pos))
             val distanceLeft = context.controller.modifyHookRange(context.properties.range, hook) -
                     (hook.pos - context.player.getWaistPos()).length()
 
@@ -72,6 +75,7 @@ abstract class CommonHookProcessor : HookProcessor {
                 hook.pos.z + hook.direction.z * castDistance
             )
                 .withEntityContext(context.player)
+                .withSubLevelMode(Raycaster.SubLevelMode.INCLUDE_SUBLEVELS)
             context.controller.configureRaycast(request)
             raycaster.cast(request)
 
@@ -81,7 +85,8 @@ abstract class CommonHookProcessor : HookProcessor {
                 Raycaster.HitType.BLOCK -> {
                     // if we hit a block, plant in it
                     hook.state = Hook.State.PLANTED
-                    hook.block = block(raycaster.blockX, raycaster.blockY, raycaster.blockZ)
+                    hook.block = raycaster.block.toImmutable()
+                    hook.moveIntoSubLevel(raycaster.sublevel)
                     context.syncHook(hook, sendToClient = false)
                     context.fireEvent(HookEvent(HookEvent.EventType.HIT, hook.id, 0))
                 }
@@ -132,9 +137,10 @@ abstract class CommonHookProcessor : HookProcessor {
             }
 
             val hookRange = context.controller.modifyHookRange(context.properties.range, hook) + breakEpsilon
+            val hookDistanceSq = SableCompanion.INSTANCE.distanceSquaredWithSubLevels(context.world, hook.pos, context.player.getWaistPos())
 
             val reason = when {
-                hook.pos.distanceTo(context.player.getWaistPos()) > hookRange -> {
+                hookDistanceSq > hookRange * hookRange -> {
                     HookPlayerController.DislodgeReason.DISTANCE
                 }
                 context.world.isAir(hook.block) -> {
@@ -147,6 +153,7 @@ abstract class CommonHookProcessor : HookProcessor {
             context.syncHook(hook)
             context.fireEvent(HookEvent(HookEvent.EventType.DISLODGE, hook.id, reason.ordinal))
         }
+
         var plantedCount = 0
         // count from the end of the list, retracting everything after the threshold
         for ((_, hook) in context.data.hooks.descendingMap()) {
@@ -171,6 +178,7 @@ abstract class CommonHookProcessor : HookProcessor {
         val iterator = context.data.hooks.iterator()
         for ((_, hook) in iterator) {
             if (hook.state != Hook.State.RETRACTING) continue
+            hook.moveOutOfSubLevel(SableCompanion.INSTANCE.getContaining(context.world, hook.pos))
             val delta = hook.pos - context.player.getWaistPos()
             val distance = delta.length()
 
@@ -182,8 +190,7 @@ abstract class CommonHookProcessor : HookProcessor {
             } else {
                 val direction = delta / distance
                 hook.pos -= direction * min(context.properties.speed, distance)
-                hook.yaw = -Math.toDegrees(atan2(direction.x, direction.z)).toFloat()
-                hook.pitch = -Math.toDegrees(asin(direction.y)).toFloat()
+                hook.direction = direction
             }
         }
     }
@@ -192,8 +199,8 @@ abstract class CommonHookProcessor : HookProcessor {
         val waist = context.player.getWaistPos()
         val iter = context.data.hooks.iterator()
         for ((_, hook) in iter) {
-            val distance = waist.distanceTo(hook.pos)
-            if (distance > 10_000) {
+            val distance = SableCompanion.INSTANCE.distanceSquaredWithSubLevels(context.world, waist, hook.pos)
+            if (distance > 10_000 * 10_000) {
                 logger.warn("Hook was an absurd distance ($distance) from player. Removing $hook from ${context.player.name}")
                 context.data.syncStatus.addRecentHook(hook)
                 iter.remove()

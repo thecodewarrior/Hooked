@@ -14,6 +14,8 @@ loom {
 }
 
 configurations {
+    create("modJar")
+
     common {
         canBeResolved = true
         canBeConsumed = false
@@ -31,29 +33,32 @@ configurations {
 }
 
 dependencies {
-    modImplementation "net.fabricmc:fabric-loader:$project.fabric_loader_version"
+    modImplementation libs.platform.fabricLoader
+    modImplementation libs.platform.fabricApi
+    modImplementation libs.platform.mods.fabricLanguageKotlin
+    modImplementation libs.platform.mods.architecturyFabric
 
-    modImplementation "net.fabricmc.fabric-api:fabric-api:$project.fabric_api_version"
-    modImplementation "net.fabricmc:fabric-language-kotlin:${project.fabric_kotlin_version}"
+    modCompileOnly libs.mods.iris
 
-    modImplementation "dev.architectury:architectury-fabric:$project.architectury_api_version"
+    modImplementation libs.bundles.mods.liblib.fabric
 
+    modImplementation libs.mods.trinkets
+    modImplementation libs.mods.cardinalComponents.base
+    modImplementation libs.mods.cardinalComponents.entity
+    include libs.mods.cardinalComponents.base
+    include libs.mods.cardinalComponents.entity
+    modApi libs.mods.sableCompanionFabric
+    include libs.mods.sableCompanionFabric
 
-    modCompileOnly "curse.maven:irisshaders-455508:6213635" // Iris v1.8.8
-
-    modImplementation "com.teamwizardry.librarianlib:mosaic-fabric:${liblib_version}"
-    modImplementation "com.teamwizardry.librarianlib:glitter-fabric:${liblib_version}"
-    modImplementation "com.teamwizardry.librarianlib:etcetera-fabric:${liblib_version}"
-
-    modImplementation "dev.emi:trinkets:${project.trinkets_version}"
-    modImplementation "org.ladysnake.cardinal-components-api:cardinal-components-base:${project.cardinal_components_version}"
-    modImplementation "org.ladysnake.cardinal-components-api:cardinal-components-entity:${project.cardinal_components_version}"
-    include "org.ladysnake.cardinal-components-api:cardinal-components-base:${project.cardinal_components_version}"
-    include "org.ladysnake.cardinal-components-api:cardinal-components-entity:${project.cardinal_components_version}"
-
+    modApi libs.runtime.mods.sableFabric
 
     common(project(path: ':common', configuration: 'namedElements')) { transitive false }
     shadowBundle project(path: ':common', configuration: 'transformProductionFabric')
+}
+
+tasks.register("downloadModJars", Sync.class) {
+    from(configurations.modJar)
+    into("${project.projectDir}/run/mods")
 }
 
 def expansions = [
@@ -67,6 +72,7 @@ def expansions = [
 ]
 processResources {
     inputs.properties(expansions)
+    dependsOn(tasks.downloadModJars)
 
     filesMatching('fabric.mod.json') {
         expand(expansions)

@@ -7,6 +7,7 @@ import com.teamwizardry.librarianlib.core.util.vec
 import com.teamwizardry.librarianlib.math.minus
 import com.teamwizardry.librarianlib.math.plus
 import com.teamwizardry.librarianlib.math.times
+import dev.ryanhcode.sable.companion.SableCompanion
 import dev.thecodewarrior.hooked.bridge.hookData
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.client.renderer.HookRenderer
@@ -17,16 +18,20 @@ import dev.thecodewarrior.hooked.hook.HookPlayerController
 import dev.thecodewarrior.hooked.platform.HookedPlatformClient
 import dev.thecodewarrior.hooked.util.getWaistPos
 import dev.thecodewarrior.hooked.util.normal
+import dev.thecodewarrior.hooked.util.toAngles
 import dev.thecodewarrior.hooked.util.vertex
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.network.AbstractClientPlayerEntity
 import net.minecraft.client.render.*
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.util.math.Position
 import net.minecraft.util.math.RotationAxis
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.set
+import kotlin.math.asin
+import kotlin.math.atan2
 import kotlin.math.sqrt
 
 object HookRenderManager {
@@ -119,7 +124,10 @@ object HookRenderManager {
                 Hook.State.REMOVED -> DistinctColors.black
             }
 
-            val hookPos = hook.posLastTick + (hook.pos - hook.posLastTick) * tickDelta
+            val (hookPos, hookDirection) = hook.renderPose(
+                SableCompanion.INSTANCE.getContainingClient(hook.pos),
+                tickDelta
+            )
 
             val normal = (hookPos - waist).normalize()
             consumer.vertex(matrices, waist).color(color).normal(matrices, normal)
@@ -127,8 +135,9 @@ object HookRenderManager {
 
             matrices.push()
             matrices.translate(hookPos.x, hookPos.y, hookPos.z)
-            matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-hook.yaw))
-            matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(hook.pitch))
+            val (hookPitch, hookYaw) = hookDirection.toAngles()
+            matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-hookYaw))
+            matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(hookPitch))
 
             val length = hook.hookLength
             val claw = length / 3

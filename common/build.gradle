@@ -8,9 +8,10 @@ architectury {
 project.version = "0.0.0"
 
 dependencies {
-    modImplementation "dev.architectury:architectury:$project.architectury_api_version"
+    modImplementation libs.platform.mods.architecturyApi
 
-    modCompileOnly "com.teamwizardry.librarianlib:mosaic:${liblib_version}"
-    modCompileOnly "com.teamwizardry.librarianlib:glitter:${liblib_version}"
-    modCompileOnly "com.teamwizardry.librarianlib:etcetera:${liblib_version}"
+    modCompileOnly libs.bundles.mods.liblib.common
+
+    modApi libs.mods.sableCompanionFabric
+    modCompileOnly libs.mods.sableFabric
 }

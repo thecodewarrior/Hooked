@@ -14,6 +14,8 @@ loom {
 }
 
 configurations {
+    create("modJar")
+
     common {
         canBeResolved = true
         canBeConsumed = false
@@ -38,18 +40,15 @@ repositories {
 }
 
 dependencies {
-    neoForge "net.neoforged:neoforge:$project.neoforge_version"
+    neoForge libs.platform.neoforge
 
-    modImplementation "dev.architectury:architectury-neoforge:$project.architectury_api_version"
+    modImplementation libs.platform.mods.architecturyNeoForge
 
-    implementation("thedarkcolour:kotlinforforge-neoforge:$project.kotlin_for_forge_version") {
-        exclude(group: "net.neoforged")
-        exclude(group: "net.neoforged.fancymodloader")
-    }
+    implementation(libs.platform.mods.kotlinForForge)
+    modImplementation(libs.mods.sableCompanionFabric)
+    include(libs.mods.sableCompanionNeoForge)
 
-    modImplementation "com.teamwizardry.librarianlib:mosaic-neoforge:${liblib_version}"
-    modImplementation "com.teamwizardry.librarianlib:glitter-neoforge:${liblib_version}"
-    modImplementation "com.teamwizardry.librarianlib:etcetera-neoforge:${liblib_version}"
+    modImplementation libs.bundles.mods.liblib.neoforge
 
     // We need this because curios adds `remap = false` to its mixin annotations, which means architectury (rightly)
     // won't remap them to yarn mappings. I built a custom jar with that flag removed, and it works.
@@ -57,21 +56,29 @@ dependencies {
     //modCompileOnly "top.theillusivec4.curios:curios-neoforge:${curios_version}:api"
     //modRuntimeOnly "top.theillusivec4.curios:curios-neoforge:${curios_version}"
 
+    modJar libs.runtime.mods.sableNeoForge
+
     common(project(path: ':common', configuration: 'namedElements')) { transitive false }
     shadowBundle project(path: ':common', configuration: 'transformProductionNeoForge')
 }
 
+tasks.register("downloadModJars", Sync.class) {
+    from(configurations.modJar)
+    into("${project.projectDir}/run/mods")
+}
+
 def expansions = [
         version: project.version,
-        dep_neoforge: project.property('neoforge.mod_deps.neoforge'),
-        dep_minecraft: project.property('neoforge.mod_deps.minecraft'),
-        dep_kotlinforforge: project.property('neoforge.mod_deps.kotlinforforge'),
-        dep_architectury: project.property('neoforge.mod_deps.architectury'),
-        dep_curios: project.property('neoforge.mod_deps.curios'),
-        dep_liblib: project.property('neoforge.mod_deps.liblib'),
+        dep_neoforge: "[${libs.versions.platform.neoforge.get()},)",
+        dep_minecraft: libs.versions.platform.minecraft.get(),
+        dep_kotlinforforge: "[${libs.versions.platform.mods.kotlinForForge.get()},)",
+        dep_architectury: "[${libs.versions.platform.mods.architectury.get()},)",
+        dep_curios: "[9.5.1+1.21.1,)",
+        dep_liblib: "[${libs.versions.mods.liblib.get()},)",
 ]
 processResources {
     inputs.properties(expansions)
+    dependsOn(tasks.downloadModJars)
 
     filesMatching('META-INF/neoforge.mods.toml') {
         expand(expansions)

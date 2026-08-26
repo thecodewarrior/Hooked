@@ -47,7 +47,7 @@ object ClientHookProcessor: CommonHookProcessor() {
         override fun fireHook(pos: Vec3d, pitch: Float, yaw: Float, modifyFn: (Hook) -> Unit) {
             val hook = Hook(
                 data.nextId(), data.properties.hookModel.hookLength,
-                pos, pitch, yaw,
+                pos, Vec3d.fromPolar(pitch, yaw),
                 Hook.State.EXTENDING,
                 BlockPos(0, 0, 0),
                 0

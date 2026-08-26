@@ -1,6 +1,7 @@
 package dev.thecodewarrior.hooked.client.renderer
 
 import com.teamwizardry.librarianlib.math.*
+import dev.ryanhcode.sable.companion.SableCompanion
 import dev.thecodewarrior.hooked.Hooked
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.hook.Hook
@@ -8,6 +9,7 @@ import dev.thecodewarrior.hooked.hook.HookPlayerController
 import dev.thecodewarrior.hooked.item.HookProperties
 import dev.thecodewarrior.hooked.util.getWaistPos
 import dev.thecodewarrior.hooked.util.normal
+import dev.thecodewarrior.hooked.util.toAngles
 import dev.thecodewarrior.hooked.util.vertex
 import net.minecraft.client.render.OverlayTexture
 import net.minecraft.client.render.RenderLayer
@@ -49,16 +51,18 @@ abstract class SimpleHookRenderer<C: HookPlayerController>(): HookRenderer<C>() 
         hook: Hook,
     ) {
         val waist = player.getWaistPos(tickDelta)
-        val hookPos = hook.posLastTick + (hook.pos - hook.posLastTick) * tickDelta
+        val (hookPos, hookDirection) = hook.renderPose(
+            SableCompanion.INSTANCE.getContainingClient(hook.pos),
+            tickDelta
+        )
         val chainLength = waist.distanceTo(hookPos)
         val chainDirection = (hookPos - waist) / chainLength
 
         matrices.push()
-        val yaw = -Math.toDegrees(atan2(chainDirection.x, chainDirection.z)).toFloat()
-        val pitch = -Math.toDegrees(asin(chainDirection.y)).toFloat()
+        val (chainPitch, chainYaw) = chainDirection.toAngles()
         // we add 90 to the pitch because the model is based on +y, but pitch/yaw are based on +z
-        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-yaw))
-        matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(pitch + 90))
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-chainYaw))
+        matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(chainPitch + 90))
         matrices.translate(0.0, properties.chainAppearance.playerGap, 0.0)
 
         val actualLength = chainLength - properties.chainAppearance.playerGap
@@ -70,9 +74,10 @@ abstract class SimpleHookRenderer<C: HookPlayerController>(): HookRenderer<C>() 
 
         matrices.push()
         matrices.translate(hookPos.x - waist.x, hookPos.y - waist.y, hookPos.z - waist.z)
+        val (hookPitch, hookYaw) = hookDirection.toAngles()
         // we add 90 to the pitch because the model is based on +y, but pitch/yaw are based on +z
-        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-hook.yaw))
-        matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(hook.pitch + 90))
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-hookYaw))
+        matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(hookPitch + 90))
 
         val consumer = consumers.getBuffer(RenderLayer.getEntityCutout(properties.hookModel.texture))
         val lightmap = getBrightnessForRender(player.world, hookPos)

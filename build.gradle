@@ -3,12 +3,11 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id 'dev.architectury.loom' version '1.7-SNAPSHOT' apply false
-    id 'architectury-plugin' version '3.4-SNAPSHOT'
-    id 'com.gradleup.shadow' version '8.3.6' apply false
-
-    id 'org.jetbrains.kotlin.jvm' version '2.0.21' apply false
-    id 'com.google.devtools.ksp' version '2.0.21-1.0.28' apply false
+    alias(libs.plugins.loom) apply false
+    alias(libs.plugins.architectury)
+    alias(libs.plugins.shadow) apply false
+    alias(libs.plugins.kotlinJvm) apply false
+    alias(libs.plugins.ksp) apply false
 }
 
 architectury {
@@ -22,11 +21,11 @@ allprojects {
 }
 
 subprojects {
-    apply plugin: 'dev.architectury.loom'
-    apply plugin: 'architectury-plugin'
+    apply plugin: libs.plugins.loom.get().pluginId
+    apply plugin: libs.plugins.architectury.get().pluginId
 
-    apply plugin: 'org.jetbrains.kotlin.jvm'
-    apply plugin: 'com.google.devtools.ksp'
+    apply plugin: libs.plugins.kotlinJvm.get().pluginId
+    apply plugin: libs.plugins.ksp.get().pluginId
 
     base {
         // Set up a suffixed format for the mod jar names, e.g. `example-fabric`.
@@ -38,21 +37,35 @@ subprojects {
         maven { url = "https://maven.terraformersmc.com/" }
         maven { url = "https://maven.ladysnake.org/releases" }
         maven { url = "https://s01.oss.sonatype.org/content/repositories/snapshots" }
-        maven { url = "https://cursemaven.com" }
+        exclusiveContent {
+            forRepository { maven { url = "https://cursemaven.com"} }
+            filter { includeGroup("curse.maven") }
+        }
         maven { url = 'https://thedarkcolour.github.io/KotlinForForge/' }
         maven { url = "https://maven.theillusivec4.top/" } // curios
+        exclusiveContent {
+            forRepository { maven { url = "https://maven.ryanhcode.dev/releases" } }
+            filter {
+                includeGroup("dev.ryanhcode.sable-companion")
+                includeGroup("dev.ryanhcode.sable")
+            }
+        }
+        
+        // sable dependencies:
+        maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" } // fuzs.forgeconfigapiport
+        maven { url = "https://maven.blamejared.com" } // foundry.veil / foundry.imguimc
         mavenLocal()
     }
 
     dependencies {
-        minecraft "net.minecraft:minecraft:$project.minecraft_version"
+        minecraft(libs.platform.minecraft)
         mappings loom.layered {
-            it.mappings("net.fabricmc:yarn:$project.yarn_mappings:v2")
-            it.mappings("dev.architectury:yarn-mappings-patch-neoforge:$project.yarn_mappings_patch_neoforge_version")
+            it.mappings(variantOf(libs.platform.yarnMappings) { classifier ("v2") })
+            it.mappings(libs.platform.yarnMappingsNeoForgePatch)
         }
 
-        ksp "dev.zacsweers.autoservice:auto-service-ksp:1.2.0"
-        implementation "com.google.auto.service:auto-service-annotations:1.1.0"
+        ksp libs.build.autoServiceKsp
+        implementation libs.build.autoServiceAnnotations
     }
 
     java {

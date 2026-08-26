@@ -3,6 +3,7 @@ package dev.thecodewarrior.hooked.hooks
 import com.teamwizardry.librarianlib.math.dot
 import com.teamwizardry.librarianlib.math.minus
 import com.teamwizardry.librarianlib.math.times
+import dev.ryanhcode.sable.companion.SableCompanion
 import dev.thecodewarrior.hooked.hook.Hook
 import dev.thecodewarrior.hooked.hook.HookActiveReason
 import dev.thecodewarrior.hooked.hook.HookControllerDelegate
@@ -15,6 +16,7 @@ import net.minecraft.entity.player.PlayerAbilities
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.PacketByteBuf
+import net.minecraft.util.math.Position
 import net.minecraft.util.math.Vec3d
 import kotlin.math.cos
 
@@ -64,10 +66,6 @@ open class FlightHookPlayerController(val player: PlayerEntity, val behavior: Fl
         disableFlight()
     }
 
-    private fun isPointingAtHook(pos: Vec3d, direction: Vec3d, cosThreshold: Double, hook: Hook): Boolean {
-        return direction dot (hook.pos - pos).normalize() > cosThreshold
-    }
-
     private val retractThreshold: Double = cos(Math.toRadians(15.0))
     override fun fireHooks(
         delegate: HookControllerDelegate,
@@ -79,7 +77,7 @@ open class FlightHookPlayerController(val player: PlayerEntity, val behavior: Fl
         if(sneaking) {
             val direction = Vec3d.fromPolar(pitch, yaw)
             val closestHook = delegate.hooks
-                .map { hook -> hook to (direction dot (hook.pos - pos).normalize()) }
+                .map { hook -> hook to (direction dot (delegate.project(hook.pos) - pos).normalize()) }
                 .filter { it.second > retractThreshold }
                 .maxByOrNull { it.second }
                 ?.first
@@ -138,7 +136,8 @@ open class FlightHookPlayerController(val player: PlayerEntity, val behavior: Fl
             return
         }
 
-        if(hull.update(planted.map { it.pos })) {
+        val globalPoints = planted.map { SableCompanion.INSTANCE.projectOutOfSubLevel(delegate.world, it.pos as Position) }
+        if(hull.update(globalPoints)) {
             showHullTimer.start(20)
         }
 

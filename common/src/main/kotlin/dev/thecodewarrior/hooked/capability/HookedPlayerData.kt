@@ -118,7 +118,7 @@ class HookedPlayerData(val player: PlayerEntity) {
         properties = tag.get("Properties")?.let { HookProperties.fromNBT(it) } ?: HookProperties.NONE
         hooks = Hook.LIST_CODEC.parse(NbtOps.INSTANCE, tag.get("Hooks"))
             .resultOrPartial {  logger.error("Error reading hooks: $it") }
-            .orElse(emptyList())
+            .orElse(emptyList())!!
             .associateByTo(TreeMap()) { it.id }
         controller.loadState(tag.getCompound("Controller"))
 

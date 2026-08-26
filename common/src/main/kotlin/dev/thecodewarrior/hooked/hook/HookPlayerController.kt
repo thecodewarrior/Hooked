@@ -237,7 +237,7 @@ abstract class HookPlayerController {
     protected fun spawnChainShatterParticleEffect(delegate: HookControllerDelegate, hook: Hook) {
         val appearance = delegate.properties.chainAppearance
         if(appearance.particleColorMin.isPresent && delegate.player.world.isClient) {
-            ChainShatterParticleSpawner.spawnBurst(delegate.player.getWaistPos(), hook.pos, appearance)
+            ChainShatterParticleSpawner.spawnBurst(delegate.player.getWaistPos(), delegate.project(hook.pos), appearance)
         }
     }
 

@@ -1,0 +1,101 @@
+[versions]
+mods_liblib = "5.1.0"
+mods_cardinalComponents = "6.1.2"
+mods_trinkets = "3.10.0"
+mods_sableCompanion = "1.6.0"
+mods_sable = "2.0.5"
+
+# see: https://fabricmc.net/versions.html
+platform_minecraft = "1.21.1"
+platform_yarnMappings = "1.21.1+build.3"
+platform_yarnMappingsNeoForgePatch = "1.21+build.4"
+platform_mixin = "0.8.5"
+platform_mixinExtras = "0.4.1"
+
+platform_neoforge = "21.1.248"
+platform_fabricLoader = "0.19.3"
+platform_fabricApi = "0.116.15+1.21.1"
+
+platform_mods_fabricLanguageKotlin = "1.13.11+kotlin.2.3.21"
+platform_mods_kotlinForForge = "5.11.0"
+platform_mods_architectury = "13.0.8"
+
+build_autoServiceAnnotations = "1.1.0"
+build_autoServiceKsp = "1.2.0"
+
+# https://mvnrepository.com/artifact/dev.architectury.loom/dev.architectury.loom.gradle.plugin
+plugin_loom = "1.17.491"
+# https://mvnrepository.com/artifact/architectury-plugin/architectury-plugin.gradle.plugin
+plugin_architectury = "3.5.169"
+plugin_shadow = "8.3.6"
+plugin_kotlin = "2.3.21"
+plugin_ksp = "2.3.11"
+
+[bundles]
+mods_liblib_common = [
+    "mods_liblib_etcetera_common",
+    "mods_liblib_mosaic_common",
+    "mods_liblib_glitter_common",
+]
+mods_liblib_fabric = [
+    "mods_liblib_etcetera_fabric",
+    "mods_liblib_mosaic_fabric",
+    "mods_liblib_glitter_fabric",
+]
+mods_liblib_neoforge = [
+    "mods_liblib_etcetera_neoforge",
+    "mods_liblib_mosaic_neoforge",
+    "mods_liblib_glitter_neoforge",
+]
+
+[libraries]
+# the only difference between sable companion for forge and fabric is the mappings
+mods_sableCompanionFabric = { group = "dev.ryanhcode.sable-companion", name = "sable-companion-fabric-1.21.1", version.ref = "mods_sableCompanion" }
+mods_sableCompanionNeoForge = { group = "dev.ryanhcode.sable-companion", name = "sable-companion-common-1.21.1", version.ref = "mods_sableCompanion" }
+mods_sableFabric = { group = "dev.ryanhcode.sable", name = "sable-fabric-1.21.1", version.ref = "mods_sable" }
+mods_iris = "curse.maven:irisshaders-455508:6213635" # Iris v1.8.8
+
+mods_trinkets = { group = "dev.emi", name = "trinkets", version.ref = "mods_trinkets" }
+mods_cardinalComponents_base = { group = "org.ladysnake.cardinal-components-api", name = "cardinal-components-base", version.ref = "mods_cardinalComponents" }
+mods_cardinalComponents_entity = { group = "org.ladysnake.cardinal-components-api", name = "cardinal-components-entity", version.ref = "mods_cardinalComponents" }
+
+mods_liblib_mosaic_common = { group = "com.teamwizardry.librarianlib", name = "mosaic", version.ref = "mods_liblib"}
+mods_liblib_mosaic_fabric = { group = "com.teamwizardry.librarianlib", name = "mosaic-fabric", version.ref = "mods_liblib"}
+mods_liblib_mosaic_neoforge = { group = "com.teamwizardry.librarianlib", name = "mosaic-neoforge", version.ref = "mods_liblib"}
+
+mods_liblib_glitter_common = { group = "com.teamwizardry.librarianlib", name = "glitter", version.ref = "mods_liblib"}
+mods_liblib_glitter_fabric = { group = "com.teamwizardry.librarianlib", name = "glitter-fabric", version.ref = "mods_liblib"}
+mods_liblib_glitter_neoforge = { group = "com.teamwizardry.librarianlib", name = "glitter-neoforge", version.ref = "mods_liblib"}
+
+mods_liblib_etcetera_common = { group = "com.teamwizardry.librarianlib", name = "etcetera", version.ref = "mods_liblib"}
+mods_liblib_etcetera_fabric = { group = "com.teamwizardry.librarianlib", name = "etcetera-fabric", version.ref = "mods_liblib"}
+mods_liblib_etcetera_neoforge = { group = "com.teamwizardry.librarianlib", name = "etcetera-neoforge", version.ref = "mods_liblib"}
+
+runtime_mods_sableFabric = "curse.maven:sable-1312371:8673824" # 2.0.5
+runtime_mods_sableNeoForge = "curse.maven:sable-1312371:8673825" # 2.0.5
+
+platform_minecraft = { group = "net.minecraft", name = "minecraft", version.ref = "platform_minecraft" }
+platform_yarnMappings = { group = "net.fabricmc", name = "yarn", version.ref = "platform_yarnMappings" }
+platform_yarnMappingsNeoForgePatch = { group = "dev.architectury", name = "yarn-mappings-patch-neoforge", version.ref = "platform_yarnMappingsNeoForgePatch" }
+platform_mixin = { group = "org.spongepowered", name = "mixin", version.ref = "platform_mixin"}
+platform_mixinExtras = { group = "io.github.llamalad7", name = "mixinextras-common", version.ref = "platform_mixinExtras" }
+
+platform_neoforge = { group = "net.neoforged", name = "neoforge", version.ref = "platform_neoforge" }
+platform_fabricLoader = { group = "net.fabricmc", name = "fabric-loader", version.ref = "platform_fabricLoader" }
+platform_fabricApi = { group = "net.fabricmc.fabric-api", name = "fabric-api", version.ref = "platform_fabricApi" }
+
+platform_mods_fabricLanguageKotlin = { group = "net.fabricmc", name = "fabric-language-kotlin", version.ref = "platform_mods_fabricLanguageKotlin" }
+platform_mods_kotlinForForge = { group = "thedarkcolour", name = "kotlinforforge-neoforge", version.ref = "platform_mods_kotlinForForge" }
+platform_mods_architecturyApi = { group = "dev.architectury", name = "architectury", version.ref = "platform_mods_architectury" }
+platform_mods_architecturyFabric = { group = "dev.architectury", name = "architectury-fabric", version.ref = "platform_mods_architectury" }
+platform_mods_architecturyNeoForge = { group = "dev.architectury", name = "architectury-neoforge", version.ref = "platform_mods_architectury" }
+
+build_autoServiceAnnotations = { group = "com.google.auto.service", name = "auto-service-annotations", version.ref = "build_autoServiceAnnotations" }
+build_autoServiceKsp = { group = "dev.zacsweers.autoservice", name = "auto-service-ksp", version.ref = "build_autoServiceKsp" }
+
+[plugins]
+loom = { id = "dev.architectury.loom", version.ref = "plugin_loom" }
+architectury = { id = "architectury-plugin", version.ref = "plugin_architectury" }
+shadow = { id = "com.gradleup.shadow", version.ref = "plugin_shadow" }
+kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "plugin_kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "plugin_ksp" }
