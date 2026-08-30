@@ -63,12 +63,13 @@ tasks.register("downloadModJars", Sync.class) {
 
 def expansions = [
         version: project.version,
-        dep_minecraft: project.property('fabric.mod_deps.minecraft'),
-        dep_fabric_api: project.property('fabric.mod_deps.fabric_api'),
-        dep_fabric_language_kotlin: project.property('fabric.mod_deps.fabric_language_kotlin'),
-        dep_architectury: project.property('fabric.mod_deps.architectury'),
-        dep_trinkets: project.property('fabric.mod_deps.trinkets'),
-        dep_liblib: project.property('fabric.mod_deps.liblib'),
+        dep_minecraft: libs.versions.platform.minecraft.get(),
+        dep_fabricApi: libs.versions.platform.fabricApi.get(),
+        dep_fabricLanguageKotlin: libs.versions.platform.mods.fabricLanguageKotlin.get(),
+        dep_architectury: libs.versions.platform.mods.architectury.get(),
+        dep_trinkets: libs.versions.mods.trinkets.get(),
+        dep_liblib: libs.versions.mods.liblib.get(),
+        dep_cardinalComponents: libs.versions.mods.cardinalComponents.get(),
 ]
 processResources {
     inputs.properties(expansions)

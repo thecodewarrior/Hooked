@@ -45,7 +45,7 @@ dependencies {
     modImplementation libs.platform.mods.architecturyNeoForge
 
     implementation(libs.platform.mods.kotlinForForge)
-    modImplementation(libs.mods.sableCompanionFabric)
+    modImplementation(libs.mods.sableCompanionNeoForge)
     include(libs.mods.sableCompanionNeoForge)
 
     modImplementation libs.bundles.mods.liblib.neoforge
@@ -53,10 +53,8 @@ dependencies {
     // We need this because curios adds `remap = false` to its mixin annotations, which means architectury (rightly)
     // won't remap them to yarn mappings. I built a custom jar with that flag removed, and it works.
     modImplementation files("curios-neoforge-9.5.1+1.21.1.jar")
-    //modCompileOnly "top.theillusivec4.curios:curios-neoforge:${curios_version}:api"
-    //modRuntimeOnly "top.theillusivec4.curios:curios-neoforge:${curios_version}"
-
-    modJar libs.runtime.mods.sableNeoForge
+//    modCompileOnly variantOf(libs.mods.curios) { classifier("api") }
+//    modRuntimeOnly variantOf(libs.mods.curios)
 
     common(project(path: ':common', configuration: 'namedElements')) { transitive false }
     shadowBundle project(path: ':common', configuration: 'transformProductionNeoForge')
@@ -69,12 +67,12 @@ tasks.register("downloadModJars", Sync.class) {
 
 def expansions = [
         version: project.version,
-        dep_neoforge: "[${libs.versions.platform.neoforge.get()},)",
+        dep_neoforge: libs.versions.platform.neoforge.get(),
         dep_minecraft: libs.versions.platform.minecraft.get(),
-        dep_kotlinforforge: "[${libs.versions.platform.mods.kotlinForForge.get()},)",
-        dep_architectury: "[${libs.versions.platform.mods.architectury.get()},)",
-        dep_curios: "[9.5.1+1.21.1,)",
-        dep_liblib: "[${libs.versions.mods.liblib.get()},)",
+        dep_kotlinforforge: libs.versions.platform.mods.kotlinForForge.get(),
+        dep_architectury: libs.versions.platform.mods.architectury.get(),
+        dep_curios: libs.versions.mods.curios.get(),
+        dep_liblib: libs.versions.mods.liblib.get(),
 ]
 processResources {
     inputs.properties(expansions)

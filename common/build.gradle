@@ -12,6 +12,6 @@ dependencies {
 
     modCompileOnly libs.bundles.mods.liblib.common
 
-    modApi libs.mods.sableCompanionFabric
+    modCompileOnly libs.mods.sableCompanionFabric
     modCompileOnly libs.mods.sableFabric
 }

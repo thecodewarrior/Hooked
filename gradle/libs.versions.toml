@@ -4,6 +4,7 @@ mods_cardinalComponents = "6.1.2"
 mods_trinkets = "3.10.0"
 mods_sableCompanion = "1.6.0"
 mods_sable = "2.0.5"
+mods_curios = "9.5.1+1.21.1" # we use a custom jar, so changing this won't actually update the build dependency
 
 # see: https://fabricmc.net/versions.html
 platform_minecraft = "1.21.1"
@@ -59,6 +60,9 @@ mods_trinkets = { group = "dev.emi", name = "trinkets", version.ref = "mods_trin
 mods_cardinalComponents_base = { group = "org.ladysnake.cardinal-components-api", name = "cardinal-components-base", version.ref = "mods_cardinalComponents" }
 mods_cardinalComponents_entity = { group = "org.ladysnake.cardinal-components-api", name = "cardinal-components-entity", version.ref = "mods_cardinalComponents" }
 
+# we use a custom Curios jar which has the `remap = false` flags removed, so this isn't actually used
+mods_curios = { group = "top.theillusivec4.curios", name = "curios-neoforge", version.ref = "mods_curios" }
+
 mods_liblib_mosaic_common = { group = "com.teamwizardry.librarianlib", name = "mosaic", version.ref = "mods_liblib"}
 mods_liblib_mosaic_fabric = { group = "com.teamwizardry.librarianlib", name = "mosaic-fabric", version.ref = "mods_liblib"}
 mods_liblib_mosaic_neoforge = { group = "com.teamwizardry.librarianlib", name = "mosaic-neoforge", version.ref = "mods_liblib"}
@@ -72,7 +76,6 @@ mods_liblib_etcetera_fabric = { group = "com.teamwizardry.librarianlib", name = 
 mods_liblib_etcetera_neoforge = { group = "com.teamwizardry.librarianlib", name = "etcetera-neoforge", version.ref = "mods_liblib"}
 
 runtime_mods_sableFabric = "curse.maven:sable-1312371:8673824" # 2.0.5
-runtime_mods_sableNeoForge = "curse.maven:sable-1312371:8673825" # 2.0.5
 
 platform_minecraft = { group = "net.minecraft", name = "minecraft", version.ref = "platform_minecraft" }
 platform_yarnMappings = { group = "net.fabricmc", name = "yarn", version.ref = "platform_yarnMappings" }

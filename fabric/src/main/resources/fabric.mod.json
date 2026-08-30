@@ -51,15 +51,17 @@
   ],
 
   "depends": {
-    "fabric-api": "${dep_fabric_api}",
-    "fabric-language-kotlin": "${dep_fabric_language_kotlin}",
     "minecraft": "${dep_minecraft}",
-    "architectury": "${dep_architectury}",
-    "liblib_mosaic": "${dep_liblib}",
-    "liblib_glitter": "${dep_liblib}",
-    "liblib_etcetera": "${dep_liblib}",
-    "trinkets": "${dep_trinkets}",
-    "fabric-key-binding-api-v1": "*"
+    "fabric-api": ">=${dep_fabricApi}",
+    "fabric-language-kotlin": ">=${dep_fabricLanguageKotlin}",
+    "fabric-key-binding-api-v1": "*",
+    "architectury": ">=${dep_architectury}",
+    "liblib_mosaic": ">=${dep_liblib}",
+    "liblib_glitter": ">=${dep_liblib}",
+    "liblib_etcetera": ">=${dep_liblib}",
+    "trinkets": ">=${dep_trinkets}",
+    "cardinal-components-base": ">=${dep_cardinalComponents}",
+    "cardinal-components-entity": ">=${dep_cardinalComponents}"
   },
   "custom": {
     "cardinal-components": [

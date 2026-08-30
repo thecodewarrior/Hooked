@@ -1,114 +1,65 @@
 package dev.thecodewarrior.hooked.util
 
-import com.teamwizardry.librarianlib.core.util.vec
-import com.teamwizardry.librarianlib.math.times
-import net.minecraft.entity.Entity
+import dev.thecodewarrior.hooked.integration.JumpCollisionChecker
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.math.Box
-import net.minecraft.util.math.Vec3d
+import org.joml.Vector3d
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
 object JumpHeightUtil {
 
-
-    /**
-     * Based on the step height code from `Entity.adjustMovementForCollisions(Vec3d)`.
-     *
-     * Returns the final movement
-     */
-    fun computeStepTarget(
+    fun findJumpTargetOffsets(
         player: PlayerEntity,
         box: Box,
-        movement: Vec3d,
-        maxHeight: Double
-    ): Vec3d {
-        val collisionBoxes = player.world.getEntityCollisions(player, box.stretch(movement))
-        val horizontal = if (movement.lengthSquared() == 0.0) {
-            movement
-        } else {
-            Entity.adjustMovementForCollisions(
-                player,
-                movement,
-                box,
-                player.world,
-                collisionBoxes
-            )
-        }
-
-        val collidedX = movement.x != horizontal.x
-        val collidedZ = movement.z != horizontal.z
-        if (collidedX || collidedZ) {
-            var rising = Entity.adjustMovementForCollisions(
-                player,
-                Vec3d(movement.x, maxHeight, movement.z),
-                box,
-                player.world,
-                collisionBoxes
-            )
-            val ceiling = Entity.adjustMovementForCollisions(
-                player,
-                Vec3d(0.0, maxHeight, 0.0),
-                box.stretch(movement.x, 0.0, movement.z),
-                player.world,
-                collisionBoxes
-            )
-            if (ceiling.y < maxHeight) {
-                val ceilingHorizontal = Entity.adjustMovementForCollisions(
-                    player,
-                    Vec3d(movement.x, 0.0, movement.z),
-                    box.offset(ceiling),
-                    player.world,
-                    collisionBoxes
-                ).add(ceiling)
-                if (ceilingHorizontal.horizontalLengthSquared() > rising.horizontalLengthSquared()) {
-                    rising = ceilingHorizontal
-                }
-            }
-            if (rising.horizontalLengthSquared() > horizontal.horizontalLengthSquared()) {
-                return rising.add( // move down to the floor
-                    Entity.adjustMovementForCollisions(
-                        player,
-                        Vec3d(0.0, -rising.y + movement.y, 0.0),
-                        box.offset(rising),
-                        player.world,
-                        collisionBoxes
-                    )
-                )
-            }
-        }
-
-        return horizontal
+        maxHeight: Double,
+    ): Collection<Vector3d> {
+        val offsets = computeJumpTestOffsets(player, maxHeight)
+        val afterVanilla = JumpCollisionChecker.vanillaInstance.findNonCollidingBoundingBoxes(player, box, offsets)
+        val afterSable = JumpCollisionChecker.sableInstance.findNonCollidingBoundingBoxes(player, box, afterVanilla)
+        return afterSable
+            .groupBy { it.x to it.z }
+            .values.map { it.minBy { vec -> vec.y } }
+            .filter { it.y > 0 }
     }
 
-    fun movementToDirection(forward: Float, sideways: Float, yaw: Float): Vec3d {
+    fun movementToDirection(forward: Float, sideways: Float, yaw: Float): Vector3d {
         val s = sin(Math.toRadians(yaw.toDouble()))
         val c = cos(Math.toRadians(yaw.toDouble()))
         if (forward * forward + sideways * sideways < 1.0E-7) {
-            return vec(-s, 0, c)
+            return Vector3d(-s, 0.0, c)
         }
-        return vec(
+        return Vector3d(
             sideways * c - forward * s,
-            0,
+            0.0,
             forward * c + sideways * s
         ).normalize()
     }
 
-    fun computeJumpTargetOffsets(player: PlayerEntity): List<Vec3d> {
+    fun computeJumpTestOffsets(player: PlayerEntity, maxHeight: Double): List<Vector3d> {
         val direction = movementToDirection(player.forwardSpeed, player.sidewaysSpeed, player.yaw)
 
-        val sampleAngles = listOf(45).map { it * PI.toFloat() / 180f }
-        val sampleDistance = 1.0
-
-        val samples = mutableListOf<Vec3d>()
-        samples.add(direction * sampleDistance)
-
-        for (angle in sampleAngles) {
-            samples.add(direction.rotateY(angle) * sampleDistance)
-            samples.add(direction.rotateY(-angle) * sampleDistance)
+        val sampleAngles = listOf(
+            0.0 to 0.5,
+            0.0 to 1.0,
+            -45.0 to 1.0,
+            45.0 to 1.0,
+        ).map { (angle, distance) ->
+            (angle * PI / 180) to distance
         }
 
-        return samples
+        val testIncrement = 1 / 16.0
+        val yOffsets = (0 .. (maxHeight / testIncrement).toInt()).map { it * testIncrement }
+
+        return sampleAngles
+            .map { (angle, distance) ->
+                direction.rotateY(angle, Vector3d()).mul(distance)
+            }
+            .flatMap { base ->
+                yOffsets.map { y ->
+                    base.add(0.0, y, 0.0, Vector3d())
+                }
+            }
     }
 }

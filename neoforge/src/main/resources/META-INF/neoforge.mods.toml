@@ -19,13 +19,6 @@ Hooked: Grappling hooks done simple, natural, and useful.
 config = "hooked.mixins.json"
 
 [[dependencies.hooked]]
-modId = "neoforge"
-type = "required"
-versionRange = "${dep_neoforge}"
-ordering = "NONE"
-side = "BOTH"
-
-[[dependencies.hooked]]
 modId = "minecraft"
 type = "required"
 versionRange = "${dep_minecraft}"
@@ -33,43 +26,50 @@ ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.hooked]]
+modId = "neoforge"
+type = "required"
+versionRange = "[${dep_neoforge},)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.hooked]]
 modId="kotlinforforge"
 mandatory=true
-versionRange="${dep_kotlinforforge}"
+versionRange="[${dep_kotlinforforge},)"
 ordering="NONE"
 side="BOTH"
 
 [[dependencies.hooked]]
 modId = "architectury"
 type = "required"
-versionRange = "${dep_architectury}"
+versionRange = "[${dep_architectury},)"
 ordering = "AFTER"
 side = "BOTH"
 
 [[dependencies.hooked]]
 modId="curios"
 mandatory=true
-versionRange="${dep_curios}"
+versionRange="[${dep_curios},)"
 ordering="NONE"
 side="BOTH"
 
 [[dependencies.hooked]]
 modId="liblib_mosaic"
 mandatory=true
-versionRange="${dep_liblib}"
+versionRange="[${dep_liblib},)"
 ordering="NONE"
 side="BOTH"
 
 [[dependencies.hooked]]
 modId="liblib_glitter"
 mandatory=true
-versionRange="${dep_liblib}"
+versionRange="[${dep_liblib},)"
 ordering="NONE"
 side="BOTH"
 
 [[dependencies.hooked]]
 modId="liblib_etcetera"
 mandatory=true
-versionRange="${dep_liblib}"
+versionRange="[${dep_liblib},)"
 ordering="NONE"
 side="BOTH"
