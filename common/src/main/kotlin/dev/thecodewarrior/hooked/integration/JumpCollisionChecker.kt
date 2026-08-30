@@ -17,16 +17,13 @@ interface JumpCollisionChecker {
             if (Platform.isModLoaded("sable")) SableJumpCollisionChecker else NoopJumpCollisionChecker
         }
 
-        fun expandBoxByOffsets(aabb: Box, offsets: Collection<Vector3d>): Box = aabb
-            .stretch(
-                offsets.minOf { it.x },
-                offsets.minOf { it.y },
-                offsets.minOf { it.z },
-            )
-            .stretch(
-                offsets.maxOf { it.x },
-                offsets.maxOf { it.y },
-                offsets.maxOf { it.z },
-            )
+        fun expandBoxByOffsets(aabb: Box, offsets: Collection<Vector3d>): Box = Box(
+            aabb.minX + offsets.minOf { it.x },
+            aabb.minY + offsets.minOf { it.y },
+            aabb.minZ + offsets.minOf { it.z },
+            aabb.maxX + offsets.maxOf { it.x },
+            aabb.maxY + offsets.maxOf { it.y },
+            aabb.maxZ + offsets.maxOf { it.z },
+        )
     }
 }

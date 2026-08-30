@@ -10,6 +10,7 @@ import dev.thecodewarrior.hooked.HookGameEvents
 import dev.thecodewarrior.hooked.HookSounds
 import dev.thecodewarrior.hooked.HookTags
 import dev.thecodewarrior.hooked.client.glitter.ChainShatterParticleSpawner
+import dev.thecodewarrior.hooked.integration.JumpCollisionChecker
 import dev.thecodewarrior.hooked.mixin.EntityAccessMixin
 import dev.thecodewarrior.hooked.mixin.FloatingTicksAccess
 import dev.thecodewarrior.hooked.util.getWaistPos
@@ -20,6 +21,7 @@ import net.minecraft.network.PacketByteBuf
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.math.Vec3d
 import net.minecraft.util.shape.VoxelShapes
+import org.joml.Vector3d
 import kotlin.math.abs
 import kotlin.math.sign
 
@@ -181,7 +183,8 @@ abstract class HookPlayerController {
      * @param lockPlayer Whether to reset the player's motion when snapping using the [enforcementForce]
      */
     protected fun applyRestoringForce(
-        player: PlayerEntity, target: Vec3d,
+        player: PlayerEntity,
+        target: Vec3d,
         pullForce: Double,
         enforcementForce: Double = pullForce,
         accelerationFactor: Double = 0.5,
@@ -230,8 +233,23 @@ abstract class HookPlayerController {
 
     protected fun movePlayer(player: PlayerEntity, offset: Vec3d) {
         val allowedOffset = mixinCast<EntityAccessMixin>(player).invokeAdjustMovementForCollisions(offset)
-        val newPos = player.pos + allowedOffset
-        player.setPosition(newPos.x, newPos.y, newPos.z)
+
+        val substepCount = 16
+        val substeps = (0..substepCount).map { i ->
+            Vector3d(allowedOffset.x, allowedOffset.y, allowedOffset.z).mul(i / substepCount.toDouble())
+        }
+        val afterSableSubsteps = JumpCollisionChecker.sableInstance.findNonCollidingBoundingBoxes(
+            player,
+            player.boundingBox,
+            substeps
+        )
+        val sableAllowedOffset = afterSableSubsteps.lastOrNull() ?: Vector3d()
+
+        player.setPosition(
+            player.pos.x + sableAllowedOffset.x,
+            player.pos.y + sableAllowedOffset.y,
+            player.pos.z + sableAllowedOffset.z,
+        )
     }
 
     protected fun spawnChainShatterParticleEffect(delegate: HookControllerDelegate, hook: Hook) {
