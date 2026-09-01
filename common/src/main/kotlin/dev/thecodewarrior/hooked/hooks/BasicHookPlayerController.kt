@@ -67,74 +67,15 @@ open class BasicHookPlayerController(val player: PlayerEntity, val behavior: Bas
 
     fun isStuck(delegate: HookControllerDelegate): Boolean {
         val delta = getTargetPoint(delegate) - player.getWaistPos()
-
         return delta == Vec3d.ZERO || acos(player.actualMotion.normalize() dot delta.normalize()) > Math.toRadians(80.0)
     }
-
-//    /**
-//     * Returns a list of min/max heights for jump height raycasts
-//     */
-//    fun computeJumpCasts(delegate: HookControllerDelegate): List<Pair<Double, Double>>? {
-//        val raycaster = Raycaster()
-//        val waist = player.getWaistPos()
-//        val targetPos = getTargetPoint(delegate)
-//        val deltaPos = targetPos - waist
-//
-//        val sampleOrigin: Vec3d
-//        val boostAABB: Box
-//        when {
-//            isStuck(delegate) || player.actualMotion == Vec3d.ZERO -> {
-//                boostAABB = player.boundingBox
-//                sampleOrigin = player.pos
-//            }
-//            deltaPos.length() < behavior.pullStrength * 3 -> {
-//                boostAABB = player.boundingBox.offset(deltaPos) // the player's bounding box centered around the targetPos
-//                sampleOrigin = player.pos.add(deltaPos)
-//            }
-//            else -> return null // not allowed to jump
-//        }
-//
-//        val maxHeight = 2.5
-//
-//        fun buildRequest(x: Double, y: Double, z: Double, deltaY: Double) =
-//            Raycaster.RaycastRequest(delegate.world, x, y + deltaY, z, x, y, z)
-//                .withEntityContext(player)
-//                .withBlockMode(Raycaster.BlockMode.COLLISION)
-//                .withSubLevelMode(Raycaster.SubLevelMode.INCLUDE_SUBLEVELS)
-//
-//        val samples = JumpHeightUtil.computeTargetRayOffsets(player).map { offset ->
-//            raycaster.cast(buildRequest(
-//                sampleOrigin.x + offset.x,
-//                sampleOrigin.y + maxHeight,
-//                sampleOrigin.z + offset.z,
-//                -maxHeight
-//            ))
-//
-//            val hitHeight = maxHeight * (1 - raycaster.fraction)
-//
-//            raycaster.cast(buildRequest(
-//                sampleOrigin.x + offset.x,
-//                sampleOrigin.y + hitHeight,
-//                sampleOrigin.z + offset.z,
-//                player.height.toDouble()
-//            ))
-//
-//            hitHeight to (raycaster.fraction * player.height)
-//        }
-//
-//        return JumpHeightUtil.computeJumpTargetOffsets(player).map {
-//            boostAABB.offset(JumpHeightUtil.computeStepTarget(player, boostAABB, it, 2.5))
-//        }.sortedByDescending { it.minY }.filter { it.minY > player.y }
-//    }
 
     /**
      * Returns the bounding boxes of the jump targets. The returned list is sorted from highest to lowest
      * priority. That is, the first element should be used as the final jump target. Null if the player is in a state
      * where they aren't allowed to jump.
      */
-    fun computeJumpTargets(
-        delegate: HookControllerDelegate
-    ): List<Box>? {
+    fun computeJumpTargets(delegate: HookControllerDelegate): List<Box>? {
         val waist = player.getWaistPos()
         val targetPos = getTargetPoint(delegate)
         val deltaPos = targetPos - waist
@@ -208,7 +149,7 @@ open class BasicHookPlayerController(val player: PlayerEntity, val behavior: Bas
         var plantedCount = 0
         var targetPoint = Vec3d.ZERO
         delegate.hooks.forEach { hook ->
-            if (hook.state == Hook.State.PLANTED) {
+            if (hook.state == Hook.State.PLANTED && !delegate.isUnloadedSable(hook.pos)) {
                 targetPoint += delegate.project(hook.pos)
                 plantedCount++
             }

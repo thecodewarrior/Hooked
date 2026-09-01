@@ -77,6 +77,7 @@ open class FlightHookPlayerController(val player: PlayerEntity, val behavior: Fl
         if(sneaking) {
             val direction = Vec3d.fromPolar(pitch, yaw)
             val closestHook = delegate.hooks
+                .filter { !delegate.isUnloadedSable(it.pos) }
                 .map { hook -> hook to (direction dot (delegate.project(hook.pos) - pos).normalize()) }
                 .filter { it.second > retractThreshold }
                 .maxByOrNull { it.second }

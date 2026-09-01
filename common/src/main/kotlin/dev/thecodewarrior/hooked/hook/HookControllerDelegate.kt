@@ -54,4 +54,9 @@ interface HookControllerDelegate {
     fun project(pos: Vec3d): Vec3d {
         return SableCompanion.INSTANCE.projectOutOfSubLevel(world, pos as Position)
     }
+
+    fun isUnloadedSable(pos: Vec3d): Boolean {
+        return SableCompanion.INSTANCE.isInPlotGrid(world, pos) &&
+                SableCompanion.INSTANCE.getContaining(world, pos as Position) == null
+    }
 }
