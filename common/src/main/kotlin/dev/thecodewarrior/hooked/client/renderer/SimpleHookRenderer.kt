@@ -106,6 +106,8 @@ abstract class SimpleHookRenderer<C: HookPlayerController>(): HookRenderer<C>() 
     ) {
         if (chainLength < 0) // this can happen when the chain is shorter than the chain margin
             return
+        if (chainLength > 1000) // this can happen with sable sublevels
+            return
         val chainSegments = floorInt(chainLength)
         val firstSegmentLength = chainLength - chainSegments
 
