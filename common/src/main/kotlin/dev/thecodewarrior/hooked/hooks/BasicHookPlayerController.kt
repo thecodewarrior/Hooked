@@ -143,6 +143,7 @@ open class BasicHookPlayerController(val player: PlayerEntity, val behavior: Bas
         if(isStuck(delegate) || player.actualMotion == Vec3d.ZERO) {
             player.stopFallFlying()
         }
+        updateSubLevelTracking(delegate)
     }
 
     protected fun getTargetPoint(delegate: HookControllerDelegate): Vec3d {

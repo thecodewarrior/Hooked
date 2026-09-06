@@ -162,6 +162,8 @@ open class FlightHookPlayerController(val player: PlayerEntity, val behavior: Fl
             }
             showHullTimer.start(10)
         }
+
+        updateSubLevelTracking(delegate)
     }
 
     private var wasFlying = false

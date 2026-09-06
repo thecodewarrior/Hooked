@@ -6,11 +6,13 @@ import com.teamwizardry.librarianlib.etcetera.Raycaster
 import com.teamwizardry.librarianlib.math.minus
 import com.teamwizardry.librarianlib.math.plus
 import com.teamwizardry.librarianlib.math.times
+import dev.ryanhcode.sable.companion.SableCompanion
 import dev.thecodewarrior.hooked.HookGameEvents
 import dev.thecodewarrior.hooked.HookSounds
 import dev.thecodewarrior.hooked.HookTags
 import dev.thecodewarrior.hooked.client.glitter.ChainShatterParticleSpawner
 import dev.thecodewarrior.hooked.integration.JumpCollisionChecker
+import dev.thecodewarrior.hooked.integration.SubLevelTrackingManager
 import dev.thecodewarrior.hooked.mixin.EntityAccessMixin
 import dev.thecodewarrior.hooked.mixin.FloatingTicksAccess
 import dev.thecodewarrior.hooked.util.getWaistPos
@@ -162,6 +164,16 @@ abstract class HookPlayerController {
             }
         }
         spawnChainShatterParticleEffect(delegate, hook)
+    }
+
+    // only triggered on hooks landing or detaching
+    protected fun updateSubLevelTracking(delegate: HookControllerDelegate) {
+        val sublevels = delegate.hooks
+            .filter { it.state == Hook.State.PLANTED }
+            .map { SableCompanion.INSTANCE.getContaining(delegate.world, it.block) }
+            .distinctBy { it?.uniqueId }
+
+        sublevels.singleOrNull()?.let { SubLevelTrackingManager.setTrackingSubLevel(delegate.player, it) }
     }
 
     /**
