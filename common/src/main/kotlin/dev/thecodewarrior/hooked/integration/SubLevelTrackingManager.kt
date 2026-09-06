@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 interface SubLevelTrackingManager {
     fun setTrackingSubLevel(player: PlayerEntity, subLevelAccess: SubLevelAccess?)
+    fun isFrozenToSubLevel(player: PlayerEntity): Boolean
 
     companion object {
         val managerInstance: SubLevelTrackingManager by lazy {
@@ -24,6 +25,19 @@ interface SubLevelTrackingManager {
                 if (loggedCrashes.add(player.uuid)) {
                     logger.warn("Exception setting tracking sublevel for player ${player.uuid}", e)
                 }
+            }
+        }
+
+        fun isFrozenToSubLevel(player: PlayerEntity): Boolean {
+            try {
+                val isFrozen = managerInstance.isFrozenToSubLevel(player)
+                loggedCrashes.remove(player.uuid)
+                return isFrozen
+            } catch (e: Exception) {
+                if (loggedCrashes.add(player.uuid)) {
+                    logger.warn("Exception checking player sublevel freeze state for player ${player.uuid}", e)
+                }
+                return false
             }
         }
 

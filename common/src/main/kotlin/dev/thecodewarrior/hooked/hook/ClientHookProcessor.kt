@@ -7,6 +7,7 @@ import dev.thecodewarrior.hooked.Hooked
 import dev.thecodewarrior.hooked.bridge.hookData
 import dev.thecodewarrior.hooked.capability.HookedPlayerData
 import dev.thecodewarrior.hooked.hooks.BasicHookPlayerController
+import dev.thecodewarrior.hooked.integration.SubLevelTrackingManager
 import dev.thecodewarrior.hooked.item.HookProperties
 import dev.thecodewarrior.hooked.network.ClientHookSyncC2SPacket
 import dev.thecodewarrior.hooked.network.HookJumpC2SPacket
@@ -101,6 +102,11 @@ object ClientHookProcessor: CommonHookProcessor() {
     }
 
     fun fireHook(player: PlayerEntity, data: HookedPlayerData, pos: Vec3d, pitch: Float, yaw: Float, sneaking: Boolean) {
+        if (SubLevelTrackingManager.isFrozenToSubLevel(player)) {
+            // the player won't tick while frozen, so hooks will stack up and start moving after sublevels load.
+            // This is bad from a game feel perspective, so we stop the player from firing hooks at all in this state.
+            return
+        }
         if(player.isFallFlying && !player.world.gameRules.getBoolean(HookGameRules.ALLOW_HOOKS_WHILE_FLYING)) {
             return
         }
@@ -111,6 +117,10 @@ object ClientHookProcessor: CommonHookProcessor() {
     }
 
     fun jump(data: HookedPlayerData, doubleJump: Boolean, sneaking: Boolean) {
+        if (SubLevelTrackingManager.isFrozenToSubLevel(data.player)) {
+            // player won't tick while frozen, meaning the player can't normally move, so we shouldn't handle jump inputs
+            return
+        }
         if (data.maxHooks > 0) {
             data.controller.jump(Context(data), doubleJump, sneaking)
 
