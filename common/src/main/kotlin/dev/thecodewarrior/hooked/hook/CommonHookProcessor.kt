@@ -62,7 +62,7 @@ abstract class CommonHookProcessor : HookProcessor {
                 continue
 
             hook.moveOutOfSubLevel(SableCompanion.INSTANCE.getContaining(context.world, hook.pos))
-            val distanceLeft = context.controller.modifyHookRange(context.properties.range, hook) -
+            val distanceLeft = context.controller.getHookRange(context, hook) -
                     (hook.pos - context.player.getWaistPos()).length()
 
             val castDistance = min(context.properties.speed, distanceLeft) + context.properties.hookModel.hookLength
@@ -128,30 +128,18 @@ abstract class CommonHookProcessor : HookProcessor {
             }
         }
 
-        // a bit of wiggle room before a hook breaks off.
-        val breakEpsilon: Double = 1 / 16.0
 
         for(hook in context.hooks) {
             if (hook.state != Hook.State.PLANTED) {
                 continue
             }
 
-            val hookRange = context.controller.modifyHookRange(context.properties.range, hook) + breakEpsilon
-            val hookDistanceSq = SableCompanion.INSTANCE.distanceSquaredWithSubLevels(context.world, hook.pos, context.player.getWaistPos())
-
-            val reason = when {
-                hookDistanceSq > hookRange * hookRange -> {
-                    HookPlayerController.DislodgeReason.DISTANCE
-                }
-                context.world.isAir(hook.block) -> {
-                    HookPlayerController.DislodgeReason.BLOCK_BROKEN
-                }
-                else -> continue
+            val reason = context.controller.shouldDislodge(context, hook)
+            if (reason != null) {
+                hook.state = Hook.State.RETRACTING
+                context.syncHook(hook)
+                context.fireEvent(HookEvent(HookEvent.EventType.DISLODGE, hook.id, reason.ordinal))
             }
-
-            hook.state = Hook.State.RETRACTING
-            context.syncHook(hook)
-            context.fireEvent(HookEvent(HookEvent.EventType.DISLODGE, hook.id, reason.ordinal))
         }
 
         var plantedCount = 0

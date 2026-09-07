@@ -190,11 +190,14 @@ open class FlightHookPlayerController(val player: PlayerEntity, val behavior: Fl
         }
     }
 
-    override fun modifyHookRange(baseRange: Double, hook: Hook): Double {
+    override fun getHookRange(
+        delegate: HookControllerDelegate,
+        hook: Hook
+    ): Double {
         if (hook.state == Hook.State.PLANTED) {
-            return baseRange * behavior.breakRangeFactor
+            return super.getHookRange(delegate, hook) * behavior.breakRangeFactor
         } else {
-            return baseRange
+            return super.getHookRange(delegate, hook)
         }
     }
 

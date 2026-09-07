@@ -71,8 +71,29 @@ abstract class HookPlayerController {
             }
     }
 
-    open fun modifyHookRange(baseRange: Double, hook: Hook): Double {
-        return baseRange
+    open fun getHookRange(delegate: HookControllerDelegate, hook: Hook): Double {
+        return delegate.properties.range
+    }
+
+    open fun shouldDislodge(delegate: HookControllerDelegate, hook: Hook): DislodgeReason? {
+        // a bit of wiggle room before a hook breaks off.
+        val breakEpsilon: Double = 1 / 16.0
+        val hookRange = getHookRange(delegate, hook) + breakEpsilon
+        val hookDistanceSq = SableCompanion.INSTANCE.distanceSquaredWithSubLevels(delegate.world, hook.pos, delegate.player.getWaistPos())
+
+        return when {
+            delegate.isUnloadedSable(hook.pos) -> {
+                // wait for sublevels to load, otherwise hooks might detach client-side prematurely
+                null
+            }
+            hookDistanceSq > hookRange * hookRange -> {
+                DislodgeReason.DISTANCE
+            }
+            delegate.world.isAir(hook.block) -> {
+                DislodgeReason.BLOCK_BROKEN
+            }
+            else -> null
+        }
     }
 
     /**

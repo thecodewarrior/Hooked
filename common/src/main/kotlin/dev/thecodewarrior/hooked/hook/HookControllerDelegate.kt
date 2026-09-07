@@ -57,6 +57,6 @@ interface HookControllerDelegate {
 
     fun isUnloadedSable(pos: Vec3d): Boolean {
         return SableCompanion.INSTANCE.isInPlotGrid(world, pos) &&
-                SableCompanion.INSTANCE.getContaining(world, pos as Position) == null
+                !world.isChunkLoaded((pos.x / 16).toInt(), (pos.z / 16).toInt())
     }
 }
